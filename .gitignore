@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Jupyter / Colab
+.ipynb_checkpoints/
+
+# Segredos e configuração local
+.env
+
+# Sistema operacional
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Logs de execução (a pasta é mantida pelo .gitkeep)
+nlp-fabrica-corpus/logs/*
+!nlp-fabrica-corpus/logs/.gitkeep
