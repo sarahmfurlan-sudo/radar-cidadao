@@ -1,0 +1,20 @@
+DOCUMENTO DE TESTE — TODOS OS DADOS PESSOAIS SÃO FICTÍCIOS
+
+Registro de ocorrências de chuva — Associação de Moradores da Vila Esperança
+
+Na madrugada de 12 de janeiro de 2026, a moradora Mariana Toledo Vasconcelos registrou no Radar Cidadão um alagamento na esquina da Rua das Palmeiras com a Rua do Córrego. Segundo ela, a água chegou a 40 centímetros em menos de uma hora. O vizinho Joaquim Pereira Lins confirmou o relato e enviou fotos pelo aplicativo. Mariana também relatou que o bueiro da esquina estava entupido havia duas semanas.
+
+Contato da moradora: CPF 123.456.789-10, e-mail mariana.toledo@example.com, telefone (20) 99999-0001.
+Contato do vizinho: CPF 987.654.321-99, e-mail joaquim.lins@example.com, celular +55 20 98888-0002.
+
+A Defesa Civil foi acionada pelo telefone 199 e orientou os moradores a se afastarem das áreas de encosta. Dona Benedita Arruda, de 78 anos, precisou de ajuda para sair de casa. O Corpo de Bombeiros (193) fez o resgate, e o SAMU (192) prestou o primeiro atendimento. A Polícia Militar (190) organizou o trânsito na avenida principal.
+
+Para receber alertas de chuva forte, a Defesa Civil recomenda enviar o CEP por SMS para 40199. A presidente da associação, Luíza Andrade Siqueira, pediu que os moradores mantenham esse número salvo no celular. Dúvidas podem ser enviadas para associacao.vilaesperanca@example.com ou pelo telefone fixo (23) 3000-0003.
+
+Segundo o Ministério da Saúde, a água de enchente pode transmitir leptospirose. Quem teve contato com a água e apresentar febre deve procurar a unidade de saúde mais próxima.
+
+Equipe responsável pelo registro
+Mariana Toledo Vasconcelos
+JOAQUIM PEREIRA LINS
+Luíza Andrade Siqueira – Presidente da associação
+Secretário: Rafael Monteiro Dantas
