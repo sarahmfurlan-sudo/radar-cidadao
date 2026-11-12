@@ -1,0 +1,26 @@
+{
+  "mi_2003_manual_desastres_naturais.pdf": {
+    "modo": "incluir",
+    "paginas": [[40, 41], [48, 52], [108, 117]],
+    "motivo": "Usar só os capítulos sobre inundações, enxurradas, alagamentos e deslizamentos.",
+    "detalhes": [
+      {"paginas": [40, 41], "decisao": "incluir", "motivo": "Introdução do Título III (Cap. II): caracterização e efeitos adversos das inundações."},
+      {"paginas": [42, 47], "decisao": "excluir", "motivo": "Manejo de bacias e medidas de uso rural (matas ciliares, desassoreamento, transposição, bacias de captação), fora do foco urbano."},
+      {"paginas": [48, 49], "decisao": "incluir", "motivo": "Enchentes ou Inundações Graduais."},
+      {"paginas": [50, 50], "decisao": "incluir", "motivo": "Enxurradas ou Inundações Bruscas."},
+      {"paginas": [51, 52], "decisao": "incluir", "motivo": "Alagamentos."},
+      {"paginas": [53, 53], "decisao": "excluir", "motivo": "Inundações litorâneas por invasão do mar, sem relação com chuva."},
+      {"paginas": [102, 107], "decisao": "excluir", "motivo": "Introdução técnica de geomorfologia e solos, distante da linguagem do cidadão."},
+      {"paginas": [108, 116], "decisao": "incluir", "motivo": "Escorregamentos ou Deslizamentos."},
+      {"paginas": [117, 117], "decisao": "incluir", "motivo": "Corridas de Massa, deslizamentos desencadeados por chuva intensa."},
+      {"paginas": [118, 121], "decisao": "excluir", "motivo": "Rastejos e quedas de rochas, pouca relação direta com chuva."},
+      {"paginas": [3, 3], "decisao": "excluir", "motivo": "Página de créditos com nomes reais."}
+    ]
+  },
+  "mdr_2021_guia_alertas_desastres.pdf": {
+    "modo": "excluir",
+    "paginas": [[2, 2]],
+    "motivo": "Página de créditos com nomes reais.",
+    "detalhes": []
+  }
+}

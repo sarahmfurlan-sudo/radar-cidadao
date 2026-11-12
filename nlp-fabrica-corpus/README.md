@@ -44,7 +44,30 @@ Ficam em [`dados/entrada/`](dados/entrada/).
 | `ms_2017_cartilha_alerta_chuvas.pdf` | Cartilha de Orientação à População no Período de Alerta de Chuvas Intensas | Ministério da Saúde | 2017 | — | [PDF](https://bvsms.saude.gov.br/bvs/publicacoes/cartilha_orientacao_populacao_chuvas_intensas.pdf) |
 | `ms_2026_enchentes.html` | Enchentes (página no gov.br) | Ministério da Saúde | 2026 (ano de acesso) | — | [Página](https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/e/enchentes) |
 
-Os formatos TXT, DOCX e texto colado serão demonstrados com um arquivo de teste com **dados pessoais fictícios**. O mesmo arquivo serve para mostrar o "antes e depois" da anonimização. _(Pendente.)_
+## Documentos ampliados (RAG de IA Generativa)
+
+Ficam em [`dados/entrada_ia_generativa/`](dados/entrada_ia_generativa/).
+**Não entram no corpus avaliado da NLP**, que usa só os 5 documentos acima. Servem para o corpus ampliado (9 documentos) usado no RAG da disciplina de IA Generativa.
+
+| Arquivo | Documento | Órgão | Ano | Link oficial |
+|---|---|---|---|---|
+| `mdr_2021_guia_alertas_desastres.pdf` | Guia Prático de Utilização de Alertas do Governo Federal para Ações de Preparação para Desastres (2ª ed.) | Ministério do Desenvolvimento Regional | 2021 | _Pendente_ |
+| `mi_2003_manual_desastres_naturais.pdf` | Manual de Desastres, Volume I: Desastres Naturais | Ministério da Integração Nacional | 2003 | _Pendente_ |
+| `pmsp_2024_chuvas_excessivas.pdf` | Chuvas excessivas: Saiba como agir (página da Defesa Civil, salva em PDF) | Prefeitura de São Paulo | 2024 | _Pendente_ |
+| `cgesp_2026_dicas_alagamentos.docx` | Dicas sobre alagamentos e enchentes (texto transcrito da página) | CGE – Prefeitura de São Paulo | 2026 (ano de acesso) | _Pendente: link da página original no cgesp.org_ |
+
+### Seleção de páginas
+
+Os PDFs ficam inteiros no repositório. A seleção é aplicada na ingestão, a partir de [`selecao_paginas.json`](dados/entrada_ia_generativa/selecao_paginas.json).
+
+| Documento | Páginas usadas | Motivo |
+|---|---|---|
+| Manual de Desastres (MI, 2003) | 40–41, 48–52, 108–117 (17 de 174) | Só os capítulos sobre inundações, enxurradas, alagamentos e deslizamentos. Excluídas: créditos (p. 3), manejo rural de bacias (p. 42–47), inundações litorâneas (p. 53), introdução de geomorfologia (p. 102–107), rastejos e quedas de rochas (p. 118–121). |
+| Guia Prático de Alertas (MDR, 2021) | Todas, exceto a p. 2 (45 de 46) | A p. 2 é a página de créditos, com nomes reais. |
+
+## Arquivo de teste
+
+Os formatos TXT, DOCX e texto colado serão demonstrados com um arquivo de teste com **dados pessoais fictícios**. O mesmo arquivo serve para mostrar o "antes e depois" da anonimização. Ele fica em [`dados/teste/`](dados/teste/), junto com o script `gerar_docx.py`, que gera o DOCX a partir do TXT.
 
 ## Bibliotecas
 
