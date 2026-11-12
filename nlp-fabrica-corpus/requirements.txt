@@ -1,0 +1,8 @@
+# Bibliotecas usadas pelo código atual (ingestão e extração).
+# Versões instaladas e testadas localmente (Python 3.14). Ainda não testadas no Colab.
+pypdf==7.0.1
+python-docx==1.2.0
+beautifulsoup4==4.15.0
+
+# Testes
+pytest==9.2.0
