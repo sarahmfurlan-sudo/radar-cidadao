@@ -29,7 +29,10 @@ Passos previstos:
    - **Filtro contra falsos positivos:** usa o vocabulário do corpus. Uma palavra que aparece escrita em minúscula em algum lugar do corpus é tratada como palavra comum, e não como nome de pessoa.
    - **Preservados**, por decisão do grupo em 13/11/2026, porque são serviços de que o cidadão precisa: os números de emergência (190, 192, 193, 199 e 40199), o 156, os e-mails `.gov.br` e os telefones de órgãos públicos da lista `CONTATOS_PUBLICOS`.
    - **Limites conhecidos:** um nome de uma palavra só não é mascarado; um nome de cidade com cara de nome de pessoa (por exemplo, "Afonso Cláudio") é mascarado; um sobrenome que também é palavra comum pode ficar solto no texto.
-6. **Segmentação:** trechos de 256 a 512 tokens, respeitando o fim de frase ou parágrafo.
+6. **Segmentação:** trechos de 256 a 512 tokens.
+   - **Contagem de tokens:** com o tokenizador do Qwen 2.5 (`Qwen/Qwen2.5-7B-Instruct`), que tem o mesmo vocabulário do Qwen 3.
+   - **Corte:** sempre em fim de frase.
+   - **Rastreabilidade:** cada segmento guarda todas as páginas de origem e um `id` (nome do arquivo + número sequencial).
 7. **Geração dos corpus:** `corpus_texto.jsonl`, `corpus_qa.jsonl` e `corpus_chat.jsonl`, todos com o campo `fonte`.
 8. **Relatório de qualidade:** número de exemplos, média de tokens, duplicatas removidas e 5 exemplos aleatórios.
 
@@ -97,7 +100,7 @@ Os formatos TXT, DOCX e texto colado serão demonstrados com um arquivo de teste
 | `gradio` | Interface |
 | `transformers`, `accelerate`, `bitsandbytes` | Execução do modelo Qwen quantizado na GPU |
 | `spacy` (`pt_core_news_md`) | Detecção de nomes de pessoas |
-| _a definir_ | Contagem de tokens |
+| `transformers` (tokenizador do Qwen 2.5) | Contagem de tokens |
 
 ## Estrutura da pasta
 
