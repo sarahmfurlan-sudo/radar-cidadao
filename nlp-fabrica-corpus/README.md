@@ -84,13 +84,15 @@ Passos previstos:
      | Arquivo | Conteúdo | Campos |
      |---|---|---|
      | `dados/saida/corpus_texto.jsonl` | Segmentos dos 5 documentos de `dados/entrada` | `id`, `texto`, `fonte`, `paginas`, `tokens` |
-     | `dados/saida/corpus_qa.jsonl` | Perguntas e respostas | `instruction` (pergunta), `input` (vazio), `output` (resposta, já com a citação da fonte), `fonte`, `paginas`, `segmento_id` |
-     | `dados/saida/corpus_chat.jsonl` | Diálogos | `messages` (`role`/`content`, com o `system` da persona primeiro), `fonte`, `paginas`, `segmento_id` |
+     | `dados/saida/corpus_qa.jsonl` | Perguntas e respostas | `id`, `instruction` (pergunta), `input` (vazio), `output` (resposta, já com a citação da fonte), `fonte`, `paginas`, `segmento_id` |
+     | `dados/saida/corpus_chat.jsonl` | Diálogos | `id`, `messages` (`role`/`content`, com o `system` da persona primeiro), `fonte`, `paginas`, `segmento_id` |
      | `dados/saida_rag/corpus_rag.jsonl` | Segmentos dos 9 documentos (`dados/entrada` + `dados/entrada_ia_generativa`), para o RAG de IA Generativa | `id`, `texto`, `fonte`, `titulo` (de `geracao.TITULOS`), `paginas`, `tokens` |
 
    - **Preparação por pasta:** cada pasta passa separadamente por ingestão, limpeza, anonimização e segmentação. Assim os segmentos dos 5 documentos são os mesmos no `corpus_texto`, na geração e no RAG, com os mesmos `id`.
    - **Duplicatas:** removidas antes de gravar, mantendo a primeira ocorrência. Conta como duplicata o texto igual depois de normalizar espaços e caixa (só para comparar; o texto gravado não muda). Nas perguntas, conta a pergunta igual; nos diálogos, o texto de todas as falas. As contagens de removidos são devolvidas para o relatório.
-   - **Perguntas e diálogos vêm do cache:** a exportação não carrega modelo. Ela chama a geração com a função `sem_modelo`, que dá erro se for chamada, e tudo sai de [`dados/cache_geracao/`](dados/cache_geracao/). Se faltar algum segmento no cache, a exportação para com o erro `CacheIncompleto`. A divisão dos segmentos e as quantidades ficam na função `gerar_perguntas_e_dialogos`, que serve tanto para gerar no Colab quanto para exportar, para as chaves do cache serem as mesmas.
+   - **Perguntas e diálogos vêm do arquivo de resultado da geração:** no fim da geração, o notebook grava `dados/geracao/resultado_v8.json` (função `gravar_resultado`), com a versão do prompt, o modelo, os exemplos aprovados e as estatísticas que a geração devolve (segmentos pulados e número de descartes; os motivos dos descartes ainda não são devolvidos por `gerar_qa` e `gerar_chat`). A exportação só lê esse arquivo: não repete a geração, não carrega modelo e não depende do cache. Se o arquivo não existir, ela avisa que é preciso rodar a geração antes.
+   - **Geração no notebook:** a função `gerar_perguntas_e_dialogos` divide os segmentos entre perguntas e diálogos (`planejar_divisao`) e gera 100 perguntas e 30 diálogos com o modelo.
+   - **`id` nas perguntas e nos diálogos:** os `id` da geração (`qa_0001`, `chat_0001`...) são mantidos, para ligar cada exemplo exportado à revisão do grupo.
 9. **Relatório de qualidade:** número de exemplos, média de tokens, duplicatas removidas e 5 exemplos aleatórios.
 
 O corpus não passa por remoção de stop words nem por stemming: os textos dos 3 JSONL ficam com as palavras inteiras. A comparação pelas 5 primeiras letras existe só dentro da trava 3 da etapa 7, para conferir a resposta contra o trecho, e não muda nenhum texto.
@@ -178,6 +180,7 @@ As versões fixadas estão em [`requirements.txt`](requirements.txt). `gradio` a
 | `src/fabrica_corpus/` | Módulos Python de cada etapa (`ingestao`, `limpeza`, `anonimizacao`, `segmentacao`, `geracao` e `exportacao`) |
 | `dados/entrada/` | Documentos de entrada |
 | `dados/cache_geracao/` | Saídas do Qwen salvas para reaproveitar entre execuções |
+| `dados/geracao/` | Resultado de cada geração (`resultado_v8.json`): exemplos aprovados e estatísticas, lido pela exportação |
 | `dados/saida/` | Os 3 corpus JSONL e o relatório de qualidade |
 | `dados/saida_rag/` | Corpus ampliado (9 documentos) para o RAG de IA Generativa |
 | `revisao/` | Amostra revisada pelo grupo (mínimo de 20%) |

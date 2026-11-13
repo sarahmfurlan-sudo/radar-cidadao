@@ -5,8 +5,8 @@ import pytest
 
 import fabrica_corpus.geracao as geracao
 from fabrica_corpus.exportacao import (
-    CacheIncompleto, exportar_qa_chat, exportar_rag, exportar_texto, gerar_perguntas_e_dialogos,
-    gravar_jsonl, linha_chat, linha_qa, preparar_segmentos, remover_duplicatas, sem_modelo,
+    exportar_qa_chat, exportar_rag, exportar_texto, gerar_perguntas_e_dialogos, gravar_jsonl,
+    gravar_resultado, linha_chat, linha_qa, preparar_segmentos, remover_duplicatas,
 )
 from fabrica_corpus.segmentacao import Segmento
 
@@ -66,51 +66,63 @@ def test_gravar_jsonl_utf8_uma_linha_por_objeto(tmp_path):
 def test_linha_qa_no_formato_do_enunciado():
     exemplo = {"id": "qa_0001", "pergunta": "O que é enchente?", "resposta": "É a cheia do rio.\n\nFonte: X, p. 3.",
                "fonte": "a.pdf", "paginas": [3], "segmento_id": "a_0001", "modelo": "m"}
-    assert linha_qa(exemplo) == {"instruction": "O que é enchente?", "input": "",
+    assert linha_qa(exemplo) == {"id": "qa_0001", "instruction": "O que é enchente?", "input": "",
                                  "output": "É a cheia do rio.\n\nFonte: X, p. 3.",
                                  "fonte": "a.pdf", "paginas": [3], "segmento_id": "a_0001"}
 
 
 # 4. Formato dos diálogos: messages com role/content e system primeiro
 def test_linha_chat_no_formato_do_enunciado():
-    exemplo = {"mensagens": [{"role": "system", "content": "persona"}, {"role": "user", "content": "oi"},
-                             {"role": "assistant", "content": "olá"}],
+    exemplo = {"id": "chat_0001", "mensagens": [{"role": "system", "content": "persona"},
+                                                {"role": "user", "content": "oi"},
+                                                {"role": "assistant", "content": "olá"}],
                "fonte": "a.pdf", "paginas": [3], "segmento_id": "a_0001"}
     linha = linha_chat(exemplo)
-    assert list(linha) == ["messages", "fonte", "paginas", "segmento_id"]
+    assert list(linha) == ["id", "messages", "fonte", "paginas", "segmento_id"]
     assert [m["role"] for m in linha["messages"]] == ["system", "user", "assistant"]
 
 
-# 5. Perguntas e diálogos saem do cache, sem chamar o modelo
-def test_exportar_qa_chat_do_cache_sem_modelo(tmp_path):
+# 5. Perguntas e diálogos saem do arquivo de resultado, sem repetir a geração
+def test_exportar_qa_chat_do_arquivo_de_resultado(tmp_path):
     segs = [seg(i) for i in range(1, 13)]
-    cache = tmp_path / "cache"
-    qa, chat, _ = gerar_perguntas_e_dialogos(segs, gerador_falso, cache, total_qa=6, total_chat=2)
-    assert len(qa) == 6 and len(chat) == 2 and any(cache.iterdir())
+    qa, chat, estat_geracao = gerar_perguntas_e_dialogos(segs, gerador_falso, None, total_qa=6, total_chat=2,
+                                                         progresso=False)
+    resultado = gravar_resultado(qa, chat, estat_geracao, tmp_path / "geracao" / "resultado_v8.json")
+    dados = json.loads(resultado.read_text(encoding="utf-8"))
+    assert dados["versao_prompt"] == geracao.VERSAO_PROMPT and "segmentos_pulados" in dados["estatisticas"]["qa"]
 
-    # a exportação usa sem_modelo, que dá erro se for chamado: tudo tem que vir do cache
-    estat = exportar_qa_chat(segs, pasta_cache=cache, saida=tmp_path / "saida", total_qa=6, total_chat=2)
+    estat = exportar_qa_chat(resultado, saida=tmp_path / "saida")
 
     assert estat["qa"] == {"gravados": 6, "duplicatas_removidas": 0}
     assert estat["chat"] == {"gravados": 2, "duplicatas_removidas": 0}
+    assert estat["geracao"]["qa"]["exemplos"] == 6
     _, linhas_qa = ler(tmp_path / "saida" / "corpus_qa.jsonl")
-    assert set(linhas_qa[0]) == {"instruction", "input", "output", "fonte", "paginas", "segmento_id"}
+    assert set(linhas_qa[0]) == {"id", "instruction", "input", "output", "fonte", "paginas", "segmento_id"}
+    assert linhas_qa[0]["id"] == "qa_0001"
     assert "\n\nFonte: " in linhas_qa[0]["output"]           # citação já vem na resposta
     _, linhas_chat = ler(tmp_path / "saida" / "corpus_chat.jsonl")
-    assert linhas_chat[0]["messages"][0]["role"] == "system"
+    assert linhas_chat[0]["id"] == "chat_0001" and linhas_chat[0]["messages"][0]["role"] == "system"
 
 
-# 6. Cache vazio: a exportação para em vez de carregar modelo
-def test_cache_incompleto_da_erro(tmp_path):
-    with pytest.raises(CacheIncompleto):
-        gerar_perguntas_e_dialogos([seg(i) for i in range(1, 5)], sem_modelo, tmp_path / "vazio",
-                                   total_qa=2, total_chat=1)
+# 6. Exportar não chama o modelo: só lê o arquivo; sem arquivo, avisa
+def test_exportacao_nao_gera_e_avisa_sem_resultado(tmp_path, monkeypatch):
+    def proibido(*args, **kwargs):
+        raise AssertionError("a exportação não pode gerar")
+    import fabrica_corpus.exportacao as exportacao
+    for modulo in (geracao, exportacao):
+        monkeypatch.setattr(modulo, "gerar_qa", proibido)
+        monkeypatch.setattr(modulo, "gerar_chat", proibido)
+    resultado = gravar_resultado([], [], {"qa": {"segmentos_pulados": ["x"]}}, tmp_path / "r.json")
+    assert exportar_qa_chat(resultado, saida=tmp_path)["qa"]["gravados"] == 0
+    with pytest.raises(FileNotFoundError, match="rode a geração"):
+        exportar_qa_chat(tmp_path / "nao_existe.json", saida=tmp_path)
 
 
 # 7. Perguntas repetidas são removidas na exportação
 def test_qa_duplicada_removida():
-    linhas = [linha_qa({"pergunta": p, "resposta": "r", "fonte": "a", "paginas": [], "segmento_id": "s"})
-              for p in ["O que é enchente?", "o que é  enchente?", "O que é alagamento?"]]
+    linhas = [linha_qa({"id": f"qa_{i}", "pergunta": p, "resposta": "r", "fonte": "a", "paginas": [],
+                        "segmento_id": "s"})
+              for i, p in enumerate(["O que é enchente?", "o que é  enchente?", "O que é alagamento?"])]
     unicos, removidos = remover_duplicatas(linhas, lambda l: l["instruction"])
     assert len(unicos) == 2 and removidos == 1
 
