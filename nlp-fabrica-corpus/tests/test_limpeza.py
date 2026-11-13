@@ -223,3 +223,13 @@ def test_referencias_contadas_nas_estatisticas():
     limpo, estat = limpar_corpus([Trecho(fonte="map.pdf", tipo="pdf", pagina=9, texto=REFS)])
     assert estat["linhas_de_referencia_removidas"] == 3
     assert "Capítulo 2" in limpo[0].texto
+
+
+def test_capitular_com_espaco_e_juntada():
+    texto = "T odos os anos chove. T ambém há deslizamentos. T ente avisar os vizinhos."
+    assert juntar_hifenizacao(texto) == "Todos os anos chove. Também há deslizamentos. Tente avisar os vizinhos."
+
+
+def test_capitular_nao_junta_palavras_de_verdade():
+    texto = "A erosão aumenta. E depois a água baixa. O ponto X de encontro fica na praça."
+    assert juntar_hifenizacao(texto) == texto

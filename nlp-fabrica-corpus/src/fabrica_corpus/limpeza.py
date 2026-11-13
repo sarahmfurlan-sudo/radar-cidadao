@@ -16,8 +16,10 @@ Ordem das regras (a ordem importa):
  9. normalizar_espacos     - espaços repetidos e excesso de linhas em branco
 
 Limites conhecidos (registrar no relatório):
- - espaço no meio da palavra por defeito da fonte do PDF ("T odos") não é corrigido:
-   uma regra para isso erraria palavras normais;
+ - espaço no meio da palavra por defeito da fonte do PDF só é corrigido no caso da
+   letra capitular ("T odos" -> "Todos", só consoantes); fora disso ("ex emplo") não,
+   porque uma regra geral erraria palavras normais;
+ - espaço perdido entre duas palavras ("Vamosconversar") não é corrigido;
  - tabelas de PDF chegam com as colunas misturadas;
  - palavra composta quebrada exatamente no hífen ("bem-\\nestar") vira "bemestar".
 """
@@ -148,8 +150,23 @@ _HIFEN_QUEBRA = re.compile(r"(\w) ?-[ ]*\n[ ]*([a-zà-ÿ])")
 _CAPITULAR = re.compile(r"(^|\n)([A-ZÀ-Ú])\n([a-zà-ÿ])")
 
 
+# Capitular com espaço perdido no PDF: "T odos", "T ambém", "T ente" -> "Todos"...
+# Só consoante: A, E, O (e É, À) são palavras em português ("A erosão", "E depois")
+# e ficam como estão. E não junta se o pedaço seguinte já é uma palavra curta comum
+# ("X de", "P ou"), para não colar duas palavras de verdade.
+_CAPITULAR_ESPACO = re.compile(r"(?<![\wÀ-ÿ])([B-DF-HJ-NP-TV-Z]) ([a-zà-ÿ]{2,})")
+_PALAVRAS_CURTAS = {"de", "da", "do", "das", "dos", "em", "no", "na", "nos", "nas", "ou", "que", "se",
+                    "um", "uma", "com", "por", "para", "ao", "aos", "as", "os", "é"}
+
+
+def _juntar_capitular_espaco(m: re.Match) -> str:
+    letra, resto = m.group(1), m.group(2)
+    return m.group(0) if resto in _PALAVRAS_CURTAS else letra + resto
+
+
 def juntar_hifenizacao(texto: str) -> str:
     texto = _CAPITULAR.sub(r"\1\2\3", texto)
+    texto = _CAPITULAR_ESPACO.sub(_juntar_capitular_espaco, texto)
     return _HIFEN_QUEBRA.sub(r"\1\2", texto)
 
 
