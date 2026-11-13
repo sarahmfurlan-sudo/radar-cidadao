@@ -4,7 +4,7 @@ Ferramenta da disciplina de NLP da Global Solution 2026.2 (FIAP, tema CitizenTec
 
 Ela transforma documentos públicos sobre chuvas intensas e alagamentos em três corpus no formato JSONL, prontos para o fine-tuning de um modelo de linguagem pequeno (SLM) voltado a orientar o cidadão.
 
-> **Situação:** em desenvolvimento. Já existem, com testes, os módulos de ingestão, limpeza, anonimização, segmentação e geração. Ainda faltam a exportação dos corpus JSONL, o relatório de qualidade, o notebook do Colab e a interface Gradio.
+> **Situação:** em desenvolvimento. Já existem, com testes, os módulos de ingestão, limpeza, anonimização, segmentação, geração e exportação. O `corpus_rag.jsonl` já foi gerado; o `corpus_texto.jsonl`, o `corpus_qa.jsonl` e o `corpus_chat.jsonl` serão gravados depois da geração da v8 no Colab. Ainda faltam o relatório de qualidade, o notebook do Colab e a interface Gradio.
 
 ## Como executar no Google Colab
 
@@ -78,7 +78,20 @@ Passos previstos:
      - Geração em etapas (v8): `PROMPT_FATOS`, `PROMPT_QA_FATOS` e `PROMPT_CHAT_FATOS` (linhas 158 a 206). Os critérios de qualidade ficam num comentário logo antes (linhas 146 a 151).
      - Juiz: `PROMPT_JUIZ` (linhas 362 a 381).
      - Geração direta, usada só com `USAR_FATOS = False`: `PROMPT_QA` e `PROMPT_CHAT` (linhas 102 a 143).
-8. **Relatório de qualidade:** número de exemplos, média de tokens, duplicatas removidas e 5 exemplos aleatórios.
+8. **Exportação:** grava os corpus em JSONL (UTF-8, um JSON por linha, acentos sem escape), pela função `exportar_tudo` de [`exportacao.py`](src/fabrica_corpus/exportacao.py).
+   - **Arquivos e formatos:**
+
+     | Arquivo | Conteúdo | Campos |
+     |---|---|---|
+     | `dados/saida/corpus_texto.jsonl` | Segmentos dos 5 documentos de `dados/entrada` | `id`, `texto`, `fonte`, `paginas`, `tokens` |
+     | `dados/saida/corpus_qa.jsonl` | Perguntas e respostas | `instruction` (pergunta), `input` (vazio), `output` (resposta, já com a citação da fonte), `fonte`, `paginas`, `segmento_id` |
+     | `dados/saida/corpus_chat.jsonl` | Diálogos | `messages` (`role`/`content`, com o `system` da persona primeiro), `fonte`, `paginas`, `segmento_id` |
+     | `dados/saida_rag/corpus_rag.jsonl` | Segmentos dos 9 documentos (`dados/entrada` + `dados/entrada_ia_generativa`), para o RAG de IA Generativa | `id`, `texto`, `fonte`, `titulo` (de `geracao.TITULOS`), `paginas`, `tokens` |
+
+   - **Preparação por pasta:** cada pasta passa separadamente por ingestão, limpeza, anonimização e segmentação. Assim os segmentos dos 5 documentos são os mesmos no `corpus_texto`, na geração e no RAG, com os mesmos `id`.
+   - **Duplicatas:** removidas antes de gravar, mantendo a primeira ocorrência. Conta como duplicata o texto igual depois de normalizar espaços e caixa (só para comparar; o texto gravado não muda). Nas perguntas, conta a pergunta igual; nos diálogos, o texto de todas as falas. As contagens de removidos são devolvidas para o relatório.
+   - **Perguntas e diálogos vêm do cache:** a exportação não carrega modelo. Ela chama a geração com a função `sem_modelo`, que dá erro se for chamada, e tudo sai de [`dados/cache_geracao/`](dados/cache_geracao/). Se faltar algum segmento no cache, a exportação para com o erro `CacheIncompleto`. A divisão dos segmentos e as quantidades ficam na função `gerar_perguntas_e_dialogos`, que serve tanto para gerar no Colab quanto para exportar, para as chaves do cache serem as mesmas.
+9. **Relatório de qualidade:** número de exemplos, média de tokens, duplicatas removidas e 5 exemplos aleatórios.
 
 O corpus não passa por remoção de stop words nem por stemming: os textos dos 3 JSONL ficam com as palavras inteiras. A comparação pelas 5 primeiras letras existe só dentro da trava 3 da etapa 7, para conferir a resposta contra o trecho, e não muda nenhum texto.
 
@@ -128,6 +141,18 @@ Os PDFs ficam inteiros no repositório. A seleção é aplicada na ingestão, a 
 | Manual de Desastres (MI, 2003) | 40–41, 48–52, 108–117 (17 de 174) | Só os capítulos sobre inundações, enxurradas, alagamentos e deslizamentos. Excluídas: créditos (p. 3), manejo rural de bacias (p. 42–47), inundações litorâneas (p. 53), introdução de geomorfologia (p. 102–107), rastejos e quedas de rochas (p. 118–121). |
 | Guia Prático de Alertas (MDR, 2021) | Todas, exceto a p. 2 (45 de 46) | A p. 2 é a página de créditos, com nomes reais. |
 
+### Arquivo para o RAG
+
+O RAG de IA Generativa lê o corpus ampliado pelo link raw do GitHub:
+
+```
+https://raw.githubusercontent.com/sarahmfurlan-sudo/radar-cidadao/main/nlp-fabrica-corpus/dados/saida_rag/corpus_rag.jsonl
+```
+
+- **Conteúdo:** 355 segmentos dos 9 documentos (306 dos 5 documentos de entrada e 49 dos 4 ampliados), já limpos, anonimizados e com 256 a 512 tokens (2 segmentos curtos, no fim de documento).
+- **Campos de cada linha:** `id`, `texto`, `fonte` (nome do arquivo), `titulo` (título legível, para citar a fonte na resposta), `paginas` (lista vazia para HTML e DOCX) e `tokens` (contados com o tokenizador do Qwen 2.5).
+- **Formato:** UTF-8, um JSON por linha.
+
 ## Arquivo de teste
 
 Os formatos TXT, DOCX e texto colado serão demonstrados com um arquivo de teste com **dados pessoais fictícios**. O mesmo arquivo serve para mostrar o "antes e depois" da anonimização. Ele fica em [`dados/teste/`](dados/teste/), junto com o script `gerar_docx.py`, que gera o DOCX a partir do TXT.
@@ -150,10 +175,11 @@ As versões fixadas estão em [`requirements.txt`](requirements.txt). `gradio` a
 
 | Caminho | Conteúdo |
 |---|---|
-| `src/fabrica_corpus/` | Módulos Python de cada etapa (`ingestao`, `limpeza`, `anonimizacao`, `segmentacao` e `geracao`) |
+| `src/fabrica_corpus/` | Módulos Python de cada etapa (`ingestao`, `limpeza`, `anonimizacao`, `segmentacao`, `geracao` e `exportacao`) |
 | `dados/entrada/` | Documentos de entrada |
 | `dados/cache_geracao/` | Saídas do Qwen salvas para reaproveitar entre execuções |
 | `dados/saida/` | Os 3 corpus JSONL e o relatório de qualidade |
+| `dados/saida_rag/` | Corpus ampliado (9 documentos) para o RAG de IA Generativa |
 | `revisao/` | Amostra revisada pelo grupo (mínimo de 20%) |
 | `logs/` | Logs de execução (não versionados) |
 | `tests/` | Testes automáticos de cada módulo (`pytest`) |
