@@ -390,3 +390,32 @@ def test_medir_juiz_contra_revisao_humana(tmp_path):
     assert r["itens"] == 3 and r["humano_S_sistema_aprova"] == 1 and r["humano_N_sistema_reprova"] == 1
     assert r["humano_N_sistema_aprova"] == 1 and r["concordancia"] == 0.67
     assert [d[0] for d in r["divergencias"]] == ["qa_2"]
+
+
+# ------------------------------------------------------------ recusas
+def test_recusas_um_dialogo_por_tema_com_encaminhamento():
+    from fabrica_corpus.geracao import TEMAS_RECUSA, gerar_recusas
+
+    def gerar(m):
+        prompt = m[0]["content"]
+        tema = next(t for t in TEMAS_RECUSA if t["pedido"] in prompt)
+        destino = tema["palavras"][0]
+        return json.dumps({"mensagens": [
+            {"papel": "cidadao", "texto": "Preciso de ajuda com isso."},
+            {"papel": "assistente", "texto": f"Não consigo ajudar com isso. Procure {destino}."},
+            {"papel": "cidadao", "texto": "Obrigado."},
+            {"papel": "assistente", "texto": f"De nada, lembre-se: {destino}."}]})
+    exemplos, estat = gerar_recusas(gerar, progresso=False)
+    assert len(exemplos) == len(TEMAS_RECUSA) >= 10 and estat["temas_pulados"] == []
+    assert exemplos[0]["mensagens"][0]["role"] == "system" and exemplos[0]["tipo"] == "recusa"
+
+
+def test_recusa_sem_encaminhamento_ou_com_numero_inventado_e_refeita():
+    from fabrica_corpus.geracao import gerar_recusas
+    sem_destino = json.dumps({"mensagens": [
+        {"papel": "cidadao", "texto": "É leptospirose?"},
+        {"papel": "assistente", "texto": "Sim, tome 500 mg de antibiótico por 7 dias."},
+        {"papel": "cidadao", "texto": "Certo."}, {"papel": "assistente", "texto": "Melhoras."}]})
+    chamadas = []
+    exemplos, estat = gerar_recusas(lambda m: chamadas.append(1) or sem_destino, total=1, progresso=False)
+    assert exemplos == [] and estat["temas_pulados"] == ["diagnóstico"] and len(chamadas) == 3

@@ -588,6 +588,103 @@ def gerar_chat(segmentos: Iterable, gerar: Callable[[list], str], total: int = 3
     return exemplos, {"exemplos": len(exemplos), "segmentos_tentados": tentados, "segmentos_pulados": pulados}
 
 
+# ------------------------------------------------------------ recusas e encaminhamentos
+# O enunciado pede pelo menos 10 diálogos em que o assistente recusa o que está fora do
+# seu alcance e encaminha a quem pode ajudar. Os temas são definidos aqui (não vêm de um
+# trecho): cada um diz o que o cidadão pede e para onde o assistente deve encaminhar.
+TEMAS_RECUSA = [
+    {"tema": "diagnóstico", "pedido": "descreve febre e dor no corpo depois de andar na enchente e pergunta se é leptospirose",
+     "destino": "procurar a unidade de saúde ou um médico", "palavras": ["unidade de saúde", "posto", "médic", "atendimento"]},
+    {"tema": "remédio", "pedido": "pergunta qual remédio e que dose tomar para a diarreia depois da enchente",
+     "destino": "procurar a unidade de saúde ou um médico", "palavras": ["unidade de saúde", "posto", "médic", "farmac"]},
+    {"tema": "picada", "pedido": "conta que foi picado por um bicho no entulho e pergunta o que passar em casa",
+     "destino": "ligar para o SAMU (192) ou ir à unidade de saúde", "palavras": ["192", "samu", "unidade de saúde", "pronto"]},
+    {"tema": "estrutura da casa", "pedido": "manda foto mental de uma rachadura na parede e pergunta se a casa vai cair",
+     "destino": "chamar a Defesa Civil (199) para avaliar", "palavras": ["199", "defesa civil"]},
+    {"tema": "emergência agora", "pedido": "diz que a água está entrando rápido e uma pessoa está presa em casa",
+     "destino": "ligar agora para os Bombeiros (193)", "palavras": ["193", "bombeiro"]},
+    {"tema": "previsão exata", "pedido": "pergunta se vai chover forte amanhã às 15h na rua dele",
+     "destino": "acompanhar os alertas da Defesa Civil, como o SMS 40199", "palavras": ["40199", "alerta", "defesa civil"]},
+    {"tema": "processo judicial", "pedido": "pergunta se pode processar a prefeitura pelo alagamento e quanto ganharia",
+     "destino": "procurar a Defensoria Pública", "palavras": ["defensoria", "advogad"]},
+    {"tema": "auxílio em dinheiro", "pedido": "pergunta como conseguir dinheiro do governo porque perdeu os móveis",
+     "destino": "procurar o CRAS (assistência social) da cidade", "palavras": ["cras", "assistência social"]},
+    {"tema": "seguro", "pedido": "pergunta se o seguro vai pagar o carro que ficou embaixo d'água",
+     "destino": "falar com a seguradora ou o corretor", "palavras": ["seguradora", "corretor"]},
+    {"tema": "obra pública", "pedido": "pergunta quando a prefeitura vai fazer a obra no córrego da rua dele",
+     "destino": "falar com a prefeitura pelo 156", "palavras": ["156", "prefeitura"]},
+    {"tema": "dados de terceiros", "pedido": "pede o telefone e o endereço de um vizinho que saiu da área de risco",
+     "destino": "não passar dados de outras pessoas", "palavras": ["não posso", "não consigo", "dados", "privacidade"]},
+    {"tema": "fora do assunto", "pedido": "pede uma receita de bolo para fazer no abrigo",
+     "destino": "explicar que só orienta sobre chuvas, alagamentos e deslizamentos", "palavras": ["chuva", "alagamento", "deslizamento"]},
+]
+
+PROMPT_RECUSA = """{persona_assistente}
+
+{persona_cidadao}
+
+Escreva um diálogo de 2 trocas. O cidadão começa: ele {pedido}.
+O assistente NÃO pode atender esse pedido. Na primeira resposta ele explica, com gentileza e em
+linguagem simples, que não pode ajudar com isso e orienta: {destino}. Ele não dá diagnóstico,
+remédio, dose, previsão, valor nem opinião jurídica, e não inventa números nem telefones.
+Na segunda troca o cidadão insiste ou agradece, e o assistente reforça a orientação em uma frase.
+Responda APENAS com JSON:
+{{"mensagens": [{{"papel": "cidadao", "texto": "..."}}, {{"papel": "assistente", "texto": "..."}}]}}"""
+
+
+def _conferir_recusa(msgs: list[dict], tema: dict) -> tuple[bool, str]:
+    papeis = [m.get("papel") for m in msgs]
+    if len(msgs) < 4 or papeis[0] != "cidadao" or any(papeis[i] == papeis[i + 1] for i in range(len(papeis) - 1)):
+        return False, "diálogo sem alternância cidadão/assistente ou curto demais"
+    falas = [m.get("texto", "") for m in msgs if m.get("papel") == "assistente"]
+    primeira = falas[0].lower()
+    if not any(p in primeira for p in tema["palavras"]):
+        return False, f"não encaminhou ({tema['destino']})"
+    novos = set().union(*(_numeros(f) for f in falas)) - EMERGENCIA
+    if novos:
+        return False, f"número inventado: {sorted(novos)}"
+    if _referencia_ao_texto(*(m.get("texto", "") for m in msgs)):
+        return False, "fala do trecho como se o leitor visse o documento"
+    return True, "ok"
+
+
+def gerar_recusas(gerar: Callable[[list], str], total: int = 12, pasta_cache: Path | None = None,
+                  progresso: bool = True) -> tuple[list[dict], dict]:
+    """Diálogos de recusa e encaminhamento (um por tema de TEMAS_RECUSA)."""
+    exemplos, pulados = [], []
+    for i, tema in enumerate(TEMAS_RECUSA[:total], start=1):
+        prompt = PROMPT_RECUSA.format(persona_assistente=PERSONA_GERACAO, persona_cidadao=PERSONA_CIDADAO_GERACAO,
+                                      pedido=tema["pedido"], destino=tema["destino"])
+        h = hashlib.sha256(f"{VERSAO_PROMPT}|{MODELO_GERADOR}|{prompt}".encode()).hexdigest()[:12]
+
+        def produzir():
+            motivo = ""
+            for tentativa in range(1, TENTATIVAS + 1):
+                try:
+                    msgs = _extrair_json(gerar(_mensagens(prompt)), "mensagens")["mensagens"]
+                except (ValueError, KeyError, TypeError) as erro:
+                    motivo = f"JSON inválido: {erro}"
+                    continue
+                ok, motivo = _conferir_recusa(msgs, tema)
+                if ok:
+                    return {"mensagens": msgs, "tentativas": tentativa, "descartados": []}
+            return {"mensagens": [], "tentativas": TENTATIVAS, "descartados": [motivo]}
+        res = _com_cache(pasta_cache, f"recusa_{i:02d}_{VERSAO_PROMPT}_{h}.json", produzir)
+        if progresso:
+            print(f"[recusas] {tema['tema']} | {'ok' if res['mensagens'] else 'pulado: ' + res['descartados'][0]}",
+                  flush=True)
+        if not res["mensagens"]:
+            pulados.append(tema["tema"])
+            continue
+        mensagens = [{"role": "system", "content": PERSONA_ASSISTENTE}] + [
+            {"role": "user" if m["papel"] == "cidadao" else "assistant", "content": m["texto"]}
+            for m in res["mensagens"]]
+        exemplos.append({"id": f"chat_recusa_{len(exemplos) + 1:04d}", "mensagens": mensagens, "fonte": "recusa",
+                         "paginas": [], "segmento_id": None, "tipo": "recusa", "tema": tema["tema"],
+                         "modelo": MODELO_GERADOR})
+    return exemplos, {"exemplos": len(exemplos), "temas_pulados": pulados}
+
+
 def planejar_divisao(segmentos: Iterable, n_qa: int, n_chat: int) -> tuple[list, list]:
     """Divide os segmentos candidatos entre perguntas e diálogos ANTES de gerar.
 
