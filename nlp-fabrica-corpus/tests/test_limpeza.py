@@ -4,7 +4,7 @@ import pytest
 from fabrica_corpus.ingestao import Trecho
 from fabrica_corpus.limpeza import (
     juntar_hifenizacao, juntar_linhas, limpar_corpus, normalizar_caracteres,
-    remover_boilerplate, remover_numeros_pagina, remover_sumario,
+    remover_boilerplate, remover_numeros_pagina, remover_referencias, remover_sumario,
 )
 
 CABECALHO = ("Mapeamento de Riscos: Conceitos e métodos aplicados a processos geológicos e hidrológicos "
@@ -163,3 +163,63 @@ def test_cabecalho_alternado_em_paginas_impares():
 
 def test_linha_terminada_em_virgula_continua():
     assert juntar_linhas("biomas do país - Cerrado,\nCaatinga, Mata Atlântica") == "biomas do país - Cerrado, Caatinga, Mata Atlântica"
+
+
+REFS = ("Os riscos devem ser mapeados com participação social.\n"
+        "REFERÊNCIAS\n"
+        "BRASIL. Ministério das Cidades. Plano de ação para riscos. Brasília, 2024.\n"
+        "SOUZA, L. A.; MOURA, R. B. Mapeamento de riscos. Disponível em: https://exemplo.gov.br. Acesso em: 10 jan. 2025.\n"
+        "\n"
+        "JACOBI, P. R. Gestão de riscos. São Paulo: Annablume, 2018.\n"
+        "Capítulo 2 - Medidas não estruturais\n"
+        "As medidas não estruturais complementam as obras.")
+
+
+def test_referencias_cortadas_e_texto_seguinte_fica():
+    texto, n = remover_referencias(REFS)
+    assert n == 3
+    assert "SOUZA" not in texto and "JACOBI" not in texto and "REFERÊNCIAS" not in texto
+    assert texto.startswith("Os riscos devem ser mapeados")
+    assert texto.endswith("As medidas não estruturais complementam as obras.")
+
+
+def test_citacao_em_varias_linhas_sem_titulo():
+    # trecho real do Mapeamento, p. 39 e 59
+    texto = ("IPCC. Climate Change 2022: Impacts, Adaptation and\n"
+             "Vulnerability. Contribution of Working Group II to the\n"
+             "Sixth Assessment Report of the Intergovernmental\n"
+             "Panel on Climate Change. Cambridge: Cambridge\n"
+             "University Press, 2022.\n"
+             "STERNBERG, H. O'R. A água e o homem na várzea do Careiro.\n"
+             "Belém: Museu Paraense Emílio Goeldi, 1998.\n"
+             "SGB/CPRM. Manual de mapeamento de perigo e risco geológico. Brasília: Serviço Geológico do Brasil, 2015.\n"
+             "Paralelamente, as ações não estruturais são imprescindíveis para todas as classes de risco.")
+    limpo, n = remover_referencias(texto)
+    assert limpo == "Paralelamente, as ações não estruturais são imprescindíveis para todas as classes de risco."
+    assert n == 8
+
+
+def test_titulo_de_capitulo_depois_das_referencias_fica():
+    texto = ("TRICART, J. Tipos de planícies aluviais. Revista Brasileira de Geografia, v. 39, n. 2, 1977.\n"
+             "UNDRR. Global Assessment Report on Disaster Risk\n"
+             "Reduction (GAR 2023). Geneva: UNDRR, 2023.\n"
+             "CAPÍTULO 4 MOVIMENTOS DE MASSA\n"
+             "Os movimentos de massa ocorrem em encostas.")
+    limpo, _ = remover_referencias(texto)
+    assert limpo == "CAPÍTULO 4 MOVIMENTOS DE MASSA\nOs movimentos de massa ocorrem em encostas."
+
+
+def test_sem_titulo_de_referencias_nada_muda():
+    texto = "BRASIL. Ministério da Saúde orienta a população.\nVeja as dicas."
+    assert remover_referencias(texto) == (texto, 0)
+
+
+def test_texto_com_ano_no_fim_nao_e_referencia():
+    texto = "A cheia mais alta foi registrada em 2009.\nAs famílias foram removidas."
+    assert remover_referencias(texto) == (texto, 0)
+
+
+def test_referencias_contadas_nas_estatisticas():
+    limpo, estat = limpar_corpus([Trecho(fonte="map.pdf", tipo="pdf", pagina=9, texto=REFS)])
+    assert estat["linhas_de_referencia_removidas"] == 3
+    assert "Capítulo 2" in limpo[0].texto

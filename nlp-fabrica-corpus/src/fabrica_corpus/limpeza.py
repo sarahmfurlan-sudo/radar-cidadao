@@ -12,7 +12,8 @@ Ordem das regras (a ordem importa):
  5. remover_sumario        - linhas de sumário com pontilhado ("ALERTAS......07")
  6. juntar_hifenizacao     - "traba-\\nlhos" -> "trabalhos" e letra capitular "E\\nvidências"
  7. juntar_linhas          - linhas quebradas no meio da frase
- 8. normalizar_espacos     - espaços repetidos e excesso de linhas em branco
+ 8. remover_referencias    - blocos de citações ABNT (com ou sem o título "REFERÊNCIAS")
+ 9. normalizar_espacos     - espaços repetidos e excesso de linhas em branco
 
 Limites conhecidos (registrar no relatório):
  - espaço no meio da palavra por defeito da fonte do PDF ("T odos") não é corrigido:
@@ -187,7 +188,65 @@ def juntar_linhas(texto: str) -> str:
     return "\n".join(saida)
 
 
-# ------------------------------------------------------------ 8. espaços
+# ------------------------------------------------- 8. referências bibliográficas
+# Usada quando as referências dividem a página com texto útil (Mapeamento),
+# e por isso não dá para excluir a página inteira na seleção de páginas.
+# Cada citação ABNT ocupa várias linhas: "IPCC. Climate Change 2022: Impacts..."
+# / "Vulnerability. Contribution of..." / "University Press, 2022." A regra
+# reconhece o BLOCO de citações pelo formato, com ou sem o título.
+_TITULO_REFERENCIAS = re.compile(r"^\s*REFER[ÊE]NCIAS(\s+BIBLIOGR[ÁA]FICAS)?\s*:?\s*$", re.I)
+# início de citação: SOBRENOME, X. / ENTIDADE. / SGB/CPRM.
+_INICIO_CITACAO = re.compile(r"^\s*[A-ZÀ-Ú][A-ZÀ-Ú'/\-]+(\s+(DE|DA|DO|DOS|DAS|[A-ZÀ-Ú'/\-]+))*[,.]\s")
+# outros sinais de citação: termina no ano, "Disponível em", "In:", "et al."
+_SINAL_CITACAO = re.compile(r"(\b(1[89]|20)\d{2}[a-z]?\.\s*$|Disponível em|Acesso em|\bIn:|\bet al\.|\(Ed\.\)|\bv\. \d|\bn\. \d)", re.I)
+_TITULO_MAIUSCULO = re.compile(r"^[^a-zà-ÿ]*[A-ZÀ-Ú]{3,}[^a-zà-ÿ]*$")
+
+
+def _e_citacao(linha: str) -> bool:
+    return bool(_INICIO_CITACAO.match(linha) or _SINAL_CITACAO.search(linha))
+
+
+def remover_referencias(texto: str) -> tuple[str, int]:
+    """Remove blocos de citações bibliográficas. Devolve (texto, linhas removidas).
+
+    Um bloco começa numa linha com cara de citação e continua enquanto as linhas
+    forem citação ou pedaço de citação (linha que não fecha frase). Termina no
+    primeiro título em maiúsculas ou na primeira frase de texto normal. Só é
+    removido se tiver pelo menos 2 inícios de citação: uma frase comum que
+    comece com "BRASIL." não basta.
+    """
+    linhas = [l for l in texto.split("\n") if not _TITULO_REFERENCIAS.match(l)]
+    remover: set[int] = set()
+    i = 0
+    while i < len(linhas):
+        if not _e_citacao(linhas[i]) or _TITULO_MAIUSCULO.match(linhas[i]):
+            i += 1
+            continue
+        j, inicios, anterior_fechou = i, 0, False
+        while j < len(linhas):
+            l = linhas[j].strip()
+            if not l:
+                j += 1
+                continue
+            if _TITULO_MAIUSCULO.match(l):
+                break
+            if _e_citacao(l):
+                inicios += bool(_INICIO_CITACAO.match(l))
+            elif anterior_fechou or re.search(r"[.!?]$", l):
+                # depois de uma citação fechada ("..., 2018."), linha que não é
+                # citação já é texto do livro; frase fechada também encerra o bloco
+                break
+            anterior_fechou = bool(re.search(r"[.!?]$", l))
+            j += 1
+        if inicios >= 2:
+            remover.update(range(i, j))
+        i = max(j, i + 1)
+    saida = [l for k, l in enumerate(linhas) if k not in remover]
+    removidas = sum(1 for k in remover if linhas[k].strip())
+    return "\n".join(saida), removidas
+
+
+# ------------------------------------------------------------ 9. espaços
 def normalizar_espacos(texto: str) -> str:
     texto = re.sub(r"[ ]{2,}", " ", texto)
     texto = "\n".join(l.strip() for l in texto.split("\n"))
@@ -209,7 +268,8 @@ def limpar_corpus(trechos: Iterable) -> tuple[list, dict]:
     """
     trechos = list(trechos)
     estat = {"trechos_entrada": len(trechos), "trechos_vazios_descartados": 0,
-             "caracteres_antes": 0, "caracteres_depois": 0, "repetidas_por_documento": {}}
+             "caracteres_antes": 0, "caracteres_depois": 0, "repetidas_por_documento": {},
+             "linhas_de_referencia_removidas": 0}
 
     # passo de documento: as linhas repetidas só fazem sentido comparando páginas do mesmo PDF
     pre = {}
@@ -230,6 +290,8 @@ def limpar_corpus(trechos: Iterable) -> tuple[list, dict]:
         texto = remover_sumario(texto)
         texto = juntar_hifenizacao(texto)
         texto = juntar_linhas(texto)
+        texto, n_ref = remover_referencias(texto)
+        estat["linhas_de_referencia_removidas"] += n_ref
         texto = normalizar_espacos(texto)
         if not texto:
             estat["trechos_vazios_descartados"] += 1
