@@ -178,10 +178,35 @@ def conferir_fidelidade(resposta: str, trecho: str, minimo: float = 0.6) -> tupl
 
 
 def _extrair_json(saida: str) -> dict:
-    inicio, fim = saida.find("{"), saida.rfind("}")
-    if inicio < 0 or fim < 0:
+    """Lê o JSON da saída do modelo, mesmo quando ele foge do formato.
+
+    O Qwen às vezes escreve vários objetos seguidos (um por fala do diálogo, ou
+    o bloco repetido) em vez de um só. Aqui todos os objetos são lidos; se algum
+    já tem "perguntas" ou "mensagens", vale o primeiro; se forem falas soltas
+    ({"papel": ..., "texto": ...}), elas viram a lista "mensagens".
+    """
+    decoder = json.JSONDecoder()
+    objetos, i = [], saida.find("{")
+    while 0 <= i < len(saida):
+        try:
+            obj, fim = decoder.raw_decode(saida, i)
+        except json.JSONDecodeError:
+            i = saida.find("{", i + 1)
+            continue
+        objetos.append(obj)
+        i = saida.find("{", fim)
+    if not objetos:
         raise ValueError("saída sem JSON")
-    return json.loads(saida[inicio:fim + 1])
+    for obj in objetos:
+        if isinstance(obj, dict) and ("perguntas" in obj or "mensagens" in obj):
+            return obj
+    falas = [o for o in objetos if isinstance(o, dict) and "papel" in o and "texto" in o]
+    if falas:
+        return {"mensagens": falas}
+    perguntas = [o for o in objetos if isinstance(o, dict) and "pergunta" in o and "resposta" in o]
+    if perguntas:
+        return {"perguntas": perguntas}
+    raise ValueError("JSON sem perguntas nem mensagens")
 
 
 # ------------------------------------------------------------ cache
@@ -190,15 +215,24 @@ def _chave(tipo: str, seg, extra: str) -> str:
     return f"{tipo}_{seg.id}_{VERSAO_PROMPT}_{h}.json"
 
 
+def _deu_certo(dados: dict) -> bool:
+    return bool(dados.get("itens") or dados.get("mensagens"))
+
+
 def _com_cache(pasta: Path | None, nome: str, produzir: Callable[[], dict]) -> dict:
+    """Reaproveita o que já deu certo. Recusa não é guardada: depois de um ajuste
+    no código ou no prompt, o segmento é tentado de novo."""
     if pasta is None:
         return produzir()
     arquivo = Path(pasta) / nome
     if arquivo.exists():
-        return json.loads(arquivo.read_text(encoding="utf-8"))
+        dados = json.loads(arquivo.read_text(encoding="utf-8"))
+        if _deu_certo(dados):
+            return dados
     dados = produzir()
-    arquivo.parent.mkdir(parents=True, exist_ok=True)
-    arquivo.write_text(json.dumps(dados, ensure_ascii=False, indent=1), encoding="utf-8")
+    if _deu_certo(dados):
+        arquivo.parent.mkdir(parents=True, exist_ok=True)
+        arquivo.write_text(json.dumps(dados, ensure_ascii=False, indent=1), encoding="utf-8")
     return dados
 
 
@@ -261,9 +295,10 @@ def gerar_qa(segmentos: Iterable, gerar: Callable[[list], str], total: int = 100
     segmentos = list(segmentos)
     exemplos, pulados, descartes = [], [], 0
     usados: set = set()
-    while len(exemplos) < total:
+    teto = max(3 * -(-total // por_segmento), 6)        # no máximo 3 segmentos por segmento necessário
+    while len(exemplos) < total and len(usados) < teto:
         faltam = total - len(exemplos)
-        lote = selecionar(segmentos, -(-faltam // por_segmento), excluir=usados)
+        lote = selecionar(segmentos, min(-(-faltam // por_segmento), teto - len(usados)), excluir=usados)
         if not lote:
             break
         for seg in lote:
@@ -293,12 +328,14 @@ def gerar_chat(segmentos: Iterable, gerar: Callable[[list], str], total: int = 3
     segmentos = list(segmentos)
     exemplos, pulados = [], []
     usados: set = set(excluir)
-    while len(exemplos) < total:
-        lote = selecionar(segmentos, total - len(exemplos), semente=7, excluir=usados)
+    tentados, teto = 0, max(3 * total, 6)               # no máximo 3 segmentos por diálogo pedido
+    while len(exemplos) < total and tentados < teto:
+        lote = selecionar(segmentos, min(total - len(exemplos), teto - tentados), semente=7, excluir=usados)
         if not lote:
             break
         for seg in lote:
             usados.add(seg.id)
+            tentados += 1
             res = _com_cache(pasta_cache, _chave("chat", seg, str(turnos)),
                              lambda: _gerar_chat_segmento(seg, gerar, turnos))
             if progresso:
@@ -315,7 +352,7 @@ def gerar_chat(segmentos: Iterable, gerar: Callable[[list], str], total: int = 3
             mensagens[ultima]["content"] += f"\n\n{citacao(seg.fonte, seg.paginas)}"
             exemplos.append({"id": f"chat_{len(exemplos) + 1:04d}", "mensagens": mensagens, "fonte": seg.fonte,
                              "paginas": seg.paginas, "segmento_id": seg.id, "modelo": MODELO_GERADOR})
-    return exemplos, {"exemplos": len(exemplos), "segmentos_pulados": pulados}
+    return exemplos, {"exemplos": len(exemplos), "segmentos_tentados": tentados, "segmentos_pulados": pulados}
 
 
 def amostra_revisao(exemplos: list[dict], proporcao: float = 0.2, semente: int = 2026) -> list[dict]:

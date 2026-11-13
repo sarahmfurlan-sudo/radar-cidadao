@@ -150,3 +150,33 @@ def test_prompt_nao_pede_citacao_ao_modelo_e_traz_as_regras_novas():
 def test_progresso_aparece_na_tela(capsys):
     gerar_qa([seg(1)], gerador_fiel, total=2)
     assert "[perguntas] 2/2" in capsys.readouterr().out
+
+
+def test_json_em_varios_blocos_e_lido():
+    # o que o Qwen fez no teste real: uma fala por objeto, em sequência
+    falas = ['{"papel": "cidadao", "texto": "A água está subindo aqui, o que eu faço?"}',
+             '{"papel": "assistente", "texto": "Em caso de risco, ligue para a Defesa Civil no 199."}',
+             '{"papel": "cidadao", "texto": "E a energia?"}',
+             '{"papel": "assistente", "texto": "Desligue a energia elétrica da casa antes que a água chegue às tomadas."}']
+    exemplos, _ = gerar_chat([seg(1)], lambda m: "\n".join(falas), total=1, progresso=False)
+    assert len(exemplos) == 1 and len(exemplos[0]["mensagens"]) == 5
+
+
+def test_bloco_repetido_vale_o_primeiro():
+    duplicado = gerador_fiel(None) + "\n" + gerador_fiel(None)
+    exemplos, _ = gerar_qa([seg(1)], lambda m: duplicado, total=2, progresso=False)
+    assert len(exemplos) == 2
+
+
+def test_teto_de_segmentos_evita_laco_sem_fim():
+    chamadas = []
+    exemplos, estat = gerar_chat([seg(i) for i in range(1, 300)],
+                                 lambda m: chamadas.append(1) or "nada", total=1, progresso=False)
+    assert exemplos == [] and estat["segmentos_tentados"] == 6 and len(chamadas) == 18
+
+
+def test_recusa_nao_fica_no_cache(tmp_path):
+    gerar_qa([seg(1)], lambda m: "sem json", total=2, pasta_cache=tmp_path, progresso=False)
+    assert list(tmp_path.iterdir()) == []
+    exemplos, _ = gerar_qa([seg(1)], gerador_fiel, total=2, pasta_cache=tmp_path, progresso=False)
+    assert len(exemplos) == 2 and len(list(tmp_path.iterdir())) == 1
