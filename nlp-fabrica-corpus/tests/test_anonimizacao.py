@@ -105,3 +105,30 @@ def test_metadados_preservados():
     anon, total = anonimizar_corpus([t])
     assert (anon[0].fonte, anon[0].tipo, anon[0].pagina) == ("x.pdf", "pdf", 12)
     assert anon[0].texto == "Contato: [EMAIL]" and total["email"] == 1
+
+
+# ------------------------------------------- falsos positivos vistos no corpus real
+def test_palavras_comuns_nao_viram_nome_nem_somem_do_texto():
+    # o spaCy marcou "Chuvas Intensas" e "Deslizamentos Planares" como pessoa no corpus real;
+    # antes da correção, "Chuvas" e "Deslizamentos" passavam a ser mascarados em todo o texto
+    texto = ("Plano para Chuvas Intensas. As chuvas intensas provocam deslizamentos.\n"
+             "Deslizamentos Planares ocorrem em encostas. Marco de Ação de Hyogo. "
+             "Os deslizamentos planares são comuns. O marco legal define regras.")
+    anon, c = anonimizar_texto(texto)
+    assert anon == texto and c["nome"] == 0
+
+
+def test_vocabulario_do_corpus_inteiro():
+    from fabrica_corpus.ingestao import Trecho
+    # "Transtorno" só aparece em maiúscula neste trecho, mas em minúscula no outro
+    t1 = Trecho(fonte="a.html", tipo="html", pagina=None, texto="Transtorno de Estresse Pós-Traumático após a enchente.")
+    t2 = Trecho(fonte="b.pdf", tipo="pdf", pagina=1, texto="O transtorno de estresse é comum depois de desastres.")
+    anon, total = anonimizar_corpus([t1, t2])
+    assert total["nome"] == 0 and anon[0].texto == t1.texto
+
+
+def test_autor_com_sobrenome_que_e_palavra_comum_continua_mascarado():
+    # "rocha" aparece em minúscula (geologia), mas "Fernando" não: é nome
+    texto = "Autores: Fernando Rocha Nogueira; Leonardo Andrade de Souza. A rocha alterada desliza."
+    anon, c = anonimizar_texto(texto)
+    assert "Fernando" not in anon and "Leonardo" not in anon and "A rocha alterada desliza." in anon

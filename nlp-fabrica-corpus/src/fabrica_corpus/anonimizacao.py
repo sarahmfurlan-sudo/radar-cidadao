@@ -15,6 +15,12 @@ Como os nomes são encontrados (em camadas, porque nenhuma sozinha basta):
     reapareça no mesmo texto: todo em maiúsculas ("JOAQUIM PEREIRA LINS") ou só
     o primeiro nome ("Mariana também relatou").
 
+Filtro contra falsos positivos (o modelo marca "Chuvas Intensas" e "Marco de
+Ação de Hyogo" como pessoa): palavra que aparece em minúscula em algum lugar
+do corpus é palavra comum, não nome. Entidade cujo primeiro nome ou a maioria
+das palavras é comum é descartada, e o primeiro nome só é mascarado sozinho
+quando nunca aparece em minúscula.
+
 Limites conhecidos (registrar no relatório):
  - nome isolado de uma palavra só, sem ter aparecido completo antes, não é
    mascarado (evita falsos positivos como "Secretário", "CPF");
@@ -90,7 +96,29 @@ def _nlp():
         ) from erro
 
 
-def _limpar_nome(nome: str) -> str | None:
+_PREFIXOS_DE_LUGAR = {"santo", "santa", "são", "rio", "vila", "porto", "monte", "serra", "nossa", "ponte", "lagoa"}
+_CONECTORES = {"de", "da", "do", "dos", "das", "e"}
+
+
+def vocabulario_minusculas(textos) -> set[str]:
+    """Palavras que aparecem escritas em minúscula em algum lugar do texto.
+
+    Nome de pessoa quase nunca aparece em minúscula ("leonardo", "vasconcelos");
+    palavra comum aparece ("chuvas", "deslizamentos", "transtorno"). É o que
+    separa "Fernando Rocha Nogueira" de "Chuvas Intensas" sem lista de nomes.
+    """
+    if isinstance(textos, str):
+        textos = [textos]
+    vocab = set()
+    for t in textos:
+        # e-mails e sites têm nomes em minúscula ("mariana.toledo@..."): fora do vocabulário
+        t = _EMAIL.sub(" ", t)
+        t = re.sub(r"(https?://|www\.)\S+", " ", t)
+        vocab.update(re.findall(r"(?<![\wÀ-ÿ.@])[a-zà-ÿ][a-zà-ÿ\-]+(?![\w@])", t))
+    return vocab
+
+
+def _limpar_nome(nome: str, vocab: set[str] = frozenset()) -> str | None:
     nome = _TRATAMENTOS.sub("", nome.strip(" .,;:-–"))
     palavras = nome.split()
     # o modelo às vezes cola um título em maiúsculas no nome:
@@ -100,32 +128,53 @@ def _limpar_nome(nome: str) -> str | None:
             palavras.pop(0)
         while palavras and len(palavras[-1]) >= 3 and palavras[-1].isupper():
             palavras.pop()
-        nome = " ".join(palavras)
-    if len(palavras) < 2 or any(ch.isdigit() for ch in nome) or "[" in nome:
+    else:
+        return None                     # tudo em maiúsculas: título, não nome
+    # palavra comum colada no fim: "Leonardo ... Varallo Rastejos" -> sem "Rastejos"
+    while len(palavras) > 2 and palavras[-1].lower() in vocab:
+        palavras.pop()
+    nome = " ".join(palavras)
+    principais = [p for p in palavras if p.lower() not in _CONECTORES]
+    if len(principais) < 2 or any(ch.isdigit() for ch in nome) or "[" in nome:
         return None
     if nome.lower() in _NAO_PESSOA:
         return None
-    if not all(p[0].isupper() or p.lower() in {"de", "da", "do", "dos", "das", "e"} for p in palavras):
+    if not all(p[0].isupper() or p.lower() in _CONECTORES for p in palavras):
+        return None
+    if re.fullmatch(r"[A-ZÀ-Ú]\.?", principais[0]):            # "V. Uma"
+        return None
+    if len({p.lower() for p in principais}) < len(principais):  # "Ameaça Ameaça"
+        return None
+    primeiro = principais[0].lower()
+    if primeiro in vocab or primeiro in _PREFIXOS_DE_LUGAR:      # "Chuvas Intensas", "Santo António"
+        return None
+    comuns = sum(1 for p in principais if p.lower() in vocab)
+    if comuns * 2 >= len(principais):                           # maioria palavra comum
         return None
     return nome
 
 
-def encontrar_nomes(texto: str) -> set[str]:
-    """Nomes completos de pessoas no texto (spaCy + rótulo "Nome:")."""
+def encontrar_nomes(texto: str, vocab: set[str] | None = None) -> set[str]:
+    """Nomes completos de pessoas no texto (spaCy + rótulo "Nome:").
+
+    vocab: palavras vistas em minúscula; por padrão, as do próprio texto.
+    Passar o vocabulário do corpus inteiro deixa o filtro mais seguro.
+    """
+    vocab = vocabulario_minusculas(texto) if vocab is None else vocab
     nomes = set()
     for ent in _nlp()(texto).ents:
         if ent.label_ == "PER":
-            nome = _limpar_nome(ent.text)
+            nome = _limpar_nome(ent.text, vocab)
             if nome:
                 nomes.add(nome)
     for m in _ROTULO_NOME.finditer(texto):
-        nome = _limpar_nome(m.group(2))
+        nome = _limpar_nome(m.group(2), vocab)
         if nome:
             nomes.add(nome)
     return nomes
 
 
-def _mascarar_nomes(texto: str, nomes: set[str]) -> tuple[str, int]:
+def _mascarar_nomes(texto: str, nomes: set[str], vocab: set[str] = frozenset()) -> tuple[str, int]:
     if not nomes:
         return texto, 0
     n = 0
@@ -135,7 +184,10 @@ def _mascarar_nomes(texto: str, nomes: set[str]) -> tuple[str, int]:
         texto, k = padrao.subn("[NOME]", texto)
         n += k
     # primeiro nome sozinho, só com inicial maiúscula ("Mariana também relatou")
-    primeiros = {nome.split()[0] for nome in nomes if len(nome.split()[0]) >= 3}
+    # só se o primeiro nome nunca aparece como palavra comum (evita "Marco", "Santo")
+    primeiros = {nome.split()[0] for nome in nomes
+                 if len(nome.split()[0]) >= 3 and nome.split()[0].lower() not in vocab
+                 and nome.split()[0].lower() not in _PREFIXOS_DE_LUGAR}
     for primeiro in primeiros:
         padrao = re.compile(r"(?<![\wÀ-ÿ\[])" + re.escape(primeiro) + r"(?![\wÀ-ÿ])")
         texto, k = padrao.subn("[NOME]", texto)
@@ -144,23 +196,26 @@ def _mascarar_nomes(texto: str, nomes: set[str]) -> tuple[str, int]:
 
 
 # ---------------------------------------------------------------- orquestração
-def anonimizar_texto(texto: str) -> tuple[str, dict]:
+def anonimizar_texto(texto: str, vocab: set[str] | None = None) -> tuple[str, dict]:
     """Devolve (texto anonimizado, contagem por tipo)."""
+    vocab = vocabulario_minusculas(texto) if vocab is None else vocab
     contagem = {}
     texto, contagem["cpf"] = _mascarar_cpf(texto)
     texto, contagem["email"] = _mascarar_email(texto)
     texto, contagem["telefone"] = _mascarar_telefone(texto)
-    nomes = encontrar_nomes(texto)
-    texto, contagem["nome"] = _mascarar_nomes(texto, nomes)
+    nomes = encontrar_nomes(texto, vocab)
+    texto, contagem["nome"] = _mascarar_nomes(texto, nomes, vocab)
     return texto, contagem
 
 
 def anonimizar_corpus(trechos: Iterable) -> tuple[list, dict]:
     """Anonimiza todos os trechos. Devolve (trechos, estatísticas por tipo)."""
+    trechos = list(trechos)
+    vocab = vocabulario_minusculas(t.texto for t in trechos)   # vocabulário do corpus inteiro
     total = {"cpf": 0, "email": 0, "telefone": 0, "nome": 0}
     saida = []
     for t in trechos:
-        texto, contagem = anonimizar_texto(t.texto)
+        texto, contagem = anonimizar_texto(t.texto, vocab)
         for tipo, k in contagem.items():
             total[tipo] += k
         saida.append(type(t)(fonte=t.fonte, tipo=t.tipo, pagina=t.pagina, texto=texto))
