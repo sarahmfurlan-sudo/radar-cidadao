@@ -29,6 +29,14 @@ def seg(i, fonte="ms_2017_cartilha_alerta_chuvas.pdf", texto=TEXTO):
 
 def gerador_falso(mensagens):
     prompt = mensagens[0]["content"]
+    if "Parte " not in prompt:                         # prompt de recusa: encaminha para o destino do tema
+        tema = next(t for t in geracao.TEMAS_RECUSA if t["pedido"] in prompt)
+        destino = tema["palavras"][0]
+        return json.dumps({"mensagens": [
+            {"papel": "cidadao", "texto": f"Me ajuda com isso? ({tema['tema']})"},
+            {"papel": "assistente", "texto": f"Não consigo ajudar com isso. Procure {destino}."},
+            {"papel": "cidadao", "texto": "Obrigado."},
+            {"papel": "assistente", "texto": f"De nada. Lembre-se: {destino}."}]})
     n = prompt.split("Parte ")[1].split(".")[0]      # pergunta diferente por segmento
     return json.dumps({
         "perguntas": [
@@ -78,8 +86,20 @@ def test_linha_chat_no_formato_do_enunciado():
                                                 {"role": "assistant", "content": "olá"}],
                "fonte": "a.pdf", "paginas": [3], "segmento_id": "a_0001"}
     linha = linha_chat(exemplo)
-    assert list(linha) == ["id", "messages", "fonte", "paginas", "segmento_id"]
+    assert list(linha) == ["id", "tipo", "messages", "fonte", "paginas", "segmento_id"]
+    assert linha["tipo"] == "trecho"
     assert [m["role"] for m in linha["messages"]] == ["system", "user", "assistant"]
+
+
+# 4b. Diálogo de recusa: tipo e fonte "recusa", sem páginas e sem segmento
+def test_linha_chat_de_recusa():
+    exemplo = {"id": "chat_recusa_0001", "tipo": "recusa", "tema": "remédio", "fonte": "recusa", "paginas": [],
+               "segmento_id": None, "mensagens": [{"role": "system", "content": "persona"},
+                                                  {"role": "user", "content": "Qual remédio tomo?"},
+                                                  {"role": "assistant", "content": "Procure a unidade de saúde."}]}
+    linha = linha_chat(exemplo)
+    assert linha["tipo"] == "recusa" and linha["fonte"] == "recusa"
+    assert linha["paginas"] == [] and linha["segmento_id"] is None
 
 
 # 5. Perguntas e diálogos saem do arquivo de resultado, sem repetir a geração
@@ -93,15 +113,20 @@ def test_exportar_qa_chat_do_arquivo_de_resultado(tmp_path):
 
     estat = exportar_qa_chat(resultado, saida=tmp_path / "saida")
 
+    n_recusas = len(geracao.TEMAS_RECUSA)
     assert estat["qa"] == {"gravados": 6, "duplicatas_removidas": 0}
-    assert estat["chat"] == {"gravados": 2, "duplicatas_removidas": 0}
-    assert estat["geracao"]["qa"]["exemplos"] == 6
+    assert estat["chat"] == {"gravados": 2 + n_recusas, "duplicatas_removidas": 0, "recusas": n_recusas}
+    assert n_recusas >= 10                                     # o enunciado pede pelo menos 10
+    assert estat["geracao"]["qa"]["exemplos"] == 6 and estat["geracao"]["recusas"]["temas_pulados"] == []
     _, linhas_qa = ler(tmp_path / "saida" / "corpus_qa.jsonl")
     assert set(linhas_qa[0]) == {"id", "instruction", "input", "output", "fonte", "paginas", "segmento_id"}
     assert linhas_qa[0]["id"] == "qa_0001"
     assert "\n\nFonte: " in linhas_qa[0]["output"]           # citação já vem na resposta
     _, linhas_chat = ler(tmp_path / "saida" / "corpus_chat.jsonl")
     assert linhas_chat[0]["id"] == "chat_0001" and linhas_chat[0]["messages"][0]["role"] == "system"
+    recusa = linhas_chat[-1]
+    assert recusa["tipo"] == "recusa" and recusa["fonte"] == "recusa" and recusa["paginas"] == []
+    assert recusa["id"].startswith("chat_recusa_")
 
 
 # 6. Exportar não chama o modelo: só lê o arquivo; sem arquivo, avisa

@@ -22,6 +22,8 @@ Passos previstos:
 1. **Ingestão:** PDF, TXT, DOCX, HTML e texto colado.
 2. **Extração:** com registro do arquivo de origem de cada trecho.
 3. **Limpeza:** cabeçalhos, rodapés, números de página, URLs soltas, caracteres estranhos, linhas repetidas e palavras quebradas por hífen.
+   - **Letra capitular:** a letra grande do início do parágrafo, que o PDF separa do resto da palavra, é juntada de volta, tanto quando vem numa linha à parte quanto quando vem com espaço ("T odos" vira "Todos"). No caso do espaço, só consoantes são juntadas, porque "A", "E" e "O" são palavras em português ("A erosão", "E depois"), e a junção não acontece quando o pedaço seguinte é uma palavra curta comum ("X de", "P ou").
+   - **Limites conhecidos:** espaço no meio da palavra fora do caso da capitular ("ex emplo") não é corrigido, porque uma regra geral erraria palavras normais; espaço perdido entre duas palavras ("Vamosconversar") também não; tabelas de PDF chegam com as colunas misturadas; palavra composta quebrada exatamente no hífen ("bem-estar" no fim da linha) vira "bemestar".
 4. **Normalização:** UTF-8, espaços, quebras de linha e aspas, mantendo acentos, pontuação e maiúsculas.
 5. **Anonimização:** CPF, e-mail, telefone e nomes de pessoas, antes de gerar qualquer corpus.
    - **Marcações:** `[CPF]`, `[EMAIL]`, `[TELEFONE]` e `[NOME]`.
@@ -57,6 +59,24 @@ Passos previstos:
    - **Persona** (aprovada em 13/11/2026): o cidadão é morador de área de risco. O assistente do Radar Cidadão é acolhedor, só responde com base no trecho, cita a fonte e, em risco imediato, orienta a ligar para o 199 (Defesa Civil) ou o 193 (Bombeiros). Na geração, o cidadão usa a `PERSONA_CIDADAO_GERACAO`, que não traz a lista de assuntos (v7).
    - **Citação da fonte:** é acrescentada automaticamente pelo código, e não pedida ao modelo (no teste de 13/11/2026 o modelo ignorou o pedido). A função `citacao` de [`geracao.py`](src/fabrica_corpus/geracao.py) (linhas 63 a 74) coloca a citação no fim de cada resposta e na última fala do assistente em cada diálogo, sempre no mesmo formato, com o título legível e as páginas: "Fonte: Periferia Sem Risco, do Ministério das Cidades (2024), p. 7-9." Os títulos ficam na constante `TITULOS` (linhas 46 a 56). O prompt de geração usa a persona sem o "citando a fonte" (`PERSONA_GERACAO`) e pede para o modelo não escrever a fonte, para a citação não sair duplicada.
    - **Quantidades:** 100 perguntas e respostas (até 2 por segmento, sem passar do número de fatos) e 30 diálogos, cada um a partir de um segmento diferente. Cada diálogo tem tantas trocas quantos fatos o segmento tiver, de 2 a 3; um segmento com menos de 2 fatos não vira diálogo.
+   - **Recusas e encaminhamentos:** o enunciado pede pelo menos 10 diálogos em que o assistente recusa o que está fora do seu alcance e encaminha a quem pode ajudar. A função `gerar_recusas` gera um diálogo de 2 trocas para cada um dos 12 temas de `TEMAS_RECUSA`. Cada tema diz o que o cidadão pede e para onde o assistente encaminha:
+
+     | Tema | Encaminhamento |
+     |---|---|
+     | Diagnóstico | Unidade de saúde ou médico |
+     | Remédio | Unidade de saúde ou médico |
+     | Picada de bicho | SAMU (192) ou unidade de saúde |
+     | Estrutura da casa | Defesa Civil (199) |
+     | Emergência agora | Bombeiros (193) |
+     | Previsão exata | Alertas da Defesa Civil (SMS 40199) |
+     | Processo judicial | Defensoria Pública |
+     | Auxílio em dinheiro | CRAS (assistência social) |
+     | Seguro | Seguradora ou corretor |
+     | Obra pública | Prefeitura (156) |
+     | Dados de terceiros | Não passa dados de outras pessoas |
+     | Fora do assunto | Explica que só orienta sobre chuvas, alagamentos e deslizamentos |
+
+     Os temas não vêm de um trecho, então a citação da fonte não é acrescentada. Cada diálogo passa por uma trava própria: alternância cidadão/assistente com pelo menos 2 trocas; a primeira fala do assistente contém o encaminhamento do tema; nenhum número além dos de emergência; nada de "o trecho". Se falhar, é refeito, com até 3 tentativas; depois disso o tema é pulado e contado nas estatísticas. Os diálogos saem com `tipo` "recusa", `fonte` "recusa", sem páginas e sem segmento.
    - **Divisão planejada dos segmentos:** antes de gerar, a função `planejar_divisao` reparte os segmentos entre perguntas e diálogos, na proporção do que cada um precisa. Antes (v1 a v7), as perguntas rodavam primeiro e ficavam com os documentos voltados ao morador (Periferia, Cartilha, Enchentes), e os diálogos só com as sobras técnicas. Agora todo documento contribui para os dois.
    - **Leitura do JSON:** o modelo às vezes escreve vários blocos JSON seguidos em vez de um só (um bloco por troca do diálogo, uma fala por bloco, ou o bloco repetido). O código lê todos e junta os que têm a chave pedida (`fatos`, `perguntas`, `mensagens` ou `avaliacoes`), sem repetir perguntas; falas soltas viram a lista de mensagens.
    - **Travas:** cada exemplo precisa passar pelas 6. Se falhar, o exemplo é refeito, com até 3 tentativas; depois disso o segmento é pulado e contado no relatório. O motivo de cada descarte fica registrado.
@@ -85,13 +105,13 @@ Passos previstos:
      |---|---|---|
      | `dados/saida/corpus_texto.jsonl` | Segmentos dos 5 documentos de `dados/entrada` | `id`, `texto`, `fonte`, `paginas`, `tokens` |
      | `dados/saida/corpus_qa.jsonl` | Perguntas e respostas | `id`, `instruction` (pergunta), `input` (vazio), `output` (resposta, já com a citação da fonte), `fonte`, `paginas`, `segmento_id` |
-     | `dados/saida/corpus_chat.jsonl` | Diálogos | `id`, `messages` (`role`/`content`, com o `system` da persona primeiro), `fonte`, `paginas`, `segmento_id` |
+     | `dados/saida/corpus_chat.jsonl` | Diálogos a partir dos trechos e de recusa | `id`, `tipo` (`trecho` ou `recusa`), `messages` (`role`/`content`, com o `system` da persona primeiro), `fonte` (`recusa` nos de recusa), `paginas` (vazio nos de recusa), `segmento_id` (`null` nos de recusa) |
      | `dados/saida_rag/corpus_rag.jsonl` | Segmentos dos 9 documentos (`dados/entrada` + `dados/entrada_ia_generativa`), para o RAG de IA Generativa | `id`, `texto`, `fonte`, `titulo` (de `geracao.TITULOS`), `paginas`, `tokens` |
 
    - **Preparação por pasta:** cada pasta passa separadamente por ingestão, limpeza, anonimização e segmentação. Assim os segmentos dos 5 documentos são os mesmos no `corpus_texto`, na geração e no RAG, com os mesmos `id`.
    - **Duplicatas:** removidas antes de gravar, mantendo a primeira ocorrência. Conta como duplicata o texto igual depois de normalizar espaços e caixa (só para comparar; o texto gravado não muda). Nas perguntas, conta a pergunta igual; nos diálogos, o texto de todas as falas. As contagens de removidos são devolvidas para o relatório.
    - **Perguntas e diálogos vêm do arquivo de resultado da geração:** no fim da geração, o notebook grava `dados/geracao/resultado_v8.json` (função `gravar_resultado`), com a versão do prompt, o modelo, os exemplos aprovados e as estatísticas que a geração devolve (segmentos pulados e número de descartes; os motivos dos descartes ainda não são devolvidos por `gerar_qa` e `gerar_chat`). A exportação só lê esse arquivo: não repete a geração, não carrega modelo e não depende do cache. Se o arquivo não existir, ela avisa que é preciso rodar a geração antes.
-   - **Geração no notebook:** a função `gerar_perguntas_e_dialogos` divide os segmentos entre perguntas e diálogos (`planejar_divisao`) e gera 100 perguntas e 30 diálogos com o modelo.
+   - **Geração no notebook:** a função `gerar_perguntas_e_dialogos` divide os segmentos entre perguntas e diálogos (`planejar_divisao`) e gera, com o modelo, 100 perguntas, 30 diálogos a partir dos trechos e os 12 diálogos de recusa. Os de recusa vão para a lista `chat` do `resultado_v8.json`, depois dos outros, e entram no `corpus_chat.jsonl`. A exportação conta quantas recusas foram gravadas, para conferir o mínimo de 10.
    - **`id` nas perguntas e nos diálogos:** os `id` da geração (`qa_0001`, `chat_0001`...) são mantidos, para ligar cada exemplo exportado à revisão do grupo.
 9. **Relatório de qualidade:** número de exemplos, média de tokens, duplicatas removidas e 5 exemplos aleatórios.
 

@@ -3,7 +3,8 @@
 Arquivos gerados (UTF-8, um JSON por linha, acentos sem escape):
  - dados/saida/corpus_texto.jsonl: segmentos dos 5 documentos de dados/entrada;
  - dados/saida/corpus_qa.jsonl: perguntas e respostas no formato instruction/input/output;
- - dados/saida/corpus_chat.jsonl: diálogos no formato messages (system/user/assistant);
+ - dados/saida/corpus_chat.jsonl: diálogos no formato messages (system/user/assistant),
+   com os de recusa e encaminhamento (tipo "recusa", fonte "recusa", sem páginas);
  - dados/saida_rag/corpus_rag.jsonl: segmentos dos 9 documentos (dados/entrada +
    dados/entrada_ia_generativa), lido pelo RAG da disciplina de IA Generativa.
 
@@ -26,7 +27,8 @@ from pathlib import Path
 from typing import Callable, Iterable
 
 from .anonimizacao import anonimizar_corpus
-from .geracao import MODELO_GERADOR, TITULOS, VERSAO_PROMPT, gerar_chat, gerar_qa, planejar_divisao
+from .geracao import (MODELO_GERADOR, TITULOS, VERSAO_PROMPT, gerar_chat, gerar_qa, gerar_recusas,
+                      planejar_divisao)
 from .ingestao import ingerir_pasta
 from .limpeza import limpar_corpus
 from .segmentacao import segmentar
@@ -40,7 +42,7 @@ SAIDA = DADOS / "saida"
 SAIDA_RAG = DADOS / "saida_rag"
 RESULTADO = DADOS / "geracao" / f"resultado_{VERSAO_PROMPT}.json"
 
-TOTAL_QA, POR_SEGMENTO, TOTAL_CHAT, TURNOS = 100, 2, 30, 3
+TOTAL_QA, POR_SEGMENTO, TOTAL_CHAT, TURNOS, TOTAL_RECUSAS = 100, 2, 30, 3, 12
 
 
 # ------------------------------------------------------------ preparação
@@ -100,9 +102,12 @@ def linha_qa(exemplo: dict) -> dict:
 
 
 def linha_chat(exemplo: dict) -> dict:
+    """Diálogo a partir de um trecho (tipo "trecho") ou de recusa e encaminhamento (tipo "recusa",
+    fonte "recusa", sem páginas e sem segmento)."""
     mensagens = [{"role": m["role"], "content": m["content"]} for m in exemplo["mensagens"]]
-    return {"id": exemplo["id"], "messages": mensagens, "fonte": exemplo["fonte"], "paginas": exemplo["paginas"],
-            "segmento_id": exemplo["segmento_id"]}
+    return {"id": exemplo["id"], "tipo": exemplo.get("tipo", "trecho"), "messages": mensagens,
+            "fonte": exemplo["fonte"], "paginas": exemplo.get("paginas") or [],
+            "segmento_id": exemplo.get("segmento_id")}
 
 
 def _texto_do_dialogo(linha: dict) -> str:
@@ -113,16 +118,19 @@ def _texto_do_dialogo(linha: dict) -> str:
 def gerar_perguntas_e_dialogos(segmentos: list, gerar: Callable[[list], str], pasta_cache: str | Path | None = CACHE,
                                total_qa: int = TOTAL_QA, por_segmento: int = POR_SEGMENTO,
                                total_chat: int = TOTAL_CHAT, turnos: int = TURNOS,
+                               total_recusas: int = TOTAL_RECUSAS,
                                progresso: bool = True) -> tuple[list, list, dict]:
-    """Usada pelo notebook: divide os segmentos e gera perguntas e diálogos com o modelo.
+    """Usada pelo notebook: divide os segmentos e gera perguntas, diálogos e recusas com o modelo.
 
-    Devolve (qa, chat, estatísticas). O resultado vai para gravar_resultado."""
+    Devolve (qa, chat, estatísticas); chat traz os diálogos dos trechos e depois os de
+    recusa. O resultado vai para gravar_resultado."""
     seg_qa, seg_chat = planejar_divisao(segmentos, n_qa=math.ceil(total_qa / por_segmento), n_chat=total_chat)
     qa, est_qa = gerar_qa(seg_qa, gerar, total=total_qa, por_segmento=por_segmento,
                           pasta_cache=pasta_cache, progresso=progresso)
     chat, est_chat = gerar_chat(seg_chat, gerar, total=total_chat, turnos=turnos,
                                 pasta_cache=pasta_cache, progresso=progresso)
-    return qa, chat, {"qa": est_qa, "chat": est_chat}
+    recusas, est_recusas = gerar_recusas(gerar, total=total_recusas, pasta_cache=pasta_cache, progresso=progresso)
+    return qa, chat + recusas, {"qa": est_qa, "chat": est_chat, "recusas": est_recusas}
 
 
 def gravar_resultado(qa: list, chat: list, estatisticas: dict, caminho: str | Path = RESULTADO) -> Path:
@@ -157,7 +165,8 @@ def exportar_qa_chat(resultado: str | Path = RESULTADO, saida: str | Path = SAID
     return {
         "qa": {"gravados": gravar_jsonl(linhas_qa, Path(saida) / "corpus_qa.jsonl"), "duplicatas_removidas": rem_qa},
         "chat": {"gravados": gravar_jsonl(linhas_chat, Path(saida) / "corpus_chat.jsonl"),
-                 "duplicatas_removidas": rem_chat},
+                 "duplicatas_removidas": rem_chat,
+                 "recusas": sum(1 for l in linhas_chat if l["tipo"] == "recusa")},
         "geracao": {"versao_prompt": dados.get("versao_prompt"), "modelo": dados.get("modelo"),
                     **dados.get("estatisticas", {})},
     }
