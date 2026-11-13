@@ -1,0 +1,103 @@
+﻿id;motivo_da_selecao;fonte;paginas;pergunta / diálogo;resposta;rotulo (S/N);motivo do N
+qa_0016;amostra 20%;ms_2025_plano_contingencia_chuvas.pdf;[38, 39];O que a prefeitura faz para monitorar riscos?;"Monitorar as condições meteorológicas e alertas hidrológicos e geológicos emitidos pelos órgãos competentes.
+
+Fonte: Plano de Contingência para Chuvas Intensas, do Ministério da Saúde (2025), p. 38-39.";S;
+qa_0041;amostra 20%;mcid_2026_mapeamento_riscos.pdf;[80, 81];O que a Defesa Civil faz?;"A Defesa Civil deve realizar visitas de campo para avaliar riscos e pré-delimitar setores de risco.
+
+Fonte: Mapeamento de Riscos, do Ministério das Cidades (2026), p. 80-81.";S;
+qa_0065;amostra 20%;mcid_2026_mapeamento_riscos.pdf;[38, 39];O que eu devo fazer durante uma enxurrada?;"Comunicação com sinalização local e avisos informativos orientando a população sobre locais de ocorrência das enxurradas e indicação de rotas seguras.
+
+Fonte: Mapeamento de Riscos, do Ministério das Cidades (2026), p. 38-39.";N;quem age: pergunta do morador ('eu devo'), resposta com ação do governo (sinalização e avisos)
+qa_0066;amostra 20%;ms_2017_cartilha_alerta_chuvas.pdf;[21, 22, 23];O que fazer com animais mortos devido à inundação?;"Em caso de acidente com animal peçonhento, mantenha a pessoa calma e procure atendimento médico o mais rápido possível. Não faça torniquete, não chupe e não aplique substância no local da picada. Se algum animal de pequeno porte morreu em decorrência da inundação, ele deverá ser acondicionado em saco plástico e encaminhado ao aterro sanitário. Animais de grande porte deverão ser enterrados o mais rápido possível em valas com profundidade mínima de dois metros e cobertos com uma camada de cal e terra. Em caso de dúvida, consulte o centro de controle de zoonoses do seu município.
+
+Fonte: Cartilha de Alerta de Chuvas Intensas, do Ministério da Saúde (2017), p. 21-23.";S;
+qa_0083;amostra 20%;ms_2025_plano_contingencia_chuvas.pdf;[17, 18];O que a prefeitura faz para as pessoas em situação de vulnerabilidade socioeconômica?;"Acesso limitado a serviços de saúde e à proteção social. Dificuldade de restabelecimento de renda e emprego.
+
+Fonte: Plano de Contingência para Chuvas Intensas, do Ministério da Saúde (2025), p. 17-18.";N;não responde: pergunta o que a prefeitura faz, resposta lista os problemas dos vulneráveis
+qa_0014;amostra 20%;ms_2017_cartilha_alerta_chuvas.pdf;[5, 6];O que eu faço para informar-me sobre os riscos da minha área?;"Informe-se com a Defesa e a Proteção Civil do seu município ou com o Núcleo de Defesa Civil sobre a exposição de riscos da sua cidade, do seu bairro, da sua rua e da sua moradia.
+
+Fonte: Cartilha de Alerta de Chuvas Intensas, do Ministério da Saúde (2017), p. 5-6.";S;
+qa_0029;amostra 20%;mcid_2026_mapeamento_riscos.pdf;[17, 18];O que é inundação?;"O volume de água em um canal, seja ele natural ou artificial, ultrapassa sua capacidade de escoamento, resultando no transbordamento das águas para além da cota máxima de contenção do leito (além da crista das margens do canal atingindo a planície de inundação).
+
+Fonte: Mapeamento de Riscos, do Ministério das Cidades (2026), p. 17-18.";S;
+qa_0077;amostra 20%;ms_2017_cartilha_alerta_chuvas.pdf;[17, 18, 19];Como evitar que animais peçonhentos entrem em casa?;"Não ponha as mãos em buracos, sob pedras e troncos podres.
+
+Fonte: Cartilha de Alerta de Chuvas Intensas, do Ministério da Saúde (2017), p. 17-19.";N;não responde: pergunta como evitar que animais entrem em casa, resposta fala de não pôr as mãos em buracos
+qa_0080;amostra 20%;ms_2025_plano_contingencia_chuvas.pdf;[63, 64];O que devo fazer se perceber algum dos sintomas de infecção por água contaminada?;"Procure atendimento médico se você, algum familiar ou amigo perceber algum desses sintomas e tiver três ou mais episódios de diarreia, em um intervalo de 24 horas.
+
+Fonte: Plano de Contingência para Chuvas Intensas, do Ministério da Saúde (2025), p. 63-64.";S;
+qa_0072;amostra 20%;ms_2017_cartilha_alerta_chuvas.pdf;[15, 16, 17];Como evitar criadouros de mosquitos no quintal?;"Manter o quintal livre de entulhos evita criadouros do mosquito da dengue e outros animais peçonhentos.
+
+Fonte: Cartilha de Alerta de Chuvas Intensas, do Ministério da Saúde (2017), p. 15-17.";S;
+qa_0054;amostra 20%;ms_2017_cartilha_alerta_chuvas.pdf;[12, 13];Como evitar a presença de ratos em casa?;"Manter os alimentos guardados em recipientes bem fechados, resistentes e em locais altos, fora do alcance dos roedores. Manter a cozinha limpa e sem restos de alimentos. Retirar as sobras de alimento ou da ração dos animais domésticos antes de anoitecer. Evitar o acúmulo de entulhos e objetos sem uso no quintal. Manter o seu terreno limpo e capinado. Guarde o lixo em sacos plásticos bem fechados e em locais altos até a coleta ocorrer.
+
+Fonte: Cartilha de Alerta de Chuvas Intensas, do Ministério da Saúde (2017), p. 12-13.";S;
+qa_0074;amostra 20%;ms_2025_plano_contingencia_chuvas.pdf;[74];O que a Defesa Civil faz para prevenir doenças após desastres?;"Intensificar a vigilância das doenças e dos agravos pós-desastres.
+
+Fonte: Plano de Contingência para Chuvas Intensas, do Ministério da Saúde (2025), p. 74.";S;
+qa_0071;amostra 20%;ms_2017_cartilha_alerta_chuvas.pdf;[15, 16, 17];Como manter a bandeja da geladeira segura durante as chuvas?;"Retire o líquido da bandeja externa pelo menos uma vez por semana e mantenha-a limpa.
+
+Fonte: Cartilha de Alerta de Chuvas Intensas, do Ministério da Saúde (2017), p. 15-17.";S;
+qa_0094;amostra 20%;mcid_2026_mapeamento_riscos.pdf;[23, 24];Por que a inundação devido à maré pode agravar-se mesmo sem chuva?;"Seus efeitos podem ser agravados pela ocorrência concomitante de ventos soprando em direção à costa, podendo o processo ocorrer inclusive em períodos sem precipitação.
+
+Fonte: Mapeamento de Riscos, do Ministério das Cidades (2026), p. 23-24.";N;fora do foco: inundação por maré, sem relação com chuva e pouco útil ao morador
+qa_0100;amostra 20%;mcid_2026_mapeamento_riscos.pdf;[17];Por que as áreas urbanas têm maior escoamento superficial?;"O alto grau de intervenção ao longo dos canais e a impermeabilização reduzem significativamente a infiltração da água no solo, intensificando o escoamento superficial e diminuindo o tempo de resposta hidrológica da bacia em relação às bacias rurais.
+
+Fonte: Mapeamento de Riscos, do Ministério das Cidades (2026), p. 17.";S;
+qa_0099;amostra 20%;mcid_2026_mapeamento_riscos.pdf;[17];O que é enchente?;"A enchente refere-se ao aumento do volume de água no interior do leito (canal) de um rio, sem transbordamento para as margens.
+
+Fonte: Mapeamento de Riscos, do Ministério das Cidades (2026), p. 17.";S;
+qa_0063;amostra 20%;ms_2025_plano_contingencia_chuvas.pdf;[33];O que a prefeitura faz para monitorar acidentes por animais peçonhentos?;"Monitorar a situação epidemiológica dos acidentes por animais peçonhentos.
+
+Fonte: Plano de Contingência para Chuvas Intensas, do Ministério da Saúde (2025), p. 33.";S;
+qa_0097;amostra 20%;mcid_2026_mapeamento_riscos.pdf;[63, 64];O que é um deslizamento translacional raso?;"É um tipo de deslizamento onde a camada superficial do solo se mobiliza de forma súbita, atingindo áreas de encosta e impactando o território adjacente.
+
+Fonte: Mapeamento de Riscos, do Ministério das Cidades (2026), p. 63-64.";S;
+qa_0076;amostra 20%;mcid_2026_mapeamento_riscos.pdf;[39];O que a prefeitura faz para evacuar as pessoas em áreas de risco?;"A prefeitura realiza evacuação parcial com a retirada de veículos e pessoas de edificações frágeis e áreas de risco e sinalização de rotas de fuga. Em áreas de risco muito alto, a prefeitura realiza evacuação preventiva ampla com a retirada de pessoas e veículos das áreas de risco, ativação de abrigos e logística de transporte.
+
+Fonte: Mapeamento de Riscos, do Ministério das Cidades (2026), p. 39.";S;
+qa_0057;amostra 20%;ms_2025_plano_contingencia_chuvas.pdf;[30, 31, 32];O que são os indicadores de um estágio operacional de normalidade?;"Indicadores: I. Ausência de alertas de nível 'Alto' ou 'Muito Alto' produzidos pelo Centro Nacional de Monitoramento de Alertas e Desastres Naturais (Cemaden)/Ministério da Ciência, Tecnologia e Inovações (MCTI).
+
+Fonte: Plano de Contingência para Chuvas Intensas, do Ministério da Saúde (2025), p. 30-32.";S;
+qa_0004;suspeita: quem age;mcid_2026_mapeamento_riscos.pdf;[35];O que devo fazer para me preparar em caso de risco alto de alagamento?;"Você deve criar rotas de evacuação e reforçar a sinalização; fortalecer a defesa civil local; realizar ações educativas contínuas; e, em casos críticos, pode ser necessário remover pessoas preventivamente.
+
+Fonte: Mapeamento de Riscos, do Ministério das Cidades (2026), p. 35.";N;quem age: pergunta do morador ('eu devo'), resposta com ações do governo (rotas de evacuação, Defesa Civil, remoção)
+qa_0079;suspeita: quem age;ms_2025_plano_contingencia_chuvas.pdf;[63, 64];O que fazer para proteger-me da leptospirose durante e após uma enchente?;"Use sempre botas impermeáveis e luvas ao transitar em áreas inundadas; cubra cortes ou arranhões com bandagens à prova-d'água.
+
+Fonte: Plano de Contingência para Chuvas Intensas, do Ministério da Saúde (2025), p. 63-64.";S;
+chat_0004;amostra 20%;mcid_2026_mapeamento_riscos.pdf;[83];"user: O que isso aqui fala sobre a vegetação?
+assistant: Significa que a vegetação na área pode influenciar na estabilidade da encosta.
+user: E quanto a trincas no terreno?
+assistant: Trincas no terreno indicam possíveis problemas de estabilidade da encosta.
+
+Fonte: Mapeamento de Riscos, do Ministério das Cidades (2026), p. 83.";;N;fala do texto: 'isso aqui', como se o leitor visse o documento
+chat_0011;amostra 20%;ms_2025_plano_contingencia_chuvas.pdf;[74, 75];"user: O que é a vigilância ativa em abrigos temporários?
+assistant: É garantir que as pessoas em abrigos temporários estejam sendo monitoradas para prevenir doenças.
+user: Quem realiza a vigilância da qualidade da água?
+assistant: A vigilância da qualidade da água é realizada pelas secretarias de saúde e de saneamento básico, ou pelos responsáveis pelo abastecimento de água.
+
+Fonte: Plano de Contingência para Chuvas Intensas, do Ministério da Saúde (2025), p. 74-75.";;S;
+chat_0017;amostra 20%;ms_2025_plano_contingencia_chuvas.pdf;[54, 55];"user: O que a vigilância da leptospirose faz quando chove muito?
+assistant: Verificar se o evento alterou a normalidade dos serviços dos laboratórios, verificar estoque de kits para sorologia da leptospirose, verificar resultados de exames e promover a divulgação de informações sobre a doença para a população.
+user: O que fazer depois de um grande temporal?
+assistant: Rever fluxos para facilitar e dar celeridade a processos, exames laboratoriais e encerramento de casos.
+
+Fonte: Plano de Contingência para Chuvas Intensas, do Ministério da Saúde (2025), p. 54-55.";;N;não responde: pergunta o que fazer depois do temporal, resposta é rotina de laboratório
+chat_0028;amostra 20%;mcid_2026_mapeamento_riscos.pdf;[48];"user: O que é R4 Muito Alto?
+assistant: É quando as evidências de instabilidade são expressivas e ocorrem muito frequentemente, afetando diretamente as edificações e/ou seu entorno imediato.
+user: Qual a ação a ser tomada nessa situação?
+assistant: Adoção imediata de medidas estruturais e não estruturais; remoções preventivas ou definitivas de moradores; isolamento da área e ações de emergência.
+
+Fonte: Mapeamento de Riscos, do Ministério das Cidades (2026), p. 48.";;S;
+chat_0021;amostra 20%;ms_2025_plano_contingencia_chuvas.pdf;[43, 44];"user: O que a vigilância epidemiológica faz antes das chuvas intensas?
+assistant: A vigilância epidemiológica sensibiliza o sistema sobre o aumento de casos de doenças imunopreveníveis e orienta sobre medidas de prevenção.
+user: Qual ação a Vigilância Epidemiológica toma depois das chuvas?
+assistant: A Vigilância Epidemiológica mantém o monitoramento da situação epidemiológica e analisa as solicitações de remessa de medicamentos.
+
+Fonte: Plano de Contingência para Chuvas Intensas, do Ministério da Saúde (2025), p. 43-44.";;S;
+chat_0030;amostra 20%;mcid_2026_mapeamento_riscos.pdf;[22, 23];"user: O que é uma enxurrada de acordo com o trecho?
+assistant: É quando a água se concentra rapidamente em linhas de drenagem mal dimensionadas, causando um escoamento rápido e forte.
+user: Qual é a diferença entre inundações bruscas e graduais?
+assistant: Inundações bruscas ocorrem rapidamente, geralmente devido a linhas de drenagem mal dimensionadas, enquanto inundações graduais se desenvolvem lentamente.
+
+Fonte: Mapeamento de Riscos, do Ministério das Cidades (2026), p. 22-23.";;N;fala do texto: 'de acordo com o trecho', como se o leitor visse o documento
