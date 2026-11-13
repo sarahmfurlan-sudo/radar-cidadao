@@ -10,7 +10,9 @@ de 3 tentativas, o segmento é pulado e contado no relatório):
  1. a saída tem que ser um JSON no formato pedido;
  2. todo número citado na resposta (telefone, prazo, quantidade) tem que estar
     no segmento, salvo os números de emergência;
- 3. a maior parte das palavras importantes da resposta tem que estar no segmento;
+ 3. filtro grosseiro: pelo menos 25% das palavras importantes da resposta têm que
+    estar no segmento, comparadas pelo radical (as 5 primeiras letras); o corte é
+    só interno à trava e não altera o texto do corpus;
  4. nada de marcações da anonimização ([NOME] etc.) nem de nomes inventados;
  5. nada de falar "do trecho" ou "disso aqui", como se o leitor visse o documento;
  6. juiz: o próprio modelo relê cada par com o trecho e confere se a resposta está
