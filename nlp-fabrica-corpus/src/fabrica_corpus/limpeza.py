@@ -17,8 +17,12 @@ Ordem das regras (a ordem importa):
 
 Limites conhecidos (registrar no relatório):
  - espaço no meio da palavra por defeito da fonte do PDF só é corrigido no caso da
-   letra capitular ("T odos" -> "Todos", só consoantes); fora disso ("ex emplo") não,
-   porque uma regra geral erraria palavras normais;
+   letra capitular ("T odos" -> "Todos", só consoantes) e só quando o vocabulário do
+   corpus confirma: a palavra juntada aparece inteira em outro lugar e o pedaço depois
+   da letra não é palavra sozinha; fora disso ("ex emplo") não, porque uma regra
+   geral erraria palavras normais;
+ - capitular cuja palavra não aparece inteira em outro lugar do corpus fica separada
+   ("T ente", na Periferia Sem Risco);
  - espaço perdido entre duas palavras ("Vamosconversar") não é corrigido;
  - tabelas de PDF chegam com as colunas misturadas;
  - palavra composta quebrada exatamente no hífen ("bem-\\nestar") vira "bemestar".
