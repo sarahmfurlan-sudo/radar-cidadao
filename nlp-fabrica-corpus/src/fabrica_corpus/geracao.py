@@ -350,7 +350,7 @@ def _extrair_json(saida: str, chave: str = "mensagens") -> dict:
 # ------------------------------------------------------------ juiz de coerência
 # As travas acima pegam invenção (números, palavras fora do trecho). Não pegam
 # incoerência: pergunta de um agente e resposta de outro, resposta que não
-# responde, texto que fala "do trecho". A revisão de 13/11 achou ~35% assim no 7B.
+# responde, texto que fala "do trecho". A revisão de 13/11 achou 29% (8 de 28) na revisão humana da amostra assim no 7B.
 # O juiz é o próprio modelo relendo cada par com o trecho e respondendo 3 perguntas.
 USAR_JUIZ = True
 _CRITERIOS_JUIZ = ("apoiada", "responde", "mesmo_agente")
