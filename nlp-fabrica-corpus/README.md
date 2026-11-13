@@ -23,7 +23,11 @@ Passos previstos:
 2. **Extração:** com registro do arquivo de origem de cada trecho.
 3. **Limpeza:** cabeçalhos, rodapés, números de página, URLs soltas, caracteres estranhos, linhas repetidas e palavras quebradas por hífen.
 4. **Normalização:** UTF-8, espaços, quebras de linha e aspas, mantendo acentos, pontuação e maiúsculas.
-5. **Anonimização:** CPF, e-mail, telefone e nomes de pessoas, antes de gerar qualquer corpus. Os números de emergência (190, 192, 193, 199 e 40199) são preservados.
+5. **Anonimização:** CPF, e-mail, telefone e nomes de pessoas, antes de gerar qualquer corpus.
+   - **Marcações:** `[CPF]`, `[EMAIL]`, `[TELEFONE]` e `[NOME]`.
+   - **Nomes, em três camadas:** (1) entidades de pessoa encontradas pelo spaCy (`pt_core_news_md`); (2) o que vem depois do rótulo "Nome:"; (3) repetições de um nome já encontrado, em maiúsculas ou só pelo primeiro nome.
+   - **Preservados**, por decisão do grupo em 13/11/2026, porque são serviços de que o cidadão precisa: os números de emergência (190, 192, 193, 199 e 40199), o 156, os e-mails `.gov.br` e os telefones de órgãos públicos da lista `CONTATOS_PUBLICOS`.
+   - **Limites conhecidos:** um nome de uma palavra só que não apareceu completo antes no texto não é mascarado; o sobrenome de autor em citação (por exemplo, "Souza, 2020") fica no texto.
 6. **Segmentação:** trechos de 256 a 512 tokens, respeitando o fim de frase ou parágrafo.
 7. **Geração dos corpus:** `corpus_texto.jsonl`, `corpus_qa.jsonl` e `corpus_chat.jsonl`, todos com o campo `fonte`.
 8. **Relatório de qualidade:** número de exemplos, média de tokens, duplicatas removidas e 5 exemplos aleatórios.
@@ -91,7 +95,8 @@ Os formatos TXT, DOCX e texto colado serão demonstrados com um arquivo de teste
 | `beautifulsoup4` | Extração de texto de HTML |
 | `gradio` | Interface |
 | `transformers`, `accelerate`, `bitsandbytes` | Execução do modelo Qwen quantizado na GPU |
-| _a definir_ | Contagem de tokens e detecção de nomes de pessoas |
+| `spacy` (`pt_core_news_md`) | Detecção de nomes de pessoas |
+| _a definir_ | Contagem de tokens |
 
 ## Estrutura da pasta
 
