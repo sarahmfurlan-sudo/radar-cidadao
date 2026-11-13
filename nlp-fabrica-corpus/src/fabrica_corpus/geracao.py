@@ -296,7 +296,12 @@ def carregar_qwen(modelo: str = MODELO_GERADOR, max_tokens: int = 700):
     lm = AutoModelForCausalLM.from_pretrained(modelo, quantization_config=quant, device_map="auto")
 
     def gerar(mensagens: list[dict]) -> str:
-        entrada = tok.apply_chat_template(mensagens, add_generation_prompt=True, return_tensors="pt").to(lm.device)
-        saida = lm.generate(entrada, max_new_tokens=max_tokens, do_sample=True, temperature=0.4, top_p=0.9)
-        return tok.decode(saida[0][entrada.shape[1]:], skip_special_tokens=True)
+        # return_dict=True: no transformers 5 o apply_chat_template devolve um dicionário
+        # (input_ids + attention_mask); pedir explicitamente funciona no 4 e no 5
+        entrada = tok.apply_chat_template(mensagens, add_generation_prompt=True,
+                                          return_tensors="pt", return_dict=True).to(lm.device)
+        saida = lm.generate(**entrada, max_new_tokens=max_tokens, do_sample=True,
+                            temperature=0.4, top_p=0.9, pad_token_id=tok.eos_token_id)
+        inicio = entrada["input_ids"].shape[1]
+        return tok.decode(saida[0][inicio:], skip_special_tokens=True)
     return gerar
