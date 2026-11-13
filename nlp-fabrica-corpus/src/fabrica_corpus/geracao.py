@@ -32,15 +32,33 @@ from pathlib import Path
 from typing import Callable, Iterable
 
 MODELO_GERADOR = "Qwen/Qwen2.5-7B-Instruct"   # confirmar no primeiro teste no Colab
-VERSAO_PROMPT = "v1"
+VERSAO_PROMPT = "v2"   # v2: o assistente cita a fonte pelo título do documento
 EMERGENCIA = {"190", "192", "193", "199", "40199", "156"}
+
+# Título legível de cada documento, para o assistente citar a fonte na resposta
+# ("Segundo a Cartilha do Ministério da Saúde (2017), ...") em vez do nome do arquivo.
+TITULOS = {
+    "mcid_2026_mapeamento_riscos.pdf": "Mapeamento de Riscos, do Ministério das Cidades (2026)",
+    "ms_2025_plano_contingencia_chuvas.pdf": "Plano de Contingência para Chuvas Intensas, do Ministério da Saúde (2025)",
+    "mcid_2024_periferia_sem_risco.pdf": "Periferia Sem Risco, do Ministério das Cidades (2024)",
+    "ms_2017_cartilha_alerta_chuvas.pdf": "Cartilha de Alerta de Chuvas Intensas, do Ministério da Saúde (2017)",
+    "ms_2026_enchentes.html": "página Enchentes, do Ministério da Saúde",
+    "mdr_2021_guia_alertas_desastres.pdf": "Guia Prático de Alertas, do Ministério do Desenvolvimento Regional (2021)",
+    "mi_2003_manual_desastres_naturais.pdf": "Manual de Desastres Naturais, do Ministério da Integração Nacional (2003)",
+    "pmsp_2024_chuvas_excessivas.pdf": "orientações da Defesa Civil da Prefeitura de São Paulo (2024)",
+    "cgesp_2026_dicas_alagamentos.docx": "dicas do CGE da Prefeitura de São Paulo",
+}
+
+
+def titulo(fonte: str) -> str:
+    return TITULOS.get(fonte, fonte)
 TENTATIVAS = 3
 
 PERSONA_ASSISTENTE = (
     "Você é o assistente do Radar Cidadão, um app que orienta moradores de áreas sujeitas "
     "a alagamento e deslizamento. Fale de forma acolhedora, direta e com frases curtas. "
-    "Responda SOMENTE com base no trecho oficial fornecido; não acrescente nada que não "
-    "esteja nele. Em situação de risco imediato, oriente primeiro a ligar para a Defesa "
+    "Responda SOMENTE com base no trecho oficial fornecido, citando a fonte; não acrescente "
+    "nada que não esteja nele. Em situação de risco imediato, oriente primeiro a ligar para a Defesa "
     "Civil (199) ou os Bombeiros (193). Se o trecho não traz a resposta, diga que não sabe."
 )
 PERSONA_CIDADAO = (
@@ -57,8 +75,9 @@ Trecho oficial (fonte: {fonte}):
 \"\"\"{texto}\"\"\"
 
 Escreva {n} perguntas que esse cidadão faria e que o trecho responde, cada uma com a
-resposta do assistente. Regras: a resposta usa só informação do trecho; não cite
-nomes de pessoas; não invente números, telefones nem prazos.
+resposta do assistente. Regras: a resposta usa só informação do trecho e cita a
+fonte pelo nome acima (por exemplo: "Segundo o/a {fonte}, ..."); não cite nomes de
+pessoas; não invente números, telefones nem prazos.
 Responda APENAS com JSON, sem texto antes ou depois:
 {{"perguntas": [{{"pergunta": "...", "resposta": "..."}}]}}"""
 
@@ -70,8 +89,9 @@ Trecho oficial (fonte: {fonte}):
 \"\"\"{texto}\"\"\"
 
 Escreva um diálogo de {turnos} trocas entre o cidadão e o assistente sobre o que o
-trecho explica. O cidadão começa. Regras: o assistente usa só informação do trecho;
-não cite nomes de pessoas; não invente números, telefones nem prazos.
+trecho explica. O cidadão começa. Regras: o assistente usa só informação do trecho e
+cita a fonte pelo nome acima pelo menos uma vez; não cite nomes de pessoas; não
+invente números, telefones nem prazos.
 Responda APENAS com JSON, sem texto antes ou depois:
 {{"mensagens": [{{"papel": "cidadao", "texto": "..."}}, {{"papel": "assistente", "texto": "..."}}]}}"""
 
@@ -161,7 +181,7 @@ def _mensagens(prompt: str) -> list[dict]:
 
 def _gerar_qa_segmento(seg, gerar, n: int) -> dict:
     prompt = PROMPT_QA.format(persona_assistente=PERSONA_ASSISTENTE, persona_cidadao=PERSONA_CIDADAO,
-                              fonte=seg.fonte, texto=seg.texto, n=n)
+                              fonte=titulo(seg.fonte), texto=seg.texto, n=n)
     ultimo_motivo = ""
     for tentativa in range(1, TENTATIVAS + 1):
         try:
@@ -172,7 +192,7 @@ def _gerar_qa_segmento(seg, gerar, n: int) -> dict:
         aprovados, motivos = [], []
         for item in itens:
             p, r = str(item.get("pergunta", "")).strip(), str(item.get("resposta", "")).strip()
-            ok, motivo = conferir_fidelidade(r, seg.texto)
+            ok, motivo = conferir_fidelidade(r, seg.texto + " " + titulo(seg.fonte))
             if p and r and ok:
                 aprovados.append({"pergunta": p, "resposta": r})
             else:
@@ -185,7 +205,7 @@ def _gerar_qa_segmento(seg, gerar, n: int) -> dict:
 
 def _gerar_chat_segmento(seg, gerar, turnos: int) -> dict:
     prompt = PROMPT_CHAT.format(persona_assistente=PERSONA_ASSISTENTE, persona_cidadao=PERSONA_CIDADAO,
-                                fonte=seg.fonte, texto=seg.texto, turnos=turnos)
+                                fonte=titulo(seg.fonte), texto=seg.texto, turnos=turnos)
     ultimo_motivo = ""
     for tentativa in range(1, TENTATIVAS + 1):
         try:
@@ -199,7 +219,8 @@ def _gerar_chat_segmento(seg, gerar, turnos: int) -> dict:
             ultimo_motivo = "diálogo sem alternância cidadão/assistente ou curto demais"
             continue
         respostas = [m.get("texto", "") for m in msgs if m.get("papel") == "assistente"]
-        falhas = [motivo for ok, motivo in (conferir_fidelidade(r, seg.texto) for r in respostas) if not ok]
+        referencia = seg.texto + " " + titulo(seg.fonte)   # citar a fonte não conta como invenção
+        falhas = [motivo for ok, motivo in (conferir_fidelidade(r, referencia) for r in respostas) if not ok]
         if not falhas:
             return {"mensagens": msgs, "tentativas": tentativa, "descartados": []}
         ultimo_motivo = "; ".join(falhas)

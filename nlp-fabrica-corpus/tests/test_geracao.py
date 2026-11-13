@@ -107,3 +107,23 @@ def test_amostra_de_revisao_tem_no_minimo_20_por_cento():
     exemplos = [{"id": i} for i in range(103)]
     assert len(amostra_revisao(exemplos)) == 21
     assert amostra_revisao(exemplos) == amostra_revisao(exemplos)      # sempre a mesma (semente)
+
+
+def test_citar_a_fonte_pelo_titulo_nao_conta_como_invencao():
+    from fabrica_corpus.geracao import TITULOS, titulo
+    s = seg(1, fonte="ms_2025_plano_contingencia_chuvas.pdf")
+    citando = json.dumps({"perguntas": [{"pergunta": "Posso atravessar a rua alagada?",
+        "resposta": f"Segundo o {titulo(s.fonte)}, não atravesse ruas alagadas, a correnteza pode arrastar você."}]})
+    exemplos, _ = gerar_qa([s], lambda m: citando, total=1)
+    assert len(exemplos) == 1 and "2025" in exemplos[0]["resposta"]
+    assert set(TITULOS) >= {"mcid_2026_mapeamento_riscos.pdf", "ms_2026_enchentes.html", "cgesp_2026_dicas_alagamentos.docx"}
+
+
+def test_prompt_recebe_titulo_e_nao_o_nome_do_arquivo():
+    recebidos = []
+
+    def espiao(mensagens):
+        recebidos.append(mensagens[0]["content"])
+        return gerador_fiel(mensagens)
+    gerar_qa([seg(1, fonte="ms_2017_cartilha_alerta_chuvas.pdf")], espiao, total=1)
+    assert "Cartilha de Alerta de Chuvas Intensas" in recebidos[0] and ".pdf" not in recebidos[0]

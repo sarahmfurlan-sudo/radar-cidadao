@@ -36,11 +36,12 @@ Passos previstos:
 7. **Geração dos corpus:** `corpus_texto.jsonl`, `corpus_qa.jsonl` e `corpus_chat.jsonl`, todos com o campo `fonte`.
    - **Modelo:** `Qwen/Qwen2.5-7B-Instruct`, em 4 bits na GPU do Colab, sem API externa (a confirmar no primeiro teste no Colab).
    - **Persona** (aprovada em 13/11/2026): o cidadão é morador de área de risco. O assistente do Radar Cidadão é acolhedor, só responde com base no trecho, cita a fonte e, em risco imediato, orienta a ligar para o 199 (Defesa Civil) ou o 193 (Bombeiros).
+   - **Citação da fonte:** é pedida no prompt. O assistente cita o documento pelo título legível (por exemplo, "Segundo a Cartilha de Alerta de Chuvas Intensas, do Ministério da Saúde (2017), ..."), e não pelo nome do arquivo. Os títulos ficam na constante `TITULOS` de [`geracao.py`](src/fabrica_corpus/geracao.py) (linhas 40 a 50). A trava de fidelidade aceita as palavras do título na resposta.
    - **Quantidades:** 100 perguntas e respostas (2 por segmento) e 30 diálogos de 3 trocas, cada um a partir de um segmento diferente.
    - **Travas contra invenção:** cada exemplo precisa passar por todas: (1) a saída é um JSON válido no formato pedido; (2) nenhum número novo, além dos de emergência; (3) a maioria das palavras da resposta está no trecho; (4) nenhuma marcação da anonimização (`[NOME]` etc.). Se falhar, o exemplo é refeito, com até 3 tentativas; depois disso o segmento é pulado e contado no relatório.
    - **Cache:** cada resposta do modelo fica salva em [`dados/cache_geracao/`](dados/cache_geracao/) e é reaproveitada nas execuções seguintes.
    - **Revisão:** a amostra de 20% que o grupo revisa à mão é sorteada com semente fixa, então sai sempre igual.
-   - **Prompt completo:** em [`src/fabrica_corpus/geracao.py`](src/fabrica_corpus/geracao.py), nas constantes `PERSONA_ASSISTENTE`, `PERSONA_CIDADAO`, `PROMPT_QA` e `PROMPT_CHAT` (linhas 39 a 76).
+   - **Prompt completo:** em [`src/fabrica_corpus/geracao.py`](src/fabrica_corpus/geracao.py), nas constantes `PERSONA_ASSISTENTE`, `PERSONA_CIDADAO`, `PROMPT_QA` e `PROMPT_CHAT` (linhas 57 a 96). Versão atual do prompt: `v2`.
 8. **Relatório de qualidade:** número de exemplos, média de tokens, duplicatas removidas e 5 exemplos aleatórios.
 
 Não são removidas stop words e não é feito stemming.
