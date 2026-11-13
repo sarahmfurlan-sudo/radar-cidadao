@@ -1,0 +1,53 @@
+{
+  "mcid_2026_mapeamento_riscos.pdf": {
+    "modo": "excluir",
+    "paginas": [[1, 6], [109, 111]],
+    "motivo": "Excluir capa, elementos pré-textuais, créditos com nomes e quarta capa.",
+    "detalhes": [
+      {"paginas": [1, 1], "decisao": "excluir", "motivo": "Capa."},
+      {"paginas": [2, 2], "decisao": "excluir", "motivo": "Folha de rosto (repete título, autores e ano)."},
+      {"paginas": [3, 3], "decisao": "excluir", "motivo": "Ficha catalográfica e expediente com nomes reais; a página também inicia a lista de figuras."},
+      {"paginas": [4, 5], "decisao": "excluir", "motivo": "Listas de figuras e de quadros (títulos com número de página, função de sumário)."},
+      {"paginas": [6, 6], "decisao": "excluir", "motivo": "Sumário."},
+      {"paginas": [109, 109], "decisao": "excluir", "motivo": "Minibiografias dos autores, organizadores e revisores, com nomes e dados pessoais."},
+      {"paginas": [110, 110], "decisao": "excluir", "motivo": "Página em branco."},
+      {"paginas": [111, 111], "decisao": "excluir", "motivo": "Quarta capa (sinopse da obra)."}
+    ]
+  },
+  "ms_2017_cartilha_alerta_chuvas.pdf": {
+    "modo": "excluir",
+    "paginas": [[1, 4], [24, 24]],
+    "motivo": "Excluir capa, elementos pré-textuais, créditos com nomes e contracapa.",
+    "detalhes": [
+      {"paginas": [1, 1], "decisao": "excluir", "motivo": "Capa."},
+      {"paginas": [2, 2], "decisao": "excluir", "motivo": "Folha de rosto."},
+      {"paginas": [3, 3], "decisao": "excluir", "motivo": "Ficha catalográfica e expediente com nomes reais."},
+      {"paginas": [4, 4], "decisao": "excluir", "motivo": "Sumário."},
+      {"paginas": [24, 24], "decisao": "excluir", "motivo": "Contracapa (só o endereço da Biblioteca Virtual em Saúde)."}
+    ]
+  },
+  "ms_2025_plano_contingencia_chuvas.pdf": {
+    "modo": "excluir",
+    "paginas": [[1, 6], [68, 71], [78, 78]],
+    "motivo": "Excluir capa, elementos pré-textuais, créditos com nomes, referências bibliográficas e contracapa.",
+    "detalhes": [
+      {"paginas": [1, 1], "decisao": "excluir", "motivo": "Capa."},
+      {"paginas": [2, 2], "decisao": "excluir", "motivo": "Folha de rosto."},
+      {"paginas": [3, 3], "decisao": "excluir", "motivo": "Ficha catalográfica e expediente com nomes reais (equipe técnica, revisão, diagramação)."},
+      {"paginas": [4, 5], "decisao": "excluir", "motivo": "Lista de siglas (material de apoio da publicação, em formato de lista)."},
+      {"paginas": [6, 6], "decisao": "excluir", "motivo": "Sumário."},
+      {"paginas": [68, 71], "decisao": "excluir", "motivo": "Referências bibliográficas: lista de citações e nomes de autores, sem conteúdo para o cidadão."},
+      {"paginas": [78, 78], "decisao": "excluir", "motivo": "Contracapa (só o endereço da Biblioteca Virtual em Saúde)."}
+    ]
+  },
+  "mcid_2024_periferia_sem_risco.pdf": {
+    "modo": "excluir",
+    "paginas": [[1, 2], [10, 12]],
+    "motivo": "Excluir capa, expediente com nomes e contracapa.",
+    "detalhes": [
+      {"paginas": [1, 2], "decisao": "excluir", "motivo": "Capa (só imagem, sem texto extraível)."},
+      {"paginas": [10, 10], "decisao": "excluir", "motivo": "Expediente com nomes reais."},
+      {"paginas": [11, 12], "decisao": "excluir", "motivo": "Contracapa (só imagem, sem texto extraível)."}
+    ]
+  }
+}

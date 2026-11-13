@@ -44,6 +44,17 @@ Ficam em [`dados/entrada/`](dados/entrada/).
 | `ms_2017_cartilha_alerta_chuvas.pdf` | Cartilha de Orientação à População no Período de Alerta de Chuvas Intensas | Ministério da Saúde | 2017 | — | [PDF](https://bvsms.saude.gov.br/bvs/publicacoes/cartilha_orientacao_populacao_chuvas_intensas.pdf) |
 | `ms_2026_enchentes.html` | Enchentes (página no gov.br) | Ministério da Saúde | 2026 (ano de acesso) | — | [Página](https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/e/enchentes) |
 
+### Seleção de páginas
+
+Os PDFs ficam inteiros no repositório. A seleção é aplicada na ingestão, a partir de [`selecao_paginas.json`](dados/entrada/selecao_paginas.json). O HTML não tem páginas e entra inteiro.
+
+| Documento | Páginas excluídas | Motivo |
+|---|---|---|
+| Mapeamento de Riscos (MCid, 2026) | 1–6, 109–111 (usadas 102 de 111) | Capa (p. 1), folha de rosto (p. 2), ficha catalográfica e expediente com nomes (p. 3), listas de figuras e quadros (p. 4–5), sumário (p. 6), minibiografias dos autores (p. 109), página em branco (p. 110) e quarta capa (p. 111). |
+| Cartilha Alerta de Chuvas (MS, 2017) | 1–4, 24 (usadas 19 de 24) | Capa, folha de rosto, ficha catalográfica e expediente com nomes, sumário e contracapa. |
+| Plano de Contingência (MS, 2025) | 1–6, 68–71, 78 (usadas 67 de 78) | Capa, folha de rosto, ficha catalográfica e expediente com nomes (p. 3), lista de siglas (p. 4–5), sumário (p. 6), referências bibliográficas (p. 68–71) e contracapa (p. 78). |
+| Periferia Sem Risco (MCid, 2024) | 1–2, 10–12 (usadas 7 de 12) | Capa e contracapa (só imagem) e expediente com nomes (p. 10). |
+
 ## Documentos ampliados (RAG de IA Generativa)
 
 Ficam em [`dados/entrada_ia_generativa/`](dados/entrada_ia_generativa/).

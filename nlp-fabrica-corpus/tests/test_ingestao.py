@@ -135,3 +135,25 @@ def test_formato_nao_aceito(tmp_path, caplog):
 
     assert [t.fonte for t in trechos] == ["relato.txt"]
     assert "planilha.xlsx" in caplog.text
+
+
+# 9. Seleção dos documentos oficiais: páginas excluídas não aparecem
+def test_selecao_entrada():
+    trechos = ingerir_pasta(ENTRADA)
+    paginas = {}
+    for t in trechos:
+        paginas.setdefault(t.fonte, []).append(t.pagina)
+
+    excluidas = {
+        "mcid_2026_mapeamento_riscos.pdf": {1, 2, 3, 4, 5, 6, 109, 110, 111},
+        "ms_2017_cartilha_alerta_chuvas.pdf": {1, 2, 3, 4, 24},
+        "ms_2025_plano_contingencia_chuvas.pdf": {1, 2, 3, 4, 5, 6, 68, 69, 70, 71, 78},
+        "mcid_2024_periferia_sem_risco.pdf": {1, 2, 10, 11, 12},
+    }
+    for fonte, proibidas in excluidas.items():
+        assert not proibidas & set(paginas[fonte]), fonte
+
+    assert len(paginas["mcid_2026_mapeamento_riscos.pdf"]) == 102
+    assert len(paginas["ms_2017_cartilha_alerta_chuvas.pdf"]) == 19
+    assert len(paginas["ms_2025_plano_contingencia_chuvas.pdf"]) == 67
+    assert len(paginas["mcid_2024_periferia_sem_risco.pdf"]) == 7
