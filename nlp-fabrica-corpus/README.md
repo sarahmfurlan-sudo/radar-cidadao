@@ -4,7 +4,7 @@ Ferramenta da disciplina de NLP da Global Solution 2026.2 (FIAP, tema CitizenTec
 
 Ela transforma documentos públicos sobre chuvas intensas e alagamentos em três corpus no formato JSONL, prontos para o fine-tuning de um modelo de linguagem pequeno (SLM) voltado a orientar o cidadão.
 
-> **Situação:** em desenvolvimento. Por enquanto, só os documentos de entrada estão no repositório. O código, o notebook e os corpus ainda não existem.
+> **Situação:** em desenvolvimento. Já existem, com testes, os módulos de ingestão, limpeza, anonimização, segmentação e geração. Ainda faltam a exportação dos corpus JSONL, o relatório de qualidade, o notebook do Colab e a interface Gradio.
 
 ## Como executar no Google Colab
 
@@ -34,11 +34,18 @@ Passos previstos:
    - **Corte:** sempre em fim de frase.
    - **Rastreabilidade:** cada segmento guarda todas as páginas de origem e um `id` (nome do arquivo + número sequencial).
 7. **Geração dos corpus:** `corpus_texto.jsonl`, `corpus_qa.jsonl` e `corpus_chat.jsonl`, todos com o campo `fonte`.
+   - **Modelo:** `Qwen/Qwen2.5-7B-Instruct`, em 4 bits na GPU do Colab, sem API externa (a confirmar no primeiro teste no Colab).
+   - **Persona** (aprovada em 13/11/2026): o cidadão é morador de área de risco. O assistente do Radar Cidadão é acolhedor, só responde com base no trecho, cita a fonte e, em risco imediato, orienta a ligar para o 199 (Defesa Civil) ou o 193 (Bombeiros).
+   - **Quantidades:** 100 perguntas e respostas (2 por segmento) e 30 diálogos de 3 trocas, cada um a partir de um segmento diferente.
+   - **Travas contra invenção:** cada exemplo precisa passar por todas: (1) a saída é um JSON válido no formato pedido; (2) nenhum número novo, além dos de emergência; (3) a maioria das palavras da resposta está no trecho; (4) nenhuma marcação da anonimização (`[NOME]` etc.). Se falhar, o exemplo é refeito, com até 3 tentativas; depois disso o segmento é pulado e contado no relatório.
+   - **Cache:** cada resposta do modelo fica salva em [`dados/cache_geracao/`](dados/cache_geracao/) e é reaproveitada nas execuções seguintes.
+   - **Revisão:** a amostra de 20% que o grupo revisa à mão é sorteada com semente fixa, então sai sempre igual.
+   - **Prompt completo:** em [`src/fabrica_corpus/geracao.py`](src/fabrica_corpus/geracao.py), nas constantes `PERSONA_ASSISTENTE`, `PERSONA_CIDADAO`, `PROMPT_QA` e `PROMPT_CHAT` (linhas 39 a 76).
 8. **Relatório de qualidade:** número de exemplos, média de tokens, duplicatas removidas e 5 exemplos aleatórios.
 
 Não são removidas stop words e não é feito stemming.
 
-As perguntas e os diálogos são gerados por um modelo aberto da família **Qwen** (modelo exato a definir), quantizado e rodando na GPU do Colab, sem API externa. O grupo revisa pelo menos 20% dos exemplos gerados. O modelo usado e o prompt serão informados aqui e no relatório.
+As perguntas e os diálogos são gerados pelo **Qwen2.5-7B-Instruct** (família Qwen), quantizado em 4 bits e rodando na GPU do Colab, sem API externa. O grupo revisa pelo menos 20% dos exemplos gerados. O modelo e o prompt estão descritos na etapa 7 e também serão informados no relatório.
 
 ## Documentos de entrada
 
@@ -90,7 +97,7 @@ Os formatos TXT, DOCX e texto colado serão demonstrados com um arquivo de teste
 
 ## Bibliotecas
 
-> _**Previstas.** A lista final, com versões, será confirmada quando o código existir._
+As versões fixadas estão em [`requirements.txt`](requirements.txt). `gradio` ainda não é usado pelo código; `accelerate` e `bitsandbytes` só são usados no Colab.
 
 | Biblioteca | Uso |
 |---|---|
@@ -106,13 +113,13 @@ Os formatos TXT, DOCX e texto colado serão demonstrados com um arquivo de teste
 
 | Caminho | Conteúdo |
 |---|---|
-| `src/fabrica_corpus/` | Módulos Python de cada etapa _(a criar)_ |
+| `src/fabrica_corpus/` | Módulos Python de cada etapa (`ingestao`, `limpeza`, `anonimizacao`, `segmentacao` e `geracao`) |
 | `dados/entrada/` | Documentos de entrada |
 | `dados/cache_geracao/` | Saídas do Qwen salvas para reaproveitar entre execuções |
 | `dados/saida/` | Os 3 corpus JSONL e o relatório de qualidade |
 | `revisao/` | Amostra revisada pelo grupo (mínimo de 20%) |
 | `logs/` | Logs de execução (não versionados) |
-| `tests/` | Testes _(a criar)_ |
+| `tests/` | Testes automáticos de cada módulo (`pytest`) |
 
 ## Integrantes
 
