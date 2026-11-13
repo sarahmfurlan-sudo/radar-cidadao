@@ -32,7 +32,7 @@ from pathlib import Path
 from typing import Callable, Iterable
 
 MODELO_GERADOR = "Qwen/Qwen2.5-7B-Instruct"   # confirmar no primeiro teste no Colab
-VERSAO_PROMPT = "v2"   # v2: o assistente cita a fonte pelo título do documento
+VERSAO_PROMPT = "v3"   # v3: citação automática pelo código + regras de pergunta específica e linguagem do morador
 EMERGENCIA = {"190", "192", "193", "199", "40199", "156"}
 
 # Título legível de cada documento, para o assistente citar a fonte na resposta
@@ -52,6 +52,20 @@ TITULOS = {
 
 def titulo(fonte: str) -> str:
     return TITULOS.get(fonte, fonte)
+
+
+def citacao(fonte: str, paginas: list) -> str:
+    """Citação da fonte, acrescentada pelo código no fim das respostas.
+
+    O modelo não cita de forma confiável (no teste de 13/11 ignorou o pedido),
+    então a citação é garantida aqui, sempre no mesmo formato:
+    "Fonte: Periferia Sem Risco, do Ministério das Cidades (2024), p. 7-9."
+    """
+    paginas = paginas or []
+    if not paginas:
+        return f"Fonte: {titulo(fonte)}."
+    pags = f"p. {paginas[0]}" if len(paginas) == 1 else f"p. {paginas[0]}-{paginas[-1]}"
+    return f"Fonte: {titulo(fonte)}, {pags}."
 TENTATIVAS = 3
 
 PERSONA_ASSISTENTE = (
@@ -61,6 +75,10 @@ PERSONA_ASSISTENTE = (
     "nada que não esteja nele. Em situação de risco imediato, oriente primeiro a ligar para a Defesa "
     "Civil (199) ou os Bombeiros (193). Se o trecho não traz a resposta, diga que não sabe."
 )
+# No prompt de geração, a persona vai sem o "citando a fonte": a citação é colocada
+# pelo código depois, e pedir ao modelo geraria citação duplicada.
+PERSONA_GERACAO = PERSONA_ASSISTENTE.replace(", citando a fonte", "")
+
 PERSONA_CIDADAO = (
     "O cidadão mora em bairro de periferia, em área de risco, usa o celular e fala de forma "
     "simples, às vezes com pressa ou medo. Pergunta sobre o antes (como se preparar), o "
@@ -75,9 +93,14 @@ Trecho oficial (fonte: {fonte}):
 \"\"\"{texto}\"\"\"
 
 Escreva {n} perguntas que esse cidadão faria e que o trecho responde, cada uma com a
-resposta do assistente. Regras: a resposta usa só informação do trecho e cita a
-fonte pelo nome acima (por exemplo: "Segundo o/a {fonte}, ..."); não cite nomes de
-pessoas; não invente números, telefones nem prazos.
+resposta do assistente. Regras:
+- a pergunta diz o assunto e faz sentido sozinha (ruim: "Como me preparar?"; bom:
+  "Como me preparar para um deslizamento de terra?");
+- a resposta responde exatamente o que foi perguntado, usando só informação do trecho;
+- se o trecho for técnico ou voltado à prefeitura, pergunte o que o MORADOR pode fazer
+  e responda em linguagem simples, sem acrescentar nada que o trecho não diga;
+- não cite nomes de pessoas; não invente números, telefones nem prazos;
+- não escreva a fonte na resposta: ela é acrescentada automaticamente.
 Responda APENAS com JSON, sem texto antes ou depois:
 {{"perguntas": [{{"pergunta": "...", "resposta": "..."}}]}}"""
 
@@ -89,9 +112,14 @@ Trecho oficial (fonte: {fonte}):
 \"\"\"{texto}\"\"\"
 
 Escreva um diálogo de {turnos} trocas entre o cidadão e o assistente sobre o que o
-trecho explica. O cidadão começa. Regras: o assistente usa só informação do trecho e
-cita a fonte pelo nome acima pelo menos uma vez; não cite nomes de pessoas; não
-invente números, telefones nem prazos.
+trecho explica. O cidadão começa. Regras:
+- o cidadão só pergunta coisas que o trecho responde, e cada fala do assistente
+  responde exatamente a pergunta anterior (se perguntarem "o que fazer depois",
+  a resposta é sobre depois);
+- se o trecho for técnico ou voltado à prefeitura, o cidadão pergunta o que ELE pode
+  fazer e o assistente responde em linguagem simples, sem acrescentar nada;
+- não cite nomes de pessoas; não invente números, telefones nem prazos;
+- não escreva a fonte: ela é acrescentada automaticamente.
 Responda APENAS com JSON, sem texto antes ou depois:
 {{"mensagens": [{{"papel": "cidadao", "texto": "..."}}, {{"papel": "assistente", "texto": "..."}}]}}"""
 
@@ -180,7 +208,7 @@ def _mensagens(prompt: str) -> list[dict]:
 
 
 def _gerar_qa_segmento(seg, gerar, n: int) -> dict:
-    prompt = PROMPT_QA.format(persona_assistente=PERSONA_ASSISTENTE, persona_cidadao=PERSONA_CIDADAO,
+    prompt = PROMPT_QA.format(persona_assistente=PERSONA_GERACAO, persona_cidadao=PERSONA_CIDADAO,
                               fonte=titulo(seg.fonte), texto=seg.texto, n=n)
     ultimo_motivo = ""
     for tentativa in range(1, TENTATIVAS + 1):
@@ -204,7 +232,7 @@ def _gerar_qa_segmento(seg, gerar, n: int) -> dict:
 
 
 def _gerar_chat_segmento(seg, gerar, turnos: int) -> dict:
-    prompt = PROMPT_CHAT.format(persona_assistente=PERSONA_ASSISTENTE, persona_cidadao=PERSONA_CIDADAO,
+    prompt = PROMPT_CHAT.format(persona_assistente=PERSONA_GERACAO, persona_cidadao=PERSONA_CIDADAO,
                                 fonte=titulo(seg.fonte), texto=seg.texto, turnos=turnos)
     ultimo_motivo = ""
     for tentativa in range(1, TENTATIVAS + 1):
@@ -228,7 +256,7 @@ def _gerar_chat_segmento(seg, gerar, turnos: int) -> dict:
 
 
 def gerar_qa(segmentos: Iterable, gerar: Callable[[list], str], total: int = 100, por_segmento: int = 2,
-             pasta_cache: Path | None = None) -> tuple[list[dict], dict]:
+             pasta_cache: Path | None = None, progresso: bool = True) -> tuple[list[dict], dict]:
     """Gera cerca de `total` perguntas e respostas. Devolve (exemplos, estatísticas)."""
     segmentos = list(segmentos)
     exemplos, pulados, descartes = [], [], 0
@@ -247,14 +275,20 @@ def gerar_qa(segmentos: Iterable, gerar: Callable[[list], str], total: int = 100
                 pulados.append(seg.id)
             for item in res["itens"]:
                 if len(exemplos) < total:
-                    exemplos.append({"id": f"qa_{len(exemplos) + 1:04d}", **item, "fonte": seg.fonte,
-                                     "paginas": seg.paginas, "segmento_id": seg.id, "modelo": MODELO_GERADOR})
+                    resposta = f"{item['resposta']}\n\n{citacao(seg.fonte, seg.paginas)}"
+                    exemplos.append({"id": f"qa_{len(exemplos) + 1:04d}", "pergunta": item["pergunta"],
+                                     "resposta": resposta, "fonte": seg.fonte, "paginas": seg.paginas,
+                                     "segmento_id": seg.id, "modelo": MODELO_GERADOR})
+            if progresso:
+                print(f"[perguntas] {len(exemplos)}/{total} | segmento {seg.id} | "
+                      f"{len(res['itens'])} aprovadas, {res['tentativas']} tentativa(s)", flush=True)
     return exemplos, {"exemplos": len(exemplos), "segmentos_usados": len(usados),
                       "segmentos_pulados": pulados, "respostas_descartadas": descartes}
 
 
 def gerar_chat(segmentos: Iterable, gerar: Callable[[list], str], total: int = 30, turnos: int = 3,
-               pasta_cache: Path | None = None, excluir: set = frozenset()) -> tuple[list[dict], dict]:
+               pasta_cache: Path | None = None, excluir: set = frozenset(),
+               progresso: bool = True) -> tuple[list[dict], dict]:
     """Gera cerca de `total` diálogos no formato de mensagens (system/user/assistant)."""
     segmentos = list(segmentos)
     exemplos, pulados = [], []
@@ -267,12 +301,18 @@ def gerar_chat(segmentos: Iterable, gerar: Callable[[list], str], total: int = 3
             usados.add(seg.id)
             res = _com_cache(pasta_cache, _chave("chat", seg, str(turnos)),
                              lambda: _gerar_chat_segmento(seg, gerar, turnos))
+            if progresso:
+                print(f"[diálogos] {len(exemplos) + bool(res['mensagens'])}/{total} | segmento {seg.id} | "
+                      f"{'ok' if res['mensagens'] else 'pulado'}, {res['tentativas']} tentativa(s)", flush=True)
             if not res["mensagens"]:
                 pulados.append(seg.id)
                 continue
             mensagens = [{"role": "system", "content": PERSONA_ASSISTENTE}] + [
                 {"role": "user" if m["papel"] == "cidadao" else "assistant", "content": m["texto"]}
                 for m in res["mensagens"]]
+            # citação automática na última fala do assistente
+            ultima = max(i for i, m in enumerate(mensagens) if m["role"] == "assistant")
+            mensagens[ultima]["content"] += f"\n\n{citacao(seg.fonte, seg.paginas)}"
             exemplos.append({"id": f"chat_{len(exemplos) + 1:04d}", "mensagens": mensagens, "fonte": seg.fonte,
                              "paginas": seg.paginas, "segmento_id": seg.id, "modelo": MODELO_GERADOR})
     return exemplos, {"exemplos": len(exemplos), "segmentos_pulados": pulados}

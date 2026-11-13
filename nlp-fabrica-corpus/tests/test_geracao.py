@@ -127,3 +127,26 @@ def test_prompt_recebe_titulo_e_nao_o_nome_do_arquivo():
         return gerador_fiel(mensagens)
     gerar_qa([seg(1, fonte="ms_2017_cartilha_alerta_chuvas.pdf")], espiao, total=1)
     assert "Cartilha de Alerta de Chuvas Intensas" in recebidos[0] and ".pdf" not in recebidos[0]
+
+
+def test_citacao_automatica_no_fim_da_resposta_e_do_dialogo():
+    s = seg(1, fonte="mcid_2024_periferia_sem_risco.pdf")
+    s.paginas = [7, 8, 9]
+    qa, _ = gerar_qa([s], gerador_fiel, total=1, progresso=False)
+    assert qa[0]["resposta"].endswith("Fonte: Periferia Sem Risco, do Ministério das Cidades (2024), p. 7-9.")
+    chat, _ = gerar_chat([s], gerador_fiel, total=1, progresso=False)
+    falas = [m for m in chat[0]["mensagens"] if m["role"] == "assistant"]
+    assert falas[-1]["content"].endswith("p. 7-9.") and "Fonte:" not in falas[0]["content"]
+
+
+def test_prompt_nao_pede_citacao_ao_modelo_e_traz_as_regras_novas():
+    recebidos = []
+    gerar_qa([seg(1)], lambda m: recebidos.append(m[0]["content"]) or gerador_fiel(m), total=1, progresso=False)
+    prompt = recebidos[0]
+    assert "citando a fonte" not in prompt and "acrescentada automaticamente" in prompt
+    assert "Como me preparar para um deslizamento" in prompt and "MORADOR" in prompt
+
+
+def test_progresso_aparece_na_tela(capsys):
+    gerar_qa([seg(1)], gerador_fiel, total=2)
+    assert "[perguntas] 2/2" in capsys.readouterr().out
