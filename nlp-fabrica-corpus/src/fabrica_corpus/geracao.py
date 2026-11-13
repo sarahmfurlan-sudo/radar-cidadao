@@ -13,8 +13,9 @@ de 3 tentativas, o segmento é pulado e contado no relatório):
  3. a maior parte das palavras importantes da resposta tem que estar no segmento;
  4. nada de marcações da anonimização ([NOME] etc.) nem de nomes inventados;
  5. nada de falar "do trecho" ou "disso aqui", como se o leitor visse o documento;
- 6. juiz de coerência: o próprio modelo relê cada par com o trecho e confere se a
-    resposta responde a pergunta e se quem age é o mesmo nos dois.
+ 6. juiz: o próprio modelo relê cada par com o trecho e confere se a resposta está
+    apoiada no trecho (sem acrescentar nada), se responde a pergunta e se quem age
+    é o mesmo nos dois.
 
 Cache: cada resposta do modelo é guardada em dados/cache_geracao/, com a versão
 do prompt no nome. Rodar de novo (no vídeo ou na correção) reaproveita tudo e
@@ -35,7 +36,7 @@ from pathlib import Path
 from typing import Callable, Iterable
 
 MODELO_GERADOR = "Qwen/Qwen2.5-14B-Instruct"  # 14B em 4 bits: segue melhor as regras (o 7B confundia quem age)
-VERSAO_PROMPT = "v5"   # v5: modelo 14B + juiz de coerência + trava de referência ao texto
+VERSAO_PROMPT = "v8"   # v8: geração em etapas (extração de fatos com quem age, depois perguntas e diálogos a partir dos fatos)
 EMERGENCIA = {"190", "192", "193", "199", "40199", "156"}
 
 # Título legível de cada documento, para o assistente citar a fonte na resposta
@@ -81,6 +82,14 @@ PERSONA_ASSISTENTE = (
 # No prompt de geração, a persona vai sem o "citando a fonte": a citação é colocada
 # pelo código depois, e pedir ao modelo geraria citação duplicada.
 PERSONA_GERACAO = PERSONA_ASSISTENTE.replace(", citando a fonte", "")
+
+# Na geração, o cidadão NÃO recebe a lista de assuntos (antes/durante/depois, limpeza,
+# doenças): com ela, o modelo fazia o cidadão perguntar sobre limpeza e doenças em trechos
+# que não falam disso, e respondia com conhecimento próprio (o juiz pegou em 13/11).
+PERSONA_CIDADAO_GERACAO = (
+    "O cidadão mora em bairro de periferia, em área de risco, usa o celular e fala de forma "
+    "simples, às vezes com pressa ou medo. Ele SÓ pergunta sobre o que o trecho oficial explica."
+)
 
 PERSONA_CIDADAO = (
     "O cidadão mora em bairro de periferia, em área de risco, usa o celular e fala de forma "
@@ -131,6 +140,109 @@ trecho explica. O cidadão começa. Regras:
 Responda APENAS com JSON, sem texto antes ou depois:
 {{"mensagens": [{{"papel": "cidadao", "texto": "..."}}, {{"papel": "assistente", "texto": "..."}}]}}"""
 
+# ------------------------------------------------------------ v8: geração em etapas
+# Critérios de qualidade (definidos antes de gerar, 13/11/2026; meta: 90% aprovados na
+# amostra revisada pelo grupo):
+#   1. apoiada: tudo o que a resposta afirma está no trecho;
+#   2. responde: a resposta responde exatamente a pergunta;
+#   3. mesmo_agente: quem age é o mesmo na pergunta e na resposta;
+#   4. fala com o morador, sem "o trecho" / "isso aqui".
+# Etapa 1 extrai os fatos do trecho, cada um com QUEM AGE. Etapa 2 escreve perguntas e
+# diálogos só a partir desses fatos. Assim a pergunta já nasce com o agente certo e o
+# diálogo tem tantas trocas quantos fatos houver, sem precisar inventar para continuar.
+USAR_FATOS = True
+AGENTES = ("morador", "poder_publico", "conceito")
+
+PROMPT_FATOS = """Leia o trecho oficial abaixo, de um documento sobre chuvas, alagamentos e deslizamentos.
+LISTE OS FATOS que ele afirma e que interessam a um morador de área de risco: orientações,
+definições, causas, sinais de perigo, o que os órgãos públicos fazem.
+
+Trecho oficial:
+\"\"\"{texto}\"\"\"
+
+Regras:
+- cada fato é UMA frase curta, fiel ao trecho, sem acrescentar nada;
+- quem_age: "morador" (o que a pessoa pode fazer), "poder_publico" (o que prefeitura, Defesa
+  Civil, saúde ou outro órgão fazem; diga qual em "orgao") ou "conceito" (definição, causa, explicação);
+- ignore listas de siglas, referências, créditos, sumários e trechos sem orientação ou explicação;
+- se nada no trecho interessa ao morador, devolva util false e a lista vazia.
+Responda APENAS com JSON:
+{{"util": true, "fatos": [{{"fato": "...", "quem_age": "morador", "orgao": ""}}]}}"""
+
+PROMPT_QA_FATOS = """{persona_assistente}
+
+{persona_cidadao}
+
+Fatos tirados de um documento oficial (cada um com quem age):
+{fatos}
+
+Escreva {n} perguntas que esse cidadão faria, cada uma respondida por UM fato da lista. Regras:
+- a pergunta segue quem age no fato: "morador" -> "O que eu faço...", "Como eu..."; "poder_publico"
+  -> pergunte pelo órgão indicado ("O que a Defesa Civil faz...", "O que a saúde faz..."), nunca
+  "prefeitura" se o órgão é outro; "conceito" -> "O que é...", "Por que...";
+- a pergunta diz o assunto e faz sentido sozinha;
+- a resposta usa só aquele fato, em linguagem simples, sem acrescentar nada;
+- não cite nomes de pessoas nem "o texto"/"o trecho"; não invente números, telefones nem prazos;
+- não escreva a fonte: ela é acrescentada automaticamente.
+Responda APENAS com JSON:
+{{"perguntas": [{{"fato": 1, "pergunta": "...", "resposta": "..."}}]}}"""
+
+PROMPT_CHAT_FATOS = """{persona_assistente}
+
+{persona_cidadao}
+
+Fatos tirados de um documento oficial (cada um com quem age):
+{fatos}
+
+Escreva um diálogo de {turnos} trocas entre o cidadão e o assistente. O cidadão começa. Regras:
+- cada troca usa UM fato da lista, na ordem que fizer sentido; não use nada fora dos fatos;
+- a pergunta do cidadão segue quem age no fato (o que ELE faz, o que o órgão indicado faz,
+  ou o que significa); a fala do assistente responde exatamente essa pergunta;
+- linguagem simples; não cite nomes de pessoas nem "o texto"/"o trecho"; não invente números;
+- não escreva a fonte: ela é acrescentada automaticamente.
+Responda APENAS com JSON:
+{{"mensagens": [{{"papel": "cidadao", "texto": "..."}}, {{"papel": "assistente", "texto": "..."}}]}}"""
+
+
+def _formatar_fatos(fatos: list[dict]) -> str:
+    linhas = []
+    for i, f in enumerate(fatos, start=1):
+        agente = f["quem_age"] + (f" ({f['orgao']})" if f.get("orgao") else "")
+        linhas.append(f"{i}. [{agente}] {f['fato']}")
+    return "\n".join(linhas)
+
+
+def extrair_fatos(seg, gerar) -> tuple[list[dict], str]:
+    """Etapa 1: os fatos do segmento, cada um com quem age. Devolve (fatos, motivo).
+
+    Cada fato passa pelas mesmas travas baratas das respostas (números do trecho,
+    palavras em comum, nada de marcação da anonimização): um fato inventado nem
+    chega à etapa 2.
+    """
+    ultimo = ""
+    for _ in range(TENTATIVAS):
+        saida = gerar(_mensagens(PROMPT_FATOS.format(texto=seg.texto)))
+        try:
+            brutos = _extrair_json(saida, "fatos")["fatos"] or []
+        except (ValueError, KeyError, TypeError) as erro:
+            ultimo = f"fatos: JSON inválido: {erro}"
+            continue
+        # _extrair_json devolve só a chave pedida; o "util" é lido direto da saída
+        if re.search(r'"util"\s*:\s*false', saida) and not brutos:
+            return [], "segmento sem fatos úteis ao morador"
+        fatos = []
+        for f in brutos:
+            if not isinstance(f, dict):
+                continue
+            texto, agente = str(f.get("fato", "")).strip(), str(f.get("quem_age", "")).strip()
+            if texto and agente in AGENTES and conferir_fidelidade(texto, seg.texto)[0]:
+                fatos.append({"fato": texto, "quem_age": agente, "orgao": str(f.get("orgao", "") or "").strip()})
+        if fatos:
+            return fatos, "ok"
+        ultimo = "fatos: nenhum fato válido"
+    return [], ultimo
+
+
 # palavras que indicam conteúdo útil para o cidadão (para escolher segmentos)
 _TEMAS = re.compile(r"chuva|alag|enchente|inunda|desliza|encosta|defesa civil|água|leptospirose|"
                     r"abrigo|evacua|alerta|risco|doença|limpeza|lama|córrego|bueiro", re.I)
@@ -176,7 +288,7 @@ def _numeros(texto: str) -> set[str]:
     return set(re.findall(r"\d+(?:[.,]\d+)*", texto))
 
 
-def conferir_fidelidade(resposta: str, trecho: str, minimo: float = 0.4) -> tuple[bool, str]:
+def conferir_fidelidade(resposta: str, trecho: str, minimo: float = 0.25) -> tuple[bool, str]:
     """Confere se a resposta não inventa nada que não esteja no trecho."""
     if re.search(r"\[(NOME|CPF|EMAIL|TELEFONE)\]", resposta):
         return False, "marcação de anonimização na resposta"
@@ -239,6 +351,7 @@ def _extrair_json(saida: str, chave: str = "mensagens") -> dict:
 # responde, texto que fala "do trecho". A revisão de 13/11 achou ~35% assim no 7B.
 # O juiz é o próprio modelo relendo cada par com o trecho e respondendo 3 perguntas.
 USAR_JUIZ = True
+_CRITERIOS_JUIZ = ("apoiada", "responde", "mesmo_agente")
 
 _REFERENCIA_AO_TEXTO = re.compile(
     r"\b(o|este|esse|neste|nesse|do|no)\s+(trecho|texto|documento|material)\b|\bisso aqui\b|\bde acordo com o trecho\b",
@@ -254,6 +367,8 @@ Pares:
 {pares}
 
 Para cada par, responda:
+- apoiada: tudo o que a resposta afirma está no trecho, mesmo que com outras palavras? (false se
+  acrescenta orientação, dado ou exemplo que o trecho não traz)
 - responde: a resposta responde exatamente o que a pergunta pede? (false se fala de outra coisa,
   só repete a pergunta, ou responde "antes" quando perguntaram "depois")
 - mesmo_agente: quem age é o mesmo na pergunta e na resposta? (false se a pergunta é "o que EU
@@ -261,7 +376,7 @@ Para cada par, responda:
   false se a pergunta cita a prefeitura mas o trecho fala de outro órgão)
 - motivo: uma frase curta quando algum item for false.
 Responda APENAS com JSON:
-{{"avaliacoes": [{{"par": 1, "responde": true, "mesmo_agente": true, "motivo": ""}}]}}"""
+{{"avaliacoes": [{{"par": 1, "apoiada": true, "responde": true, "mesmo_agente": true, "motivo": ""}}]}}"""
 
 
 def _referencia_ao_texto(*textos: str) -> bool:
@@ -282,17 +397,17 @@ def julgar(pares: list[tuple[str, str]], trecho: str, gerar) -> list[tuple[bool,
                  avaliacoes[i] if i < len(avaliacoes) and isinstance(avaliacoes[i], dict) else None)
         if a is None:
             resultado.append((False, "juiz: par sem avaliação"))
-        elif a.get("responde") is True and a.get("mesmo_agente") is True:
+        elif all(a.get(nome) is True for nome in _CRITERIOS_JUIZ):
             resultado.append((True, "ok"))
         else:
-            falhas = [nome for nome in ("responde", "mesmo_agente") if a.get(nome) is not True]
+            falhas = [nome for nome in _CRITERIOS_JUIZ if a.get(nome) is not True]
             resultado.append((False, f"juiz ({', '.join(falhas)}): {a.get('motivo', '')}".strip()))
     return resultado
 
 
 # ------------------------------------------------------------ cache
 def _chave(tipo: str, seg, extra: str) -> str:
-    extra = f"{extra}|juiz={USAR_JUIZ}"
+    extra = f"{extra}|juiz={USAR_JUIZ}|fatos={USAR_FATOS}"
     h = hashlib.sha256(f"{VERSAO_PROMPT}|{MODELO_GERADOR}|{tipo}|{extra}|{seg.texto}".encode()).hexdigest()[:12]
     return f"{tipo}_{seg.id}_{VERSAO_PROMPT}_{h}.json"
 
@@ -324,8 +439,17 @@ def _mensagens(prompt: str) -> list[dict]:
 
 
 def _gerar_qa_segmento(seg, gerar, n: int, juiz: bool | None = None) -> dict:
-    prompt = PROMPT_QA.format(persona_assistente=PERSONA_GERACAO, persona_cidadao=PERSONA_CIDADAO,
-                              fonte=titulo(seg.fonte), texto=seg.texto, n=n)
+    fatos = []
+    if USAR_FATOS:
+        fatos, motivo = extrair_fatos(seg, gerar)
+        if not fatos:
+            return {"itens": [], "tentativas": 0, "descartados": [motivo], "fatos": []}
+        n = min(n, len(fatos))
+        prompt = PROMPT_QA_FATOS.format(persona_assistente=PERSONA_GERACAO, persona_cidadao=PERSONA_CIDADAO_GERACAO,
+                                        fatos=_formatar_fatos(fatos), n=n)
+    else:
+        prompt = PROMPT_QA.format(persona_assistente=PERSONA_GERACAO, persona_cidadao=PERSONA_CIDADAO_GERACAO,
+                                  fonte=titulo(seg.fonte), texto=seg.texto, n=n)
     ultimo_motivo = ""
     for tentativa in range(1, TENTATIVAS + 1):
         try:
@@ -348,14 +472,24 @@ def _gerar_qa_segmento(seg, gerar, n: int, juiz: bool | None = None) -> dict:
             motivos += [m for ok, m in vereditos if not ok]
             aprovados = [a for a, (ok, _) in zip(aprovados, vereditos) if ok]
         if aprovados:
-            return {"itens": aprovados[:n], "tentativas": tentativa, "descartados": motivos}
+            return {"itens": aprovados[:n], "tentativas": tentativa, "descartados": motivos, "fatos": fatos}
         ultimo_motivo = "; ".join(motivos) or "nenhum item"
-    return {"itens": [], "tentativas": TENTATIVAS, "descartados": [ultimo_motivo]}
+    return {"itens": [], "tentativas": TENTATIVAS, "descartados": [ultimo_motivo], "fatos": fatos}
 
 
 def _gerar_chat_segmento(seg, gerar, turnos: int, juiz: bool | None = None) -> dict:
-    prompt = PROMPT_CHAT.format(persona_assistente=PERSONA_GERACAO, persona_cidadao=PERSONA_CIDADAO,
-                                fonte=titulo(seg.fonte), texto=seg.texto, turnos=turnos)
+    fatos = []
+    if USAR_FATOS:
+        fatos, motivo = extrair_fatos(seg, gerar)
+        if len(fatos) < 2:     # diálogo de verdade precisa de pelo menos 2 trocas
+            return {"mensagens": [], "tentativas": 0, "fatos": fatos,
+                    "descartados": [motivo if not fatos else "poucos fatos para um diálogo (menos de 2)"]}
+        turnos = min(turnos, len(fatos))
+        prompt = PROMPT_CHAT_FATOS.format(persona_assistente=PERSONA_GERACAO, persona_cidadao=PERSONA_CIDADAO_GERACAO,
+                                          fatos=_formatar_fatos(fatos), turnos=turnos)
+    else:
+        prompt = PROMPT_CHAT.format(persona_assistente=PERSONA_GERACAO, persona_cidadao=PERSONA_CIDADAO_GERACAO,
+                                    fonte=titulo(seg.fonte), texto=seg.texto, turnos=turnos)
     ultimo_motivo = ""
     for tentativa in range(1, TENTATIVAS + 1):
         try:
@@ -378,9 +512,9 @@ def _gerar_chat_segmento(seg, gerar, turnos: int, juiz: bool | None = None) -> d
                      for i in range(0, len(msgs) - 1, 2)]
             falhas = [m for ok, m in julgar(pares, seg.texto, gerar) if not ok]
         if not falhas:
-            return {"mensagens": msgs, "tentativas": tentativa, "descartados": []}
+            return {"mensagens": msgs, "tentativas": tentativa, "descartados": [], "fatos": fatos}
         ultimo_motivo = "; ".join(falhas)
-    return {"mensagens": [], "tentativas": TENTATIVAS, "descartados": [ultimo_motivo]}
+    return {"mensagens": [], "tentativas": TENTATIVAS, "descartados": [ultimo_motivo], "fatos": fatos}
 
 
 def gerar_qa(segmentos: Iterable, gerar: Callable[[list], str], total: int = 100, por_segmento: int = 2,
@@ -450,6 +584,83 @@ def gerar_chat(segmentos: Iterable, gerar: Callable[[list], str], total: int = 3
             exemplos.append({"id": f"chat_{len(exemplos) + 1:04d}", "mensagens": mensagens, "fonte": seg.fonte,
                              "paginas": seg.paginas, "segmento_id": seg.id, "modelo": MODELO_GERADOR})
     return exemplos, {"exemplos": len(exemplos), "segmentos_tentados": tentados, "segmentos_pulados": pulados}
+
+
+def planejar_divisao(segmentos: Iterable, n_qa: int, n_chat: int) -> tuple[list, list]:
+    """Divide os segmentos candidatos entre perguntas e diálogos ANTES de gerar.
+
+    Antes (v1 a v7) as perguntas rodavam primeiro e consumiam os documentos voltados ao
+    morador (Periferia, Cartilha, Enchentes); os diálogos ficavam só com as sobras técnicas.
+    Aqui a lista de candidatos (já em rodízio entre documentos) é repartida na proporção do
+    que cada um precisa, então todo documento contribui para os dois.
+    n_qa e n_chat: quantos SEGMENTOS cada um precisa (perguntas: total / por_segmento).
+    """
+    segmentos = list(segmentos)
+    candidatos = selecionar(segmentos, len(segmentos))
+    qa, chat = [], []
+    for seg in candidatos:
+        # vai para quem está mais longe de completar a própria necessidade
+        if len(chat) / max(n_chat, 1) < len(qa) / max(n_qa, 1):
+            chat.append(seg)
+        else:
+            qa.append(seg)
+    return qa, chat
+
+
+def conjunto_avaliacao(segmentos: Iterable, n: int = 12, semente: int = 2026) -> list:
+    """Conjunto FIXO de segmentos para comparar versões do prompt (sempre os mesmos)."""
+    return selecionar(list(segmentos), n, semente=semente)
+
+
+def _paginas_csv(texto: str) -> list[int]:
+    return [int(x) for x in re.findall(r"\d+", texto or "")]
+
+
+def _sem_fonte(texto: str) -> str:
+    return re.split(r"\n\s*Fonte:", texto or "")[0].strip()
+
+
+def medir_juiz(caminho_rotulos: str | Path, segmentos: Iterable, gerar) -> dict:
+    """Mede as travas + o juiz contra uma revisão humana (S/N).
+
+    Para cada item rotulado, roda a mesma conferência da geração (referência ao texto,
+    fidelidade e juiz) e compara com o rótulo humano. Devolve a matriz de confusão,
+    a concordância e a lista de divergências, para o relatório.
+    """
+    import csv
+    segmentos = list(segmentos)
+    linhas = list(csv.reader(open(caminho_rotulos, encoding="utf-8-sig"), delimiter=";"))[1:]
+    resultado = {"humano_S_sistema_aprova": 0, "humano_S_sistema_reprova": 0,
+                 "humano_N_sistema_aprova": 0, "humano_N_sistema_reprova": 0, "divergencias": []}
+    for linha in linhas:
+        ident, fonte, paginas = linha[0], linha[2], _paginas_csv(linha[3])
+        humano = linha[6].strip().upper()[:1]
+        seg = next((s for s in segmentos if s.fonte == fonte and s.paginas == paginas), None) or next(
+            (s for s in segmentos if s.fonte == fonte and set(s.paginas) & set(paginas)), None)
+        if seg is None or humano not in ("S", "N"):
+            resultado["divergencias"].append((ident, "segmento não encontrado ou sem rótulo"))
+            continue
+        if ident.startswith("chat"):
+            falas = [l.split(":", 1)[1].strip() for l in _sem_fonte(linha[4]).splitlines() if ":" in l]
+            pares = [(falas[i], falas[i + 1]) for i in range(0, len(falas) - 1, 2)]
+        else:
+            pares = [(linha[4].strip(), _sem_fonte(linha[5]))]
+        referencia = seg.texto + " " + titulo(seg.fonte)
+        motivos = [m for p, r in pares for ok, m in [conferir_fidelidade(r, referencia)] if not ok]
+        if _referencia_ao_texto(*(t for par in pares for t in par)):
+            motivos.append("fala do trecho como se o leitor visse o documento")
+        if not motivos:
+            motivos = [m for ok, m in julgar(pares, seg.texto, gerar) if not ok]
+        aprova = not motivos
+        chave = f"humano_{humano}_sistema_{'aprova' if aprova else 'reprova'}"
+        resultado[chave] += 1
+        if (humano == "S") != aprova:
+            resultado["divergencias"].append((ident, f"humano {humano}; sistema: {'; '.join(motivos) or 'aprovou'}"))
+    total = sum(resultado[k] for k in resultado if k.startswith("humano_"))
+    acertos = resultado["humano_S_sistema_aprova"] + resultado["humano_N_sistema_reprova"]
+    resultado["concordancia"] = round(acertos / total, 2) if total else 0.0
+    resultado["itens"] = total
+    return resultado
 
 
 def amostra_revisao(exemplos: list[dict], proporcao: float = 0.2, semente: int = 2026) -> list[dict]:

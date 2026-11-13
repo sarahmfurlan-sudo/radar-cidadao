@@ -14,6 +14,7 @@ def sem_juiz_por_padrao(monkeypatch):
     """Os testes antigos usam geradores falsos que não sabem responder ao juiz;
     os testes do juiz ligam ele explicitamente (juiz=True)."""
     monkeypatch.setattr(geracao, "USAR_JUIZ", False)
+    monkeypatch.setattr(geracao, "USAR_FATOS", False)
 
 TEXTO = ("Durante a enchente, não atravesse ruas alagadas, pois a correnteza pode arrastar você. "
          "Desligue a energia elétrica da casa antes que a água chegue às tomadas. "
@@ -215,8 +216,8 @@ def gerador_com_juiz(veredito_par2=True):
         prompt = mensagens[0]["content"]
         if "AVALIE" in prompt:
             return json.dumps({"avaliacoes": [
-                {"par": 1, "responde": True, "mesmo_agente": True, "motivo": ""},
-                {"par": 2, "responde": veredito_par2, "mesmo_agente": True,
+                {"par": 1, "apoiada": True, "responde": True, "mesmo_agente": True, "motivo": ""},
+                {"par": 2, "apoiada": True, "responde": veredito_par2, "mesmo_agente": True,
                  "motivo": "" if veredito_par2 else "responde outra coisa"}]})
         return gerador_fiel(mensagens)
     return gerar
@@ -263,3 +264,129 @@ def test_prompt_do_juiz_traz_trecho_e_pares():
     gerar_qa([seg(1)], gerar, total=2, progresso=False, juiz=True)
     juiz = next(p for p in recebidos if "AVALIE" in p)
     assert "Durante a enchente" in juiz and "1. Pergunta:" in juiz and "2. Pergunta:" in juiz
+
+
+
+def test_juiz_reprova_resposta_nao_apoiada_no_trecho():
+    def gerar(m):
+        if "AVALIE" in m[0]["content"]:
+            return json.dumps({"avaliacoes": [
+                {"par": 1, "apoiada": False, "responde": True, "mesmo_agente": True, "motivo": "acrescenta orientação"},
+                {"par": 2, "apoiada": True, "responde": True, "mesmo_agente": True, "motivo": ""}]})
+        return gerador_fiel(m)
+    exemplos, estat = gerar_qa([seg(1)], gerar, total=2, progresso=False, juiz=True)
+    assert len(exemplos) == 1 and estat["respostas_descartadas"] == 1
+
+
+def test_reescrita_livre_do_14b_passa_no_filtro_de_25():
+    trecho = ("Converse com os moradores mais antigos da comunidade e lembre os locais onde já houve "
+              "deslizamentos ou inundações. Registre tudo em mapas e desenhos.")
+    resposta = "Pergunte aos vizinhos mais velhos sobre desastres passados e veja onde já houve alagamentos ou deslizamentos."
+    assert conferir_fidelidade(resposta, trecho)[0]
+
+
+def test_cidadao_na_geracao_nao_recebe_lista_de_assuntos():
+    recebidos = []
+    gerar_qa([seg(1)], lambda m: recebidos.append(m[0]["content"]) or gerador_fiel(m), total=1, progresso=False)
+    assert "limpeza, doenças" not in recebidos[0] and "SÓ pergunta sobre o que o trecho" in recebidos[0]
+
+
+
+# ------------------------------------------------------------ v8: geração em etapas
+FATOS_OK = json.dumps({"util": True, "fatos": [
+    {"fato": "Não atravesse ruas alagadas, pois a correnteza pode arrastar você.", "quem_age": "morador", "orgao": ""},
+    {"fato": "Desligue a energia elétrica da casa antes que a água chegue às tomadas.", "quem_age": "morador", "orgao": ""},
+    {"fato": "A Defesa Civil atende pelo 199 em caso de risco.", "quem_age": "poder_publico", "orgao": "Defesa Civil"}]})
+
+
+def gerador_v8(fatos=FATOS_OK):
+    def gerar(m):
+        prompt = m[0]["content"]
+        if "LISTE OS FATOS" in prompt:
+            return fatos
+        if "AVALIE" in prompt:
+            return json.dumps({"avaliacoes": [{"par": i, "apoiada": True, "responde": True, "mesmo_agente": True}
+                                              for i in range(1, 4)]})
+        return gerador_fiel(m)
+    return gerar
+
+
+def test_v8_perguntas_nascem_dos_fatos_com_quem_age(monkeypatch):
+    monkeypatch.setattr(geracao, "USAR_FATOS", True)
+    recebidos = []
+    g = gerador_v8()
+    exemplos, _ = gerar_qa([seg(1)], lambda m: recebidos.append(m[0]["content"]) or g(m), total=2,
+                           progresso=False, juiz=True)
+    assert len(exemplos) == 2
+    prompt_qa = next(p for p in recebidos if "Fatos tirados" in p)
+    assert "[morador] Não atravesse" in prompt_qa and "[poder_publico (Defesa Civil)]" in prompt_qa
+    assert "Durante a enchente" not in prompt_qa       # a etapa 2 vê só os fatos, não o trecho
+
+
+def test_v8_fato_inventado_e_descartado_na_extracao(monkeypatch):
+    monkeypatch.setattr(geracao, "USAR_FATOS", True)
+    inventado = json.dumps({"util": True, "fatos": [
+        {"fato": "Ligue para 0800 777 1234 e espere 48 horas.", "quem_age": "morador"},
+        {"fato": "Compre um gerador movido a diesel para o telhado.", "quem_age": "morador"}]})
+    exemplos, estat = gerar_qa([seg(1)], gerador_v8(inventado), total=2, progresso=False)
+    assert exemplos == [] and estat["segmentos_pulados"] == ["plano_0001"]
+
+
+def test_v8_segmento_sem_fatos_uteis_e_pulado_sem_gerar(monkeypatch):
+    monkeypatch.setattr(geracao, "USAR_FATOS", True)
+    chamadas = []
+    vazio = json.dumps({"util": False, "fatos": []})
+    gerar_qa([seg(1)], lambda m: chamadas.append(1) or vazio, total=2, progresso=False)
+    assert len(chamadas) == 1          # só a extração; nada de geração nem juiz
+
+
+def test_v8_dialogo_tem_tantas_trocas_quantos_fatos(monkeypatch):
+    monkeypatch.setattr(geracao, "USAR_FATOS", True)
+    recebidos = []
+    dois = json.dumps({"util": True, "fatos": json.loads(FATOS_OK)["fatos"][:2]})
+    g = gerador_v8(dois)
+    gerar_chat([seg(1)], lambda m: recebidos.append(m[0]["content"]) or g(m), total=1, progresso=False)
+    assert any("diálogo de 2 trocas" in p for p in recebidos)
+
+
+def test_v8_dialogo_precisa_de_2_fatos(monkeypatch):
+    monkeypatch.setattr(geracao, "USAR_FATOS", True)
+    um = json.dumps({"util": True, "fatos": json.loads(FATOS_OK)["fatos"][:1]})
+    exemplos, estat = gerar_chat([seg(1)], gerador_v8(um), total=1, progresso=False)
+    assert exemplos == [] and estat["segmentos_pulados"] == ["plano_0001"]
+
+
+def test_divisao_planejada_reparte_cada_documento_entre_perguntas_e_dialogos():
+    from fabrica_corpus.geracao import planejar_divisao
+    segs = [seg(i, f) for f in ("periferia.pdf", "cartilha.pdf", "mapa.pdf") for i in range(1, 9)]
+    qa, chat = planejar_divisao(segs, n_qa=10, n_chat=6)
+    assert {s.fonte for s in qa} == {s.fonte for s in chat} == {"periferia.pdf", "cartilha.pdf", "mapa.pdf"}
+    assert not {s.id for s in qa} & {s.id for s in chat} and len(qa) + len(chat) == 24
+
+
+def test_conjunto_de_avaliacao_e_fixo_e_espalhado():
+    from fabrica_corpus.geracao import conjunto_avaliacao
+    segs = [seg(i, f) for f in ("a.pdf", "b.pdf", "c.pdf", "d.pdf") for i in range(1, 20)]
+    um, dois = conjunto_avaliacao(segs), conjunto_avaliacao(segs)
+    assert [s.id for s in um] == [s.id for s in dois] and len(um) == 12
+    assert {s.fonte for s in um} == {"a.pdf", "b.pdf", "c.pdf", "d.pdf"}
+
+
+def test_medir_juiz_contra_revisao_humana(tmp_path):
+    from fabrica_corpus.geracao import medir_juiz
+    import csv
+    rot = tmp_path / "rotulos.csv"
+    with open(rot, "w", newline="", encoding="utf-8-sig") as f:
+        w = csv.writer(f, delimiter=";")
+        w.writerow(["id", "motivo", "fonte", "paginas", "pergunta / diálogo", "resposta", "rotulo", "motivo do N"])
+        w.writerow(["qa_1", "", "plano.pdf", "[1]", "Posso atravessar a rua alagada?",
+                    "Não atravesse ruas alagadas, a correnteza pode arrastar você.\n\nFonte: X, p. 1.", "S", ""])
+        w.writerow(["chat_1", "", "plano.pdf", "[1]",
+                    "user: O que isso aqui fala da energia?\nassistant: Desligue a energia elétrica da casa.\n\nFonte: X.",
+                    "", "N", "fala do texto"])
+        w.writerow(["qa_2", "", "plano.pdf", "[1]", "E a energia?", "Desligue a energia elétrica da casa.", "N", "teste"])
+    aprova_tudo = lambda m: json.dumps({"avaliacoes": [{"par": 1, "apoiada": True, "responde": True, "mesmo_agente": True}]})
+    r = medir_juiz(rot, [seg(1)], aprova_tudo)
+    assert r["itens"] == 3 and r["humano_S_sistema_aprova"] == 1 and r["humano_N_sistema_reprova"] == 1
+    assert r["humano_N_sistema_aprova"] == 1 and r["concordancia"] == 0.67
+    assert [d[0] for d in r["divergencias"]] == ["qa_2"]
