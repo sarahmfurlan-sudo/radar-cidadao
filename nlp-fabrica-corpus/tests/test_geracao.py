@@ -419,3 +419,11 @@ def test_recusa_sem_encaminhamento_ou_com_numero_inventado_e_refeita():
     chamadas = []
     exemplos, estat = gerar_recusas(lambda m: chamadas.append(1) or sem_destino, total=1, progresso=False)
     assert exemplos == [] and estat["temas_pulados"] == ["diagnóstico"] and len(chamadas) == 3
+
+
+def test_estatisticas_trazem_os_motivos_de_descarte():
+    exemplos, estat = gerar_qa([seg(1)], gerador_com_juiz(veredito_par2=False), total=2, progresso=False, juiz=True)
+    assert estat["motivos_descarte"] == {"juiz (responde)": 1}
+    ruim = json.dumps({"mensagens": [{"papel": "assistente", "texto": "Olá."}, {"papel": "assistente", "texto": "Oi."}]})
+    _, estat_chat = gerar_chat([seg(1)], lambda m: ruim, total=1, progresso=False)
+    assert list(estat_chat["motivos_descarte"]) == ["diálogo sem alternância cidadão/assistente ou curto demais"]

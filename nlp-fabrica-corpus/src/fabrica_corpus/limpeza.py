@@ -151,22 +151,39 @@ _CAPITULAR = re.compile(r"(^|\n)([A-ZÀ-Ú])\n([a-zà-ÿ])")
 
 
 # Capitular com espaço perdido no PDF: "T odos", "T ambém", "T ente" -> "Todos"...
-# Só consoante: A, E, O (e É, À) são palavras em português ("A erosão", "E depois")
-# e ficam como estão. E não junta se o pedaço seguinte já é uma palavra curta comum
-# ("X de", "P ou"), para não colar duas palavras de verdade.
+# Só junta quando o VOCABULÁRIO do corpus confirma: a palavra juntada aparece em outro
+# lugar ("todos", "também") e o pedaço depois da letra NÃO é uma palavra sozinha.
+# Sem essa conferência, letras soltas de tabela e legenda viravam "Pabrangência",
+# "Ssobre", "Fet" (9 erros em 14 casos na primeira versão, 13/11/2026).
 _CAPITULAR_ESPACO = re.compile(r"(?<![\wÀ-ÿ])([B-DF-HJ-NP-TV-Z]) ([a-zà-ÿ]{2,})")
-_PALAVRAS_CURTAS = {"de", "da", "do", "das", "dos", "em", "no", "na", "nos", "nas", "ou", "que", "se",
-                    "um", "uma", "com", "por", "para", "ao", "aos", "as", "os", "é"}
 
 
-def _juntar_capitular_espaco(m: re.Match) -> str:
-    letra, resto = m.group(1), m.group(2)
-    return m.group(0) if resto in _PALAVRAS_CURTAS else letra + resto
+def vocabulario(textos) -> set[str]:
+    """Palavras (em minúscula) que aparecem inteiras nos textos."""
+    if isinstance(textos, str):
+        textos = [textos]
+    vocab = set()
+    for t in textos:
+        # os próprios casos "T odos" não contam: senão "odos" pareceria uma palavra
+        t = _CAPITULAR_ESPACO.sub(" ", t)
+        vocab.update(p.lower() for p in re.findall(r"[A-Za-zÀ-ÿ]{2,}", t))
+    return vocab
 
 
-def juntar_hifenizacao(texto: str) -> str:
+def _juntar_capitular(texto: str, vocab: set[str]) -> str:
+    def troca(m: re.Match) -> str:
+        letra, resto = m.group(1), m.group(2)
+        junta = (letra + resto).lower()
+        if junta in vocab and resto.lower() not in vocab:
+            return letra + resto
+        return m.group(0)
+    return _CAPITULAR_ESPACO.sub(troca, texto)
+
+
+def juntar_hifenizacao(texto: str, vocab: set[str] | None = None) -> str:
+    """vocab: palavras do corpus inteiro (limpar_corpus passa); sem ele, usa o próprio texto."""
     texto = _CAPITULAR.sub(r"\1\2\3", texto)
-    texto = _CAPITULAR_ESPACO.sub(_juntar_capitular_espaco, texto)
+    texto = _juntar_capitular(texto, vocabulario(texto) if vocab is None else vocab)
     return _HIFEN_QUEBRA.sub(r"\1\2", texto)
 
 
@@ -299,13 +316,14 @@ def limpar_corpus(trechos: Iterable) -> tuple[list, dict]:
             por_fonte.setdefault(t.fonte, []).append(texto)
     repetidas = {fonte: linhas_repetidas(paginas) for fonte, paginas in por_fonte.items()}
     estat["repetidas_por_documento"] = {f: len(r) for f, r in repetidas.items() if r}
+    vocab_corpus = vocabulario(pre.values())     # confere a letra capitular (etapa 6)
 
     limpos = []
     for i, t in enumerate(trechos):
         texto = remover_repetidas(pre[i], repetidas.get(t.fonte, set()))
         texto = remover_numeros_pagina(texto)
         texto = remover_sumario(texto)
-        texto = juntar_hifenizacao(texto)
+        texto = juntar_hifenizacao(texto, vocab_corpus)
         texto = juntar_linhas(texto)
         texto, n_ref = remover_referencias(texto)
         estat["linhas_de_referencia_removidas"] += n_ref

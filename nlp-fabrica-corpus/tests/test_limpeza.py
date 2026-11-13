@@ -4,7 +4,7 @@ import pytest
 from fabrica_corpus.ingestao import Trecho
 from fabrica_corpus.limpeza import (
     juntar_hifenizacao, juntar_linhas, limpar_corpus, normalizar_caracteres,
-    remover_boilerplate, remover_numeros_pagina, remover_referencias, remover_sumario,
+    remover_boilerplate, remover_numeros_pagina, remover_referencias, remover_sumario, vocabulario,
 )
 
 CABECALHO = ("Mapeamento de Riscos: Conceitos e métodos aplicados a processos geológicos e hidrológicos "
@@ -225,11 +225,28 @@ def test_referencias_contadas_nas_estatisticas():
     assert "Capítulo 2" in limpo[0].texto
 
 
-def test_capitular_com_espaco_e_juntada():
+def test_capitular_com_espaco_e_juntada_quando_o_corpus_confirma():
     texto = "T odos os anos chove. T ambém há deslizamentos. T ente avisar os vizinhos."
-    assert juntar_hifenizacao(texto) == "Todos os anos chove. Também há deslizamentos. Tente avisar os vizinhos."
+    vocab = vocabulario(["Todos ajudam. Também. Tente de novo."])
+    assert juntar_hifenizacao(texto, vocab) == "Todos os anos chove. Também há deslizamentos. Tente avisar os vizinhos."
+
+
+def test_capitular_nao_junta_letra_solta_antes_de_palavra_de_verdade():
+    # os 9 erros da primeira versão no Mapeamento e no Guia
+    corpus = ("A abrangência do risco. As consequências e os sinais. Sobre o tema. Souza et al. 2020. "
+              "P abrangência P consequências P sinais S sobre F et T tradu")
+    vocab = vocabulario([corpus])
+    texto = "P abrangência P consequências P sinais S sobre F et al. T tradu"
+    assert juntar_hifenizacao(texto, vocab) == texto
 
 
 def test_capitular_nao_junta_palavras_de_verdade():
     texto = "A erosão aumenta. E depois a água baixa. O ponto X de encontro fica na praça."
     assert juntar_hifenizacao(texto) == texto
+
+
+def test_limpar_corpus_usa_o_vocabulario_de_todos_os_documentos():
+    a = Trecho(fonte="a.pdf", tipo="pdf", pagina=1, texto="T odos os anos chove forte.")
+    b = Trecho(fonte="b.pdf", tipo="pdf", pagina=1, texto="Todos devem se preparar.")
+    limpos, _ = limpar_corpus([a, b])
+    assert limpos[0].texto.startswith("Todos os anos")

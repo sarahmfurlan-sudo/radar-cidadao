@@ -519,6 +519,11 @@ def _gerar_chat_segmento(seg, gerar, turnos: int, juiz: bool | None = None) -> d
     return {"mensagens": [], "tentativas": TENTATIVAS, "descartados": [ultimo_motivo], "fatos": fatos}
 
 
+def _categoria(motivo: str) -> str:
+    """Agrupa motivos parecidos para o relatório ("juiz (responde): ..." -> "juiz (responde)")."""
+    return re.split(r":", motivo, maxsplit=1)[0].strip()[:70] or "sem motivo"
+
+
 def gerar_qa(segmentos: Iterable, gerar: Callable[[list], str], total: int = 100, por_segmento: int = 2,
              pasta_cache: Path | None = None, progresso: bool = True,
              juiz: bool | None = None) -> tuple[list[dict], dict]:
@@ -527,6 +532,7 @@ def gerar_qa(segmentos: Iterable, gerar: Callable[[list], str], total: int = 100
     juiz: None usa USAR_JUIZ (ligado); False desliga a checagem de coerência."""
     segmentos = list(segmentos)
     exemplos, pulados, descartes = [], [], 0
+    motivos: dict[str, int] = {}
     usados: set = set()
     teto = max(3 * -(-total // por_segmento), 6)        # no máximo 3 segmentos por segmento necessário
     while len(exemplos) < total and len(usados) < teto:
@@ -539,6 +545,8 @@ def gerar_qa(segmentos: Iterable, gerar: Callable[[list], str], total: int = 100
             res = _com_cache(pasta_cache, _chave("qa", seg, str(por_segmento)),
                              lambda: _gerar_qa_segmento(seg, gerar, por_segmento, juiz))
             descartes += len(res["descartados"])
+            for m in res["descartados"]:
+                motivos[_categoria(m)] = motivos.get(_categoria(m), 0) + 1
             if not res["itens"]:
                 pulados.append(seg.id)
             for item in res["itens"]:
@@ -551,7 +559,8 @@ def gerar_qa(segmentos: Iterable, gerar: Callable[[list], str], total: int = 100
                 print(f"[perguntas] {len(exemplos)}/{total} | segmento {seg.id} | "
                       f"{len(res['itens'])} aprovadas, {res['tentativas']} tentativa(s)", flush=True)
     return exemplos, {"exemplos": len(exemplos), "segmentos_usados": len(usados),
-                      "segmentos_pulados": pulados, "respostas_descartadas": descartes}
+                      "segmentos_pulados": pulados, "respostas_descartadas": descartes,
+                      "motivos_descarte": motivos}
 
 
 def gerar_chat(segmentos: Iterable, gerar: Callable[[list], str], total: int = 30, turnos: int = 3,
@@ -560,6 +569,7 @@ def gerar_chat(segmentos: Iterable, gerar: Callable[[list], str], total: int = 3
     """Gera cerca de `total` diálogos no formato de mensagens (system/user/assistant)."""
     segmentos = list(segmentos)
     exemplos, pulados = [], []
+    motivos: dict[str, int] = {}
     usados: set = set(excluir)
     tentados, teto = 0, max(3 * total, 6)               # no máximo 3 segmentos por diálogo pedido
     while len(exemplos) < total and tentados < teto:
@@ -574,6 +584,8 @@ def gerar_chat(segmentos: Iterable, gerar: Callable[[list], str], total: int = 3
             if progresso:
                 print(f"[diálogos] {len(exemplos) + bool(res['mensagens'])}/{total} | segmento {seg.id} | "
                       f"{'ok' if res['mensagens'] else 'pulado'}, {res['tentativas']} tentativa(s)", flush=True)
+            for m in res["descartados"]:
+                motivos[_categoria(m)] = motivos.get(_categoria(m), 0) + 1
             if not res["mensagens"]:
                 pulados.append(seg.id)
                 continue
@@ -585,7 +597,8 @@ def gerar_chat(segmentos: Iterable, gerar: Callable[[list], str], total: int = 3
             mensagens[ultima]["content"] += f"\n\n{citacao(seg.fonte, seg.paginas)}"
             exemplos.append({"id": f"chat_{len(exemplos) + 1:04d}", "mensagens": mensagens, "fonte": seg.fonte,
                              "paginas": seg.paginas, "segmento_id": seg.id, "modelo": MODELO_GERADOR})
-    return exemplos, {"exemplos": len(exemplos), "segmentos_tentados": tentados, "segmentos_pulados": pulados}
+    return exemplos, {"exemplos": len(exemplos), "segmentos_tentados": tentados, "segmentos_pulados": pulados,
+                      "motivos_descarte": motivos}
 
 
 # ------------------------------------------------------------ recusas e encaminhamentos
