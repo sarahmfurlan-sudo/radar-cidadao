@@ -1,0 +1,105 @@
+{
+  "amostra": 16,
+  "acertos": 16,
+  "erros": 0,
+  "acuracia": 1.0,
+  "observacao": "Conjunto sintetico pequeno. Nao mede desempenho em ocorrencias reais.",
+  "detalhes": [
+    {
+      "esperado": "alagamento",
+      "previsto": "alagamento",
+      "acertou": true,
+      "texto_mascarado": "O rio transbordou na minha rua"
+    },
+    {
+      "esperado": "alagamento",
+      "previsto": "alagamento",
+      "acertou": true,
+      "texto_mascarado": "A ponte esta coberta por agua"
+    },
+    {
+      "esperado": "alagamento",
+      "previsto": "alagamento",
+      "acertou": true,
+      "texto_mascarado": "Enchente atingiu a avenida"
+    },
+    {
+      "esperado": "alagamento",
+      "previsto": "alagamento",
+      "acertou": true,
+      "texto_mascarado": "A rua esta inundada"
+    },
+    {
+      "esperado": "deslizamento",
+      "previsto": "deslizamento",
+      "acertou": true,
+      "texto_mascarado": "O barranco desmoronou perto da escola"
+    },
+    {
+      "esperado": "deslizamento",
+      "previsto": "deslizamento",
+      "acertou": true,
+      "texto_mascarado": "Terra deslizou da encosta"
+    },
+    {
+      "esperado": "deslizamento",
+      "previsto": "deslizamento",
+      "acertou": true,
+      "texto_mascarado": "Rachaduras no muro do morro"
+    },
+    {
+      "esperado": "deslizamento",
+      "previsto": "deslizamento",
+      "acertou": true,
+      "texto_mascarado": "Queda de barreira na estrada"
+    },
+    {
+      "esperado": "chuva_intensa",
+      "previsto": "chuva_intensa",
+      "acertou": true,
+      "texto_mascarado": "Chuva forte e raios esta noite"
+    },
+    {
+      "esperado": "chuva_intensa",
+      "previsto": "chuva_intensa",
+      "acertou": true,
+      "texto_mascarado": "Temporal e relampagos no bairro"
+    },
+    {
+      "esperado": "chuva_intensa",
+      "previsto": "chuva_intensa",
+      "acertou": true,
+      "texto_mascarado": "Previsao de chuva intensa"
+    },
+    {
+      "esperado": "chuva_intensa",
+      "previsto": "chuva_intensa",
+      "acertou": true,
+      "texto_mascarado": "Vento forte durante tempestade"
+    },
+    {
+      "esperado": "outros",
+      "previsto": "outros",
+      "acertou": true,
+      "texto_mascarado": "Quero segunda via de documento"
+    },
+    {
+      "esperado": "outros",
+      "previsto": "outros",
+      "acertou": true,
+      "texto_mascarado": "Como consultar o calendario escolar"
+    },
+    {
+      "esperado": "outros",
+      "previsto": "outros",
+      "acertou": true,
+      "texto_mascarado": "Preciso da senha de acesso"
+    },
+    {
+      "esperado": "outros",
+      "previsto": "outros",
+      "acertou": true,
+      "texto_mascarado": "Qual horario do museu"
+    }
+  ]
+}

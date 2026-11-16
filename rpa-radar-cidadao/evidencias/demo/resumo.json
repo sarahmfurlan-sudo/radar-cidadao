@@ -1,0 +1,14 @@
+{
+  "total_linhas": 12,
+  "processados": 11,
+  "invalidos": 1,
+  "duplicados": 0,
+  "por_status": {
+    "orientacao_geral": 7,
+    "encaminhar_imediatamente": 2,
+    "fora_escopo": 2
+  },
+  "tempo_segundos": 0.044,
+  "saida": "evidencias/demo/resultados.csv",
+  "erros": []
+}
