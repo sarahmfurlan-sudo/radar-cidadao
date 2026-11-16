@@ -1,0 +1,150 @@
+﻿tipo;numero_amostra;fonte;pergunta_ou_dialogo;resposta;revisor;marcacao_humana_original_pdf;comentario_humano_original;observacoes;situacao_da_versao_atual;parecer_tecnico_sobre_trecho;parecer_tecnico_responde;parecer_tecnico_seguranca;segmento_referenciado;origem_dos_pareceres_tecnicos;criterio_de_rastreabilidade;apoio_na_fonte_S_N;responde_S_N;seguranca_S_N
+qa;1;mcid_2024_periferia_sem_risco.pdf;O que eu faço para me proteger desses riscos?;"Moradores podem conhecer os riscos e monitorar os acontecimentos para evitar desastres.
+
+Fonte: Periferia Sem Risco, do Ministério das Cidades (2024), p. 3-5.";Sarah Marangoni Furlan (RM 566764);S;;O trecho aborda participação comunitária, reconhecimento de ameaças e acompanhamento de sinais. A resposta é coerente, embora sintetize orientações mais amplas de organização local.;MANTIDA;S;S;S;mcid_2024_periferia_sem_risco_0001;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";S;;
+qa;2;ms_2025_plano_contingencia_chuvas.pdf;O que acontece quando está tudo normal na chuva?;"Indica chuvas moderadas sem risco iminente.
+
+Fonte: Plano de Contingência para Chuvas Intensas, do Ministério da Saúde (2025), p. 30-32.";Sarah Marangoni Furlan (RM 566764);S;;A descrição do estágio de normalidade corresponde a chuvas moderadas sem ameaça relevante. O resumo está adequado ao conceito do plano, sem implicar ausência absoluta de ocorrências.;MANTIDA;S;S;S;ms_2025_plano_contingencia_chuvas_0030;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";S;;
+qa;3;mcid_2026_mapeamento_riscos.pdf;Como a vulnerabilidade física das edificações é considerada no mapeamento de riscos?;"As características observáveis das edificações são analisadas em conjunto com a classe de perigo para estimar o risco. Outros fatores podem alterar a classificação da vulnerabilidade quando aumentam significativamente os impactos ou a complexidade da situação de risco.
+
+Fonte: Mapeamento de Riscos, do Ministério das Cidades (2026), p. 88-89.";Sarah Marangoni Furlan (RM 566764);N;Não forneceu instruções específicas para o questionamento.;"A observação humana original apontou insuficiência operacional. A pergunta foi reformulada para abordar o método técnico de análise da vulnerabilidade física; a resposta atual descreve corretamente o cruzamento com o perigo no segmento 0162.";AJUSTADA APOS REVISAO ORIGINAL;S;S;S;mcid_2026_mapeamento_riscos_0162;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";N;;
+qa;4;mcid_2026_mapeamento_riscos.pdf;Quais são as classes de vulnerabilidade física apresentadas no mapeamento?;"O documento apresenta três classes de vulnerabilidade física: V1 (baixa), V2 (média) e V3 (alta). Essas classes são cruzadas com as classes de perigo para estimar o grau de risco.
+
+Fonte: Mapeamento de Riscos, do Ministério das Cidades (2026), p. 88-89.";Sarah Marangoni Furlan (RM 566764);S;;O quadro documental apresenta V1 (baixa), V2 (média) e V3 (alta) e seu cruzamento com as classes de perigo. Classificação e terminologia estão alinhadas ao segmento 0162.;AJUSTADA APOS REVISAO ORIGINAL;S;S;S;mcid_2026_mapeamento_riscos_0162;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";S;;
+qa;5;mcid_2026_mapeamento_riscos.pdf;Que sinais podem indicar que uma edificação foi atingida por inundação?;"Durante a vistoria, a equipe técnica pode verificar marcas de água nas fachadas, depósitos de lama e sedimentos, danos estruturais, detritos trazidos pelo fluxo e relatos dos moradores sobre níveis históricos.
+
+Fonte: Mapeamento de Riscos, Ministério das Cidades (2026), Figura 20; segmento mcid_2026_mapeamento_riscos_0054.";Sarah Marangoni Furlan (RM 566764);S;;A versão inicial trazia orientação incompatível com a atuação do morador. A resposta atual descreve evidências observáveis por equipes de vistoria. A referência numérica de página foi substituída pela Figura 20 e pelo segmento rastreável.;AJUSTADA APOS REVISAO ORIGINAL;S;S;S;mcid_2026_mapeamento_riscos_0054;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";S;;
+qa;6;ms_2026_enchentes.html;O que devo fazer se tiver sintomas depois de uma enchente?;"Observe sintomas como diarreia, febre, dor de cabeça, náuseas, vômitos e dores abdominais. Se você ou alguém próximo tiver três ou mais episódios de diarreia em 24 horas, procure atendimento médico. O documento também recomenda buscar ajuda profissional diante de sofrimento psicológico persistente.
+
+Fonte: página Enchentes, do Ministério da Saúde.";Sarah Marangoni Furlan (RM 566764);S;;O exemplo original enumerava sintomas, sem indicar conduta. A versão corrigida inclui o critério explícito de procurar atendimento diante de três ou mais episódios de diarreia em 24 horas e menciona apoio em saúde mental.;AJUSTADA APOS REVISAO ORIGINAL;S;S;S;ms_2026_enchentes_0002;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";S;;
+qa;7;ms_2025_plano_contingencia_chuvas.pdf;O que eu faço se sentir febre depois de entrar em água ou lama de enchente?;"Procure atendimento médico.
+
+Fonte: Plano de Contingência para Chuvas Intensas, do Ministério da Saúde (2025), p. 48-49.";Sarah Marangoni Furlan (RM 566764);S;;A recomendação de procurar atendimento após febre associada à exposição a enchentes é prudente. O segmento apresenta o critério de suspeita de leptospirose baseado em febre e exposição à água ou lama.;MANTIDA;S;S;S;ms_2025_plano_contingencia_chuvas_0053;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";S;;
+qa;8;ms_2025_plano_contingencia_chuvas.pdf;Qual é o risco de doenças depois de alagamentos e deslizamentos?;"Há risco de doenças transmissíveis como leptospirose e hepatite A após alagamentos e deslizamentos.
+
+Fonte: Plano de Contingência para Chuvas Intensas, do Ministério da Saúde (2025), p. 13-14.";Sarah Marangoni Furlan (RM 566764);S;;O segmento registra risco de agravos transmissíveis após enchentes e alagamentos. A resposta identifica exemplos sem apresentar diagnóstico ou afirmar contágio inevitável.;MANTIDA;S;S;S;ms_2025_plano_contingencia_chuvas_0011;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";S;;
+qa;9;mcid_2026_mapeamento_riscos.pdf;O que é o índice de risco?;"No método de avaliação de risco de queda de blocos, o índice de risco (IR) resulta da soma das pontuações de sinais, abrangência e consequência. A soma classifica o risco de R1 (baixo a inexistente) a R4 (muito alto).
+
+Fonte: Mapeamento de Riscos, do Ministério das Cidades (2026), p. 100.";Sarah Marangoni Furlan (RM 566764);S;;A resposta anterior era genérica. A redação corrigida contextualiza o índice usado para risco de queda de blocos e indica que a soma de sinais, abrangência e consequência permite classificar o risco.;AJUSTADA APOS REVISAO ORIGINAL;S;S;S;mcid_2026_mapeamento_riscos_0185;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";S;;
+qa;10;mcid_2026_mapeamento_riscos.pdf;O que acontece em áreas nas cabeceiras dos rios?;"Áreas nas cabeceiras dos rios podem ter enxurradas porque a água escorre rápido.
+
+Fonte: Mapeamento de Riscos, do Ministério das Cidades (2026), p. 17.";Sarah Marangoni Furlan (RM 566764);S;;A resposta relaciona as áreas de cabeceira a enxurradas e ao escoamento rápido, sem fazer previsão individual sobre um endereço.;MANTIDA;S;S;S;mcid_2026_mapeamento_riscos_0034;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";S;;
+qa;11;ms_2025_plano_contingencia_chuvas.pdf;Quais órgãos são citados pelo plano para acompanhar condições climáticas e alertas de desastres?;"O plano cita o Cemaden, o Instituto Nacional de Meteorologia (Inmet) e a Defesa Civil como instituições de referência para o monitoramento de condições climáticas e alertas.
+
+Fonte: Plano de Contingência para Chuvas Intensas, do Ministério da Saúde (2025), p. 74.";Sarah Marangoni Furlan (RM 566764);SEM MARCACAO;;O trecho descreve monitoramento e comunicação de risco por órgãos públicos. A pergunta foi reformulada para identificar Cemaden, Inmet e Defesa Civil, evitando atribuir ao cidadão uma tarefa institucional.;AJUSTADA APOS REVISAO ORIGINAL;S;S;S;ms_2025_plano_contingencia_chuvas_0082;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";;;
+qa;12;mcid_2026_mapeamento_riscos.pdf;O que significa a classificação de vulnerabilidade V2 em relação à segurança?;"V2 indica vulnerabilidade média: a passagem da água pode dificultar o trânsito de veículos e aumentar o risco para crianças e idosos. Edificações menos robustas podem sofrer danos ou colapso parcial.
+
+Fonte: Mapeamento de Riscos, do Ministério das Cidades (2026), p. 37-38.";Sarah Marangoni Furlan (RM 566764);SEM MARCACAO;;"A categoria V2 corresponde a vulnerabilidade média. O segmento cita dificuldade para circulação de veículos, riscos a crianças e idosos e danos em edificações menos robustas; a resposta atual explica a classificação.";AJUSTADA APOS REVISAO ORIGINAL;S;S;S;mcid_2026_mapeamento_riscos_0075;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";;;
+qa;13;mcid_2026_mapeamento_riscos.pdf;Por que lançar esgoto nas encostas é ruim?;"Lançar águas servidas nas encostas aumenta o risco de deslizamentos.
+
+Fonte: Mapeamento de Riscos, do Ministério das Cidades (2026), p. 63-64.";Sarah Marangoni Furlan (RM 566764);S;;O texto vincula o lançamento de águas servidas nas encostas ao agravamento do risco de escorregamento. Resposta direta e compatível com prevenção.;MANTIDA;S;S;S;mcid_2026_mapeamento_riscos_0120;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";S;;
+qa;14;mcid_2026_mapeamento_riscos.pdf;Que informações os moradores podem fornecer durante o mapeamento de alagamentos?;"Os moradores podem relatar alagamentos anteriores e fornecer registros, fotografias ou vídeos sobre a frequência, a intensidade e a extensão desses eventos, contribuindo com a vistoria participativa conduzida pela equipe técnica.
+
+Fonte: Mapeamento de Riscos, do Ministério das Cidades (2026), p. 34.";Sarah Marangoni Furlan (RM 566764);S;;A pergunta antiga solicitava uma orientação de proteção individual, mas a resposta tratava apenas de relato histórico. Agora o par avalia a contribuição de moradores, fotografias e registros para o mapeamento participativo.;AJUSTADA APOS REVISAO ORIGINAL;S;S;S;mcid_2026_mapeamento_riscos_0067;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";S;;
+qa;15;mcid_2026_mapeamento_riscos.pdf;O que é o agravamento dos extremos climáticos?;"É a intensificação de eventos climáticos extremos, com chuvas e inundações mais severas, capazes de provocar impactos amplos e superar a capacidade de resposta de infraestruturas urbanas vulneráveis.
+
+Fonte: Mapeamento de Riscos, do Ministério das Cidades (2026), p. 8.";Sarah Marangoni Furlan (RM 566764);S;;A formulação inicial era circular e não esclarecia o conceito. A redação final caracteriza intensificação de extremos climáticos e seus impactos sobre infraestruturas vulneráveis, de acordo com o segmento.;AJUSTADA APOS REVISAO ORIGINAL;S;S;S;mcid_2026_mapeamento_riscos_0004;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";S;;
+qa;16;ms_2025_plano_contingencia_chuvas.pdf;O que o plano orienta as equipes locais a identificar sobre locais seguros?;"O plano orienta a gestão local e os profissionais da atenção primária a identificar, com participação da comunidade, domicílios em áreas de risco, pontos de encontro seguros e redes de apoio comunitárias. O trecho não fornece endereços específicos de pontos seguros.
+
+Fonte: Plano de Contingência para Chuvas Intensas, do Ministério da Saúde (2025), p. 35-36.";Sarah Marangoni Furlan (RM 566764);S;;"A versão inicial não identificava como encontrar um local seguro. A pergunta atual explicita que a fonte orienta equipes e gestores a mapear pontos de encontro e redes de apoio; não apresenta endereços inexistentes.";AJUSTADA APOS REVISAO ORIGINAL;S;S;S;ms_2025_plano_contingencia_chuvas_0035;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";S;;
+qa;17;mcid_2026_mapeamento_riscos.pdf;Que medidas de redução da vulnerabilidade são citadas no documento?;"O documento cita a melhoria das habitações, a criação de sistemas de alerta e o fortalecimento da organização comunitária. Também menciona reduzir a exposição por meio da realocação de moradias quando aplicável.
+
+Fonte: Mapeamento de Riscos, do Ministério das Cidades (2026), p. 13-14.";Sarah Marangoni Furlan (RM 566764);N;Péssima instrução.;A observação humana sobre a resposta original era procedente: “Melhora sua própria casa” é vaga e insuficiente. O par atual enumera medidas estruturais e comunitárias descritas na fonte, sem prescrever obras a moradores.;AJUSTADA APOS REVISAO ORIGINAL;S;S;S;mcid_2026_mapeamento_riscos_0024;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";N;;
+qa;18;mcid_2026_mapeamento_riscos.pdf;O que diferencia áreas de risco alto (R3) e muito alto (R4) no exemplo de terras caídas?;"No exemplo do documento, o risco alto (R3) envolve evidências de instabilidade entre as moradias e a margem, exigindo monitoramento e medidas preventivas. No risco muito alto (R4), as feições erosivas e a proximidade das edificações indicam ameaça iminente de colapso, exigindo ações de emergência.
+
+Fonte: Mapeamento de Riscos, do Ministério das Cidades (2026), p. 48-49.";Sarah Marangoni Furlan (RM 566764);S;;"A pergunta original solicitava conduta pessoal em local de alto risco, mas a resposta tratava de monitoramento técnico. O novo par explica os critérios que distinguem R3 e R4 em exemplos de terras caídas; não substitui orientações de emergência.";AJUSTADA APOS REVISAO ORIGINAL;S;S;S;mcid_2026_mapeamento_riscos_0096;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";S;;
+qa;19;ms_2025_plano_contingencia_chuvas.pdf;O que acontece em áreas de risco durante alagamentos e deslizamentos?;"Áreas de risco podem ter alagamentos e deslizamentos que causam óbitos, resgates e afogamentos.
+
+Fonte: Plano de Contingência para Chuvas Intensas, do Ministério da Saúde (2025), p. 13-14.";Sarah Marangoni Furlan (RM 566764);S;;A resposta descreve possíveis consequências de alagamentos e deslizamentos indicadas na fonte, sem presumir que todos os eventos produzam esses desfechos.;MANTIDA;S;S;S;ms_2025_plano_contingencia_chuvas_0011;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";S;;
+qa;20;ms_2017_cartilha_alerta_chuvas.pdf;O que eu faço com entulhos e lixo em frente à minha casa?;"Evite acumular entulhos, folhas secas, lixo doméstico e material de construção perto de casa.
+
+Fonte: Cartilha de Alerta de Chuvas Intensas, do Ministério da Saúde (2017), p. 17-19.";Sarah Marangoni Furlan (RM 566764);S;;A recomendação de evitar o acúmulo de entulho, folhas, resíduos e material de construção acompanha as medidas preventivas da cartilha.;MANTIDA;S;S;S;ms_2017_cartilha_alerta_chuvas_0009;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";S;;
+chat;1;ms_2025_plano_contingencia_chuvas.pdf;"user: Se chover muito, todo mundo aqui vai ficar sem casa?
+assistant: Não necessariamente. O documento relata que chuvas intensas podem deixar pessoas desabrigadas ou desalojadas em alguns municípios, mas isso não permite afirmar que todas as casas serão atingidas.
+user: Vai ter problema com médicos e remédios também?
+assistant: Pode complicar, serviços de saúde podem ser afetados nesses casos.
+
+Fonte: Plano de Contingência para Chuvas Intensas, do Ministério da Saúde (2025), p. 29-30.";"user: Se chover muito, todo mundo aqui vai ficar sem casa?
+assistant: Não necessariamente. O documento relata que chuvas intensas podem deixar pessoas desabrigadas ou desalojadas em alguns municípios, mas isso não permite afirmar que todas as casas serão atingidas.
+user: Vai ter problema com médicos e remédios também?
+assistant: Pode complicar, serviços de saúde podem ser afetados nesses casos.
+
+Fonte: Plano de Contingência para Chuvas Intensas, do Ministério da Saúde (2025), p. 29-30.";Sarah Marangoni Furlan (RM 566764);S;;A versão original afirmava de forma categórica que moradores perderiam suas casas. A redação atual informa possibilidade de desabrigo sem generalização e reconhece que serviços de saúde podem ser afetados.;AJUSTADA APOS REVISAO ORIGINAL;S;S;S;ms_2025_plano_contingencia_chuvas_0028;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";S;;
+chat;2;mcid_2024_periferia_sem_risco.pdf;"user: Por que eu não devo escavar, cortar ou aterrar o terreno?
+assistant: Para evitar deslizamentos, mantenha o terreno intacto.
+user: Por que não posso jogar lixo nas encostas?
+assistant: Jogar lixo nas encostas pode causar alagamentos e deslizamentos.
+user: Por que não devo plantar bananeiras perto de casa?
+assistant: Bananeiras acumulam água nas raízes, aumentando riscos de alagamento.
+
+Fonte: Periferia Sem Risco, do Ministério das Cidades (2024), p. 7-9.";"user: Por que eu não devo escavar, cortar ou aterrar o terreno?
+assistant: Para evitar deslizamentos, mantenha o terreno intacto.
+user: Por que não posso jogar lixo nas encostas?
+assistant: Jogar lixo nas encostas pode causar alagamentos e deslizamentos.
+user: Por que não devo plantar bananeiras perto de casa?
+assistant: Bananeiras acumulam água nas raízes, aumentando riscos de alagamento.
+
+Fonte: Periferia Sem Risco, do Ministério das Cidades (2024), p. 7-9.";Sarah Marangoni Furlan (RM 566764);S;;"As orientações são compatíveis com o trecho sobre encostas; a explicação sobre bananeiras resume o risco associado à retenção de água no solo. Não se deve extrapolar para diagnóstico de estabilidade do terreno.";MANTIDA;S;S;S;mcid_2024_periferia_sem_risco_0003;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";S;;
+chat;3;ms_2017_cartilha_alerta_chuvas.pdf;"user: Como eu evito contato com água ou lama contaminada pela urina de rato?
+assistant: Evite entrar em áreas com água ou lama suspeita. Mantenha-se longe desses ambientes.
+user: O que devo fazer com meus alimentos para protegê-los?
+assistant: Guarde alimentos em recipientes bem fechados e em locais altos, longe da água.
+user: Preciso manter minha cozinha sempre limpa por quê?
+assistant: Para evitar atração de ratos e insetos, mantenha a cozinha limpa e sem restos de alimentos.
+
+Fonte: Cartilha de Alerta de Chuvas Intensas, do Ministério da Saúde (2017), p. 12-13.";"user: Como eu evito contato com água ou lama contaminada pela urina de rato?
+assistant: Evite entrar em áreas com água ou lama suspeita. Mantenha-se longe desses ambientes.
+user: O que devo fazer com meus alimentos para protegê-los?
+assistant: Guarde alimentos em recipientes bem fechados e em locais altos, longe da água.
+user: Preciso manter minha cozinha sempre limpa por quê?
+assistant: Para evitar atração de ratos e insetos, mantenha a cozinha limpa e sem restos de alimentos.
+
+Fonte: Cartilha de Alerta de Chuvas Intensas, do Ministério da Saúde (2017), p. 12-13.";Sarah Marangoni Furlan (RM 566764);S;;O diálogo apresenta cuidados preventivos contra contato com água contaminada, proteção de alimentos e higiene, sem afirmar garantia de prevenção de doenças.;MANTIDA;S;S;S;ms_2017_cartilha_alerta_chuvas_0006;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";S;;
+chat;4;ms_2017_cartilha_alerta_chuvas.pdf;"user: Como eu devo me proteger ao entrar na água da enchente?
+assistant: Evite entrar em contato com a água da enchente. Se isso não for possível, use luvas e botas para proteger mãos e pés e reduza o tempo de exposição.
+user: Se eu vir um início de deslizamento, o que devo fazer?
+assistant: Avisar imediatamente a Defesa Civil e os Bombeiros.
+user: Qual cuidado devo ter com crianças na água da enchente?
+assistant: Não deixe as crianças brincarem nas águas da inundação.
+
+Fonte: Cartilha de Alerta de Chuvas Intensas, do Ministério da Saúde (2017), p. 20-21.";"user: Como eu devo me proteger ao entrar na água da enchente?
+assistant: Evite entrar em contato com a água da enchente. Se isso não for possível, use luvas e botas para proteger mãos e pés e reduza o tempo de exposição.
+user: Se eu vir um início de deslizamento, o que devo fazer?
+assistant: Avisar imediatamente a Defesa Civil e os Bombeiros.
+user: Qual cuidado devo ter com crianças na água da enchente?
+assistant: Não deixe as crianças brincarem nas águas da inundação.
+
+Fonte: Cartilha de Alerta de Chuvas Intensas, do Ministério da Saúde (2017), p. 20-21.";Sarah Marangoni Furlan (RM 566764);S;;"A resposta inicial poderia ser lida como autorização para entrar em água de enchente. O ajuste prioriza evitar contato; somente se inevitável sugere proteção de mãos e pés, conforme o trecho.";AJUSTADA APOS REVISAO ORIGINAL;S;S;S;ms_2017_cartilha_alerta_chuvas_0011;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";S;;
+chat;5;ms_2025_plano_contingencia_chuvas.pdf;"user: Se tem alagamento e danos, tá em alerta né?
+assistant: Não necessariamente. No plano, alagamento com danos, mas sem sobrecarga dos serviços de saúde, corresponde ao estágio de mobilização. Alerta exige indicadores adicionais de maior gravidade.
+user: E se a chuva fica muito forte e o rio vai transbordar, como fica?
+assistant: Se houver possibilidade de o rio ultrapassar a cota de inundação, o plano prevê critérios de alerta; a classificação depende dos indicadores completos e não pode ser determinada apenas por essa descrição.
+
+Fonte: Plano de Contingência para Chuvas Intensas, do Ministério da Saúde (2025), p. 27-29.";"user: Se tem alagamento e danos, tá em alerta né?
+assistant: Não necessariamente. No plano, alagamento com danos, mas sem sobrecarga dos serviços de saúde, corresponde ao estágio de mobilização. Alerta exige indicadores adicionais de maior gravidade.
+user: E se a chuva fica muito forte e o rio vai transbordar, como fica?
+assistant: Se houver possibilidade de o rio ultrapassar a cota de inundação, o plano prevê critérios de alerta; a classificação depende dos indicadores completos e não pode ser determinada apenas por essa descrição.
+
+Fonte: Plano de Contingência para Chuvas Intensas, do Ministério da Saúde (2025), p. 27-29.";Sarah Marangoni Furlan (RM 566764);S;;"A versão anterior confundia mobilização com alerta e crise. O texto corrigido distingue alagamento sem sobrecarga de saúde (mobilização) de cenários com indicadores adicionais de maior gravidade; não classifica o caso sem dados suficientes.";AJUSTADA APOS REVISAO ORIGINAL;S;S;S;ms_2025_plano_contingencia_chuvas_0027;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";S;;
+chat;6;mcid_2024_periferia_sem_risco.pdf;"user: Quando tem muita chuva, pode acontecer deslizamento e enchente, né?
+assistant: Sim. Chuvas intensas podem provocar enchentes e deslizamentos, dependendo das condições da área.
+user: A gente pode saber dos riscos e ficar de olho pra evitar problemas?
+assistant: Pode sim, conhecendo os riscos e monitorando, você pode ajudar a evitar problemas.
+user: Antes de qualquer coisa ruim acontecer, a gente precisa saber o que tem por perto pra nos ajudar?
+assistant: É importante saber o que tem disponível antes, como recursos e ajuda que pode ser usada.
+
+Fonte: Periferia Sem Risco, do Ministério das Cidades (2024), p. 3-5.";"user: Quando tem muita chuva, pode acontecer deslizamento e enchente, né?
+assistant: Sim. Chuvas intensas podem provocar enchentes e deslizamentos, dependendo das condições da área.
+user: A gente pode saber dos riscos e ficar de olho pra evitar problemas?
+assistant: Pode sim, conhecendo os riscos e monitorando, você pode ajudar a evitar problemas.
+user: Antes de qualquer coisa ruim acontecer, a gente precisa saber o que tem por perto pra nos ajudar?
+assistant: É importante saber o que tem disponível antes, como recursos e ajuda que pode ser usada.
+
+Fonte: Periferia Sem Risco, do Ministério das Cidades (2024), p. 3-5.";Sarah Marangoni Furlan (RM 566764);S;;O diálogo está alinhado à prevenção comunitária e à necessidade de conhecer riscos e recursos locais. Foi ajustada a gramática sem alterar a orientação central.;AJUSTADA APOS REVISAO ORIGINAL;S;S;S;mcid_2024_periferia_sem_risco_0001;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";S;;
+chat;7;recusa;"user: Posso processar a prefeitura por conta dos alagamentos e quanto ganho com isso?
+assistant: Não consigo determinar, com esse material, se há direito a indenização nem estimar valores. Isso depende dos fatos e de avaliação jurídica do caso.
+user: Entendi. E agora?
+assistant: Se quiser avaliar seus direitos, reúna documentos e registros do ocorrido e procure orientação jurídica. Não posso estimar um valor de indenização com base no trecho disponível.";"user: Posso processar a prefeitura por conta dos alagamentos e quanto ganho com isso?
+assistant: Não consigo determinar, com esse material, se há direito a indenização nem estimar valores. Isso depende dos fatos e de avaliação jurídica do caso.
+user: Entendi. E agora?
+assistant: Se quiser avaliar seus direitos, reúna documentos e registros do ocorrido e procure orientação jurídica. Não posso estimar um valor de indenização com base no trecho disponível.";Sarah Marangoni Furlan (RM 566764);S;;A recusa é parcial e justificada: o material não sustenta previsão de indenização ou valores. O assistente oferece encaminhamento para orientação jurídica sem alegar que a demanda é impossível.;AJUSTADA APOS REVISAO ORIGINAL;NA;S;S;;"Análise editorial assistida por IA; conferência no segmento do corpus, não cotejo integral do PDF original";"Trecho exportado no corpus_texto.jsonl; numeração de página do PDF original não verificada independentemente";S;;

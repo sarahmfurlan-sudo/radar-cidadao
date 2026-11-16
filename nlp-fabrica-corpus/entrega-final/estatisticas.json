@@ -1,0 +1,49 @@
+{
+  "texto": {
+    "quantidade": 306,
+    "minimo": 50,
+    "quantidade_atingida": true,
+    "media_tokens_aprox": 327.5,
+    "duplicatas_removidas": 0,
+    "invalidos_removidos": 0
+  },
+  "qa": {
+    "quantidade": 100,
+    "minimo": 100,
+    "quantidade_atingida": true,
+    "media_tokens_aprox": 90.5,
+    "duplicatas_removidas": 15,
+    "invalidos_removidos": 1
+  },
+  "chat": {
+    "quantidade": 31,
+    "minimo": 30,
+    "quantidade_atingida": true,
+    "media_tokens_aprox": 305.1,
+    "duplicatas_removidas": 0,
+    "invalidos_removidos": 0
+  },
+  "recusas_validas": 11,
+  "recusas_atingidas": true,
+  "revisao_humana_confirmada": true,
+  "fontes_documentais_conferidas": false,
+  "pronto_para_entrega": false,
+  "observacao": "100 QA e 31 chats estruturalmente válidos. Seis exemplos ajustados usando trechos do corpus; PDF original não conferido e revalidação humana pendente.",
+  "observacao_revisao": "A amostra de 27 foi revisada por Sarah Marangoni Furlan; 25 marcacoes observadas no PDF (23 S e 2 N), 2 sem marcacao. Comentarios tecnicos elaborados por IA; originais mantidos; correcoes incorporadas ao corpus.",
+  "revisora_humana": "Sarah Marangoni Furlan (RM 566764)",
+  "amostra_humana": {
+    "exemplos": 27,
+    "percentual_dos_131": 20.61,
+    "marcacoes_visiveis_pdf": 25,
+    "marcacoes_s": 23,
+    "marcacoes_n": 2,
+    "campos_sem_marcacao_explicita": 2,
+    "origem": "revisao_humana_MARCACOES_RECEBIDAS.pdf; 16/11/2026"
+  },
+  "parecer_tecnico_assistido_ia": true,
+  "trechos_corpus_conferidos": 27,
+  "etapas_em_aberto": [
+    "Video demonstrativo de ate 5 minutos nao fornecido",
+    "Cotejo de paginacao fisica dos cinco documentos originais nao realizado neste pacote"
+  ]
+}

@@ -1,14 +1,15 @@
+> **Entrega consolidada de NLP (16/11/2026):** [arquivos finais, relatório, revisão humana e notebooks](entrega-final/README.md). Corpus: 306 trechos, 100 perguntas e respostas únicas, 31 diálogos (11 recusas). Revisão humana: Sarah Marangoni Furlan (RM 566764). A demonstração em vídeo deve ser anexada separadamente. A interface Gradio ainda não está comprovada neste pacote.
 # Fábrica de Corpus: Radar Cidadão
 
 Ferramenta da disciplina de NLP da Global Solution 2026.2 (FIAP, tema CitizenTech).
 
 Ela transforma documentos públicos sobre chuvas intensas e alagamentos em três corpus no formato JSONL, prontos para o fine-tuning de um modelo de linguagem pequeno (SLM) voltado a orientar o cidadão.
 
-> **Situação:** em desenvolvimento. Já existem, com testes, os módulos de ingestão, limpeza, anonimização, segmentação, geração e exportação. O `corpus_rag.jsonl` já foi gerado; o `corpus_texto.jsonl`, o `corpus_qa.jsonl` e o `corpus_chat.jsonl` serão gravados depois da geração da v8 no Colab. Ainda faltam o relatório de qualidade, o notebook do Colab e a interface Gradio.
+> **Situação do código:** módulos de ingestão, limpeza, anonimização, segmentação e geração já implementados. Os corpus e a auditoria estão publicados em `entrega-final/`; o vídeo demonstrativo é uma entrega separada. A interface Gradio não foi validada neste pacote.
 
 ## Como executar no Google Colab
 
-> _**Pendente.** Estas instruções serão escritas e testadas quando o notebook `fabrica_corpus.ipynb` existir._
+> **Notebooks usados na geração e no fechamento:** consulte `entrega-final/notebooks/`. Para executar, utilize Google Colab com GPU e acesso aos documentos/caches necessários.
 
 Passos previstos:
 
@@ -212,5 +213,5 @@ As versões fixadas estão em [`requirements.txt`](requirements.txt). `gradio` a
 | Nome completo | RM |
 |---|---|
 | Sarah Marangoni Furlan | 566764 |
-| _Pendente_ | _Pendente_ |
-| _Pendente_ | _Pendente_ |
+| Mario Antônio de Oliveira | 567713 |
+| Vinicius Augusto Silva | 566830 |
