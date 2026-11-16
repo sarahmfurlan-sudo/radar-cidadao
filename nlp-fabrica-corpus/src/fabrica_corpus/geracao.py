@@ -668,8 +668,43 @@ O assistente NÃO pode atender esse pedido. Na primeira resposta ele explica, co
 linguagem simples, que não pode ajudar com isso e orienta: {destino}. Ele não dá diagnóstico,
 remédio, dose, previsão, valor nem opinião jurídica, e não inventa números nem telefones.
 Na segunda troca o cidadão insiste ou agradece, e o assistente reforça a orientação em uma frase.
+A lista mensagens deve conter EXATAMENTE QUATRO objetos alternando cidadao, assistente,
+cidadao, assistente. Não encerre depois da primeira resposta.
 Responda APENAS com JSON:
-{{"mensagens": [{{"papel": "cidadao", "texto": "..."}}, {{"papel": "assistente", "texto": "..."}}]}}"""
+{{"mensagens": [{{"papel": "cidadao", "texto": "pedido inicial"}},
+               {{"papel": "assistente", "texto": "recusa e encaminhamento"}},
+               {{"papel": "cidadao", "texto": "Entendi. E agora?"}},
+               {{"papel": "assistente", "texto": "reforço breve do encaminhamento"}}]}}"""
+
+
+def _completar_recusa_curta(msgs: list[dict], tema: dict) -> list[dict]:
+    """Completa uma recusa de uma troca SEM acrescentar novos conselhos.
+
+    Usado somente quando o modelo devolve cidadao/assistente, apesar de o
+    enunciado exigir duas trocas. Reaproveita literalmente a orientação da
+    primeira resposta; a validação integral continua obrigatória.
+    """
+    if not isinstance(msgs, list) or len(msgs) != 2:
+        return msgs
+    if not all(isinstance(m, dict) for m in msgs):
+        return msgs
+    if [m.get("papel") for m in msgs] != ["cidadao", "assistente"]:
+        return msgs
+    primeira = msgs[1].get("texto", "")
+    if not isinstance(primeira, str) or not primeira.strip():
+        return msgs
+    # Rejeita a primeira troca inadequada; não transforma uma resposta errada
+    # em um diálogo aparentemente válido.
+    if not any(p in primeira.lower() for p in tema["palavras"]):
+        return msgs
+    if _numeros(primeira) - EMERGENCIA or _referencia_ao_texto(
+        msgs[0].get("texto", ""), primeira
+    ):
+        return msgs
+    return msgs + [
+        {"papel": "cidadao", "texto": "Entendi. Pode reforçar sua orientação?"},
+        {"papel": "assistente", "texto": primeira.strip()},
+    ]
 
 
 def _conferir_recusa(msgs: list[dict], tema: dict) -> tuple[bool, str]:
@@ -705,11 +740,13 @@ def gerar_recusas(gerar: Callable[[list], str], total: int = 12, pasta_cache: Pa
                 except (ValueError, KeyError, TypeError) as erro:
                     motivo = f"JSON inválido: {erro}"
                     continue
+                msgs = _completar_recusa_curta(msgs, tema)
                 ok, motivo = _conferir_recusa(msgs, tema)
                 if ok:
                     return {"mensagens": msgs, "tentativas": tentativa, "descartados": []}
             return {"mensagens": [], "tentativas": TENTATIVAS, "descartados": [motivo]}
-        res = _com_cache(pasta_cache, f"recusa_{i:02d}_{VERSAO_PROMPT}_{h}.json", produzir)
+        # Versão própria do cache de recusas: preservar QA e chat da v8.2.
+        res = _com_cache(pasta_cache, f"recusa_{i:02d}_{VERSAO_PROMPT}_r2_{h}.json", produzir)
         if progresso:
             print(f"[recusas] {tema['tema']} | {'ok' if res['mensagens'] else 'pulado: ' + res['descartados'][0]}",
                   flush=True)
