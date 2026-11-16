@@ -100,3 +100,7 @@ rpa-radar-cidadao/
 Materiais fornecidos na disciplina: `01_hyperautomation`, `rpa_ia_arquivos`, `02_Process_tasks_bpm_bpmn`, `cron_exercises` e o enunciado `GS2026_2_Enunciado_Final_RPA_IA`.
 
 Fonte pública complementar para orientações preventivas: [Defesa Civil Nacional — gov.br/mdr](https://www.gov.br/mdr/pt-br/assuntos/protecao-e-defesa-civil). O protótipo não consulta esse endereço nem afirma reproduzir recomendações oficiais completas.
+
+## Demonstracao no Google Colab
+
+[Notebook executado com evidencias](RADAR_CIDADAO_RPA_COLAB_EXECUTADO.ipynb). Abra no Colab e use Ambiente de execucao > Executar tudo para reproduzir. As saidas salvas demonstram uma execucao anterior; os dados sao sinteticos.
