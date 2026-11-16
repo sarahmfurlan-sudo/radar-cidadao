@@ -39,6 +39,7 @@ from typing import Callable, Iterable
 
 MODELO_GERADOR = "Qwen/Qwen2.5-14B-Instruct"  # 14B em 4 bits: segue melhor as regras (o 7B confundia quem age)
 VERSAO_PROMPT = "v8_2"   # v8.2: gera perguntas parciais e avalia rotulos legados sem escolher segmento arbitrario
+VERSAO_QA_CHAT = "v8_3"  # só QA/chat mudam; cache de recusas v8_2 permanece intacto
 EMERGENCIA = {"190", "192", "193", "199", "40199", "156"}
 
 # Título legível de cada documento, para o assistente citar a fonte na resposta
@@ -185,6 +186,11 @@ Escreva {n} perguntas que esse cidadão faria, cada uma respondida por UM fato d
 - a pergunta diz o assunto e faz sentido sozinha;
 - a resposta usa só aquele fato, em linguagem simples, sem acrescentar nada;
 - não cite nomes de pessoas nem "o texto"/"o trecho"; não invente números, telefones nem prazos;
+- cada pergunta deve tratar de um fato DIFERENTE; nunca reescreva a mesma pergunta com sinônimos;
+- evite respostas vagas que não dizem quem deve agir;
+- não atribua ao morador tarefas de prefeitura, Defesa Civil ou equipes de saúde;
+- não diga "você entra em estágio de alerta": estágios são classificações institucionais;
+- se o trecho não permite uma orientação de saúde completa e segura, NÃO gere pergunta sobre tratamento;
 - não escreva a fonte: ela é acrescentada automaticamente.
 Responda APENAS com JSON:
 {{"perguntas": [{{"fato": 1, "pergunta": "...", "resposta": "..."}}]}}"""
@@ -412,8 +418,8 @@ def julgar(pares: list[tuple[str, str]], trecho: str, gerar) -> list[tuple[bool,
 # ------------------------------------------------------------ cache
 def _chave(tipo: str, seg, extra: str) -> str:
     extra = f"{extra}|juiz={USAR_JUIZ}|fatos={USAR_FATOS}"
-    h = hashlib.sha256(f"{VERSAO_PROMPT}|{MODELO_GERADOR}|{tipo}|{extra}|{seg.texto}".encode()).hexdigest()[:12]
-    return f"{tipo}_{seg.id}_{VERSAO_PROMPT}_{h}.json"
+    h = hashlib.sha256(f"{VERSAO_QA_CHAT}|{MODELO_GERADOR}|{tipo}|{extra}|{seg.texto}".encode()).hexdigest()[:12]
+    return f"{tipo}_{seg.id}_{VERSAO_QA_CHAT}_{h}.json"
 
 
 def _deu_certo(dados: dict) -> bool:
@@ -440,6 +446,56 @@ def _com_cache(pasta: Path | None, nome: str, produzir: Callable[[], dict]) -> d
 # ------------------------------------------------------------ geração
 def _mensagens(prompt: str) -> list[dict]:
     return [{"role": "user", "content": prompt}]
+
+
+def _normalizar_similaridade(texto: str) -> set[str]:
+    """Tokens com radical leve para barrar paráfrases idênticas, sem modelo externo."""
+    texto = re.sub(r"\bFonte:.*", "", texto, flags=re.I | re.S)
+    comuns = {"você", "deve", "pode", "ser", "para", "sobre", "como", "qual", "quais",
+              "fazer", "faço", "faça", "isso", "essa", "esse", "quando", "tem", "tenho",
+              "minha", "meu", "casa", "rua", "evitar", "problemas", "preciso", "ajudar",
+              "pessoa", "pessoas", "caso", "situação", "situações", "durante"}
+    return {w[:6] for w in re.findall(r"[a-zà-ÿ]{3,}", texto.casefold()) if w not in comuns}
+
+
+def _repeticao(item: dict, anteriores: list[dict]) -> bool:
+    """Rejeita resposta essencialmente igual, mesmo com perguntas diferentes."""
+    resp = _normalizar_similaridade(item.get("resposta", ""))
+    perg = _normalizar_similaridade(item.get("pergunta", ""))
+    for anterior in anteriores:
+        r_ant = _normalizar_similaridade(anterior.get("resposta", ""))
+        p_ant = _normalizar_similaridade(anterior.get("pergunta", ""))
+        if not resp or not r_ant:
+            continue
+        inter = len(resp & r_ant)
+        if resp == r_ant or (inter >= 3 and inter / min(len(resp), len(r_ant)) >= .86):
+            return True
+        if perg and p_ant and perg == p_ant and inter / min(len(resp), len(r_ant)) >= .7:
+            return True
+    return False
+
+
+def _risco_qa(pergunta: str, resposta: str) -> str:
+    """Bloqueios conservadores; não substituem revisão humana nem confronto com fonte."""
+    p, r = pergunta.casefold(), resposta.casefold()
+    if re.search(r"\bvoc[eê]\s+entr[ao]\s+em\s+(?:est[aá]gio|estado)\s+de\s+alerta", r):
+        return "estágio institucional atribuído ao cidadão"
+    # Quando a pergunta pede ação pessoal, resposta institucional sem instrução ao morador.
+    pergunta_pessoal = bool(re.search(r"\b(o que eu|como eu|devo|posso|me proteger|me preparar)\b", p))
+    instituicao = bool(re.search(r"monitoramento peri[oó]dico|manuten[çc][aã]o (?:rotineira|peri[oó]dica).*drenagem", r))
+    if pergunta_pessoal and instituicao:
+        return "ação institucional oferecida como orientação pessoal"
+    # Evita orientação restritiva de saúde que dependa de um único limiar numérico.
+    sintomas = bool(re.search(r"febre|diarrei|v[oô]mit|dores? no corpo|leptospirose|sintomas?", p))
+    if sintomas and re.search(r"(?:s[oó]|apenas|somente|quando|se tiver|ap[oó]s)\s+(?:mais de\s+)?\d+\s+(?:epis[oó]dios|vezes)", r):
+        return "limiar de sintomas de saúde potencialmente inseguro"
+    if sintomas and ("febre" in p or "dor de cabeça" in p or "sangue" in p) and re.search(
+        r"(?:epis[oó]dios?|vezes) de diarreia|diarreia em \d+ horas", r
+    ) and not any(x in r for x in ("febre", "dor de cabeça", "sangue", "sintomas")):
+        return "resposta de saúde ignora outros sintomas da pergunta"
+    if re.search(r"\bpessoas priorit[aá]rias\b", r):
+        return "expressão vaga sem orientação acionável"
+    return ""
 
 
 def _gerar_qa_segmento(seg, gerar, n: int, juiz: bool | None = None) -> dict:
@@ -484,6 +540,11 @@ def _gerar_qa_segmento(seg, gerar, n: int, juiz: bool | None = None) -> dict:
             ok, motivo = conferir_fidelidade(resposta, seg.texto + " " + titulo(seg.fonte))
             if ok and _referencia_ao_texto(pergunta, resposta):
                 ok, motivo = False, "fala do trecho como se o leitor visse o documento"
+            if ok and (risco := _risco_qa(pergunta, resposta)):
+                ok, motivo = False, risco
+            if ok and _repeticao({"pergunta": pergunta, "resposta": resposta},
+                                 aprovados_total + candidatos):
+                ok, motivo = False, "pergunta/resposta redundante"
             if ok:
                 candidatos.append({"pergunta": pergunta, "resposta": resposta})
             else:
@@ -495,7 +556,7 @@ def _gerar_qa_segmento(seg, gerar, n: int, juiz: bool | None = None) -> dict:
         descartados.extend(motivos)
         for item in candidatos:
             chave = (item["pergunta"].casefold(), item["resposta"].casefold())
-            if chave not in vistos:
+            if chave not in vistos and not _repeticao(item, aprovados_total):
                 aprovados_total.append(item)
                 vistos.add(chave)
                 if len(aprovados_total) >= n:
@@ -553,10 +614,12 @@ def _categoria(motivo: str) -> str:
 
 def gerar_qa(segmentos: Iterable, gerar: Callable[[list], str], total: int = 100, por_segmento: int = 2,
              pasta_cache: Path | None = None, progresso: bool = True,
-             juiz: bool | None = None) -> tuple[list[dict], dict]:
+             juiz: bool | None = None, filtrar_repeticoes: bool = False) -> tuple[list[dict], dict]:
     """Gera cerca de `total` perguntas e respostas. Devolve (exemplos, estatísticas).
 
-    juiz: None usa USAR_JUIZ (ligado); False desliga a checagem de coerência."""
+    juiz: None usa USAR_JUIZ (ligado); False desliga a checagem de coerência.
+    filtrar_repeticoes: opt-in para a geração de corpus revisado; mantém a
+    compatibilidade com integrações e testes anteriores quando False."""
     segmentos = list(segmentos)
     exemplos, pulados, descartes = [], [], 0
     motivos: dict[str, int] = {}
@@ -577,6 +640,12 @@ def gerar_qa(segmentos: Iterable, gerar: Callable[[list], str], total: int = 100
             if not res["itens"]:
                 pulados.append(seg.id)
             for item in res["itens"]:
+                if _risco_qa(item["pergunta"], item["resposta"]):
+                    motivos["filtro de risco QA"] = motivos.get("filtro de risco QA", 0) + 1
+                    continue
+                if filtrar_repeticoes and _repeticao(item, exemplos):
+                    motivos["duplicação entre segmentos"] = motivos.get("duplicação entre segmentos", 0) + 1
+                    continue
                 if len(exemplos) < total:
                     resposta = f"{item['resposta']}\n\n{citacao(seg.fonte, seg.paginas)}"
                     exemplos.append({"id": f"qa_{len(exemplos) + 1:04d}", "pergunta": item["pergunta"],
