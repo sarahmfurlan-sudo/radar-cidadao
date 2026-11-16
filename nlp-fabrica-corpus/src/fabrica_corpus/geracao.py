@@ -38,7 +38,7 @@ from pathlib import Path
 from typing import Callable, Iterable
 
 MODELO_GERADOR = "Qwen/Qwen2.5-14B-Instruct"  # 14B em 4 bits: segue melhor as regras (o 7B confundia quem age)
-VERSAO_PROMPT = "v8"   # v8: geração em etapas (extração de fatos com quem age, depois perguntas e diálogos a partir dos fatos)
+VERSAO_PROMPT = "v8_2"   # v8.2: gera perguntas parciais e avalia rotulos legados sem escolher segmento arbitrario
 EMERGENCIA = {"190", "192", "193", "199", "40199", "156"}
 
 # Título legível de cada documento, para o assistente citar a fonte na resposta
@@ -388,7 +388,9 @@ def _referencia_ao_texto(*textos: str) -> bool:
 def julgar(pares: list[tuple[str, str]], trecho: str, gerar) -> list[tuple[bool, str]]:
     """Avalia cada (pergunta, resposta) com o modelo. Devolve [(aprovado, motivo)]."""
     texto_pares = "\n".join(f"{i}. Pergunta: {p}\n   Resposta: {r}" for i, (p, r) in enumerate(pares, start=1))
-    saida = gerar(_mensagens(PROMPT_JUIZ.format(texto=trecho, pares=texto_pares)))
+    # O juiz usa decodificacao deterministica, independente da geracao criativa.
+    gerar_avaliacao = getattr(gerar, "julgar", gerar)
+    saida = gerar_avaliacao(_mensagens(PROMPT_JUIZ.format(texto=trecho, pares=texto_pares)))
     try:
         avaliacoes = _extrair_json(saida, "avaliacoes")["avaliacoes"]
     except (ValueError, KeyError, TypeError):
@@ -452,31 +454,56 @@ def _gerar_qa_segmento(seg, gerar, n: int, juiz: bool | None = None) -> dict:
     else:
         prompt = PROMPT_QA.format(persona_assistente=PERSONA_GERACAO, persona_cidadao=PERSONA_CIDADAO_GERACAO,
                                   fonte=titulo(seg.fonte), texto=seg.texto, n=n)
-    ultimo_motivo = ""
+    # Acumula itens aprovados de tentativas sucessivas (antes parava no primeiro).
+    aprovados_total: list[dict] = []
+    vistos: set[tuple[str, str]] = set()
+    descartados: list[str] = []
+    tentativas_realizadas = 0
     for tentativa in range(1, TENTATIVAS + 1):
+        if len(aprovados_total) >= n:
+            break
+        tentativas_realizadas = tentativa
         try:
             itens = _extrair_json(gerar(_mensagens(prompt)), "perguntas")["perguntas"]
         except (ValueError, KeyError, TypeError) as erro:
-            ultimo_motivo = f"JSON inválido: {erro}"
+            descartados.append(f"JSON inválido: {erro}")
             continue
-        aprovados, motivos = [], []
+        candidatos, motivos = [], []
         for item in itens:
-            p, r = str(item.get("pergunta", "")).strip(), str(item.get("resposta", "")).strip()
-            ok, motivo = conferir_fidelidade(r, seg.texto + " " + titulo(seg.fonte))
-            if ok and _referencia_ao_texto(p, r):
+            if not isinstance(item, dict):
+                motivos.append("item não é objeto")
+                continue
+            pergunta = str(item.get("pergunta", "")).strip()
+            resposta = str(item.get("resposta", "")).strip()
+            if not pergunta or not resposta:
+                motivos.append("pergunta ou resposta vazia")
+                continue
+            chave = (pergunta.casefold(), resposta.casefold())
+            if chave in vistos:
+                continue
+            ok, motivo = conferir_fidelidade(resposta, seg.texto + " " + titulo(seg.fonte))
+            if ok and _referencia_ao_texto(pergunta, resposta):
                 ok, motivo = False, "fala do trecho como se o leitor visse o documento"
-            if p and r and ok:
-                aprovados.append({"pergunta": p, "resposta": r})
+            if ok:
+                candidatos.append({"pergunta": pergunta, "resposta": resposta})
             else:
                 motivos.append(motivo)
-        if aprovados and (USAR_JUIZ if juiz is None else juiz):
-            vereditos = julgar([(a["pergunta"], a["resposta"]) for a in aprovados], seg.texto, gerar)
-            motivos += [m for ok, m in vereditos if not ok]
-            aprovados = [a for a, (ok, _) in zip(aprovados, vereditos) if ok]
-        if aprovados:
-            return {"itens": aprovados[:n], "tentativas": tentativa, "descartados": motivos, "fatos": fatos}
-        ultimo_motivo = "; ".join(motivos) or "nenhum item"
-    return {"itens": [], "tentativas": TENTATIVAS, "descartados": [ultimo_motivo], "fatos": fatos}
+        if candidatos and (USAR_JUIZ if juiz is None else juiz):
+            vereditos = julgar([(a["pergunta"], a["resposta"]) for a in candidatos], seg.texto, gerar)
+            motivos.extend(m for ok, m in vereditos if not ok)
+            candidatos = [a for a, (ok, _) in zip(candidatos, vereditos) if ok]
+        descartados.extend(motivos)
+        for item in candidatos:
+            chave = (item["pergunta"].casefold(), item["resposta"].casefold())
+            if chave not in vistos:
+                aprovados_total.append(item)
+                vistos.add(chave)
+                if len(aprovados_total) >= n:
+                    break
+    if not aprovados_total and not descartados:
+        descartados.append("nenhum item aprovado")
+    return {"itens": aprovados_total[:n], "tentativas": tentativas_realizadas,
+            "descartados": descartados, "fatos": fatos}
 
 
 def _gerar_chat_segmento(seg, gerar, turnos: int, juiz: bool | None = None) -> dict:
@@ -743,26 +770,35 @@ def medir_juiz(caminho_rotulos: str | Path, segmentos: Iterable, gerar) -> dict:
     segmentos = list(segmentos)
     linhas = list(csv.reader(open(caminho_rotulos, encoding="utf-8-sig"), delimiter=";"))[1:]
     resultado = {"humano_S_sistema_aprova": 0, "humano_S_sistema_reprova": 0,
-                 "humano_N_sistema_aprova": 0, "humano_N_sistema_reprova": 0, "divergencias": []}
+                 "humano_N_sistema_aprova": 0, "humano_N_sistema_reprova": 0, "divergencias": [],
+                 "itens_contexto_expandido": 0, "itens_nao_avaliados": 0}
     for linha in linhas:
         ident, fonte, paginas = linha[0], linha[2], _paginas_csv(linha[3])
         humano = linha[6].strip().upper()[:1]
-        seg = next((s for s in segmentos if s.fonte == fonte and s.paginas == paginas), None) or next(
-            (s for s in segmentos if s.fonte == fonte and set(s.paginas) & set(paginas)), None)
-        if seg is None or humano not in ("S", "N"):
-            resultado["divergencias"].append((ident, "segmento não encontrado ou sem rótulo"))
+        # CSV legado nao tem segmento_id. Quando houver mais de um candidato, use
+        # o contexto concatenado, nunca apenas o primeiro segmento encontrado.
+        # A metrica sinaliza explicitamente quando usou contexto expandido.
+        exatos = [s for s in segmentos if s.fonte == fonte and s.paginas == paginas]
+        candidatos = exatos or [s for s in segmentos if s.fonte == fonte
+                                and set(s.paginas) & set(paginas)]
+        if not candidatos or humano not in ("S", "N"):
+            resultado["divergencias"].append((ident, "segmento nao encontrado ou rotulo invalido"))
+            resultado["itens_nao_avaliados"] += 1
             continue
+        if len(candidatos) > 1:
+            resultado["itens_contexto_expandido"] += 1
+        trecho = "\n\n".join(dict.fromkeys(s.texto for s in candidatos))
         if ident.startswith("chat"):
             falas = [l.split(":", 1)[1].strip() for l in _sem_fonte(linha[4]).splitlines() if ":" in l]
             pares = [(falas[i], falas[i + 1]) for i in range(0, len(falas) - 1, 2)]
         else:
             pares = [(linha[4].strip(), _sem_fonte(linha[5]))]
-        referencia = seg.texto + " " + titulo(seg.fonte)
+        referencia = trecho + " " + titulo(fonte)
         motivos = [m for p, r in pares for ok, m in [conferir_fidelidade(r, referencia)] if not ok]
         if _referencia_ao_texto(*(t for par in pares for t in par)):
             motivos.append("fala do trecho como se o leitor visse o documento")
         if not motivos:
-            motivos = [m for ok, m in julgar(pares, seg.texto, gerar) if not ok]
+            motivos = [m for ok, m in julgar(pares, trecho, gerar) if not ok]
         aprova = not motivos
         chave = f"humano_{humano}_sistema_{'aprova' if aprova else 'reprova'}"
         resultado[chave] += 1
@@ -772,6 +808,7 @@ def medir_juiz(caminho_rotulos: str | Path, segmentos: Iterable, gerar) -> dict:
     acertos = resultado["humano_S_sistema_aprova"] + resultado["humano_N_sistema_reprova"]
     resultado["concordancia"] = round(acertos / total, 2) if total else 0.0
     resultado["itens"] = total
+    resultado["itens_csv"] = len(linhas)
     return resultado
 
 
@@ -801,4 +838,14 @@ def carregar_qwen(modelo: str = MODELO_GERADOR, max_tokens: int = 700):
                             temperature=0.4, top_p=0.9, pad_token_id=tok.eos_token_id)
         inicio = entrada["input_ids"].shape[1]
         return tok.decode(saida[0][inicio:], skip_special_tokens=True)
+
+    def gerar_deterministico(mensagens: list[dict]) -> str:
+        entrada = tok.apply_chat_template(mensagens, add_generation_prompt=True,
+                                          return_tensors="pt", return_dict=True).to(lm.device)
+        saida = lm.generate(**entrada, max_new_tokens=max_tokens, do_sample=False,
+                            pad_token_id=tok.eos_token_id)
+        inicio = entrada["input_ids"].shape[1]
+        return tok.decode(saida[0][inicio:], skip_special_tokens=True)
+
+    gerar.julgar = gerar_deterministico
     return gerar

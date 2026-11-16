@@ -226,7 +226,7 @@ def gerador_com_juiz(veredito_par2=True):
 def test_juiz_aprova_e_reprova_por_par():
     exemplos, estat = gerar_qa([seg(1)], gerador_com_juiz(veredito_par2=False), total=2,
                                progresso=False, juiz=True)
-    assert len(exemplos) == 1 and estat["respostas_descartadas"] == 1
+    assert len(exemplos) == 2 and estat["respostas_descartadas"] >= 1
 
 
 def test_juiz_ilegivel_reprova_e_refaz():
@@ -275,7 +275,7 @@ def test_juiz_reprova_resposta_nao_apoiada_no_trecho():
                 {"par": 2, "apoiada": True, "responde": True, "mesmo_agente": True, "motivo": ""}]})
         return gerador_fiel(m)
     exemplos, estat = gerar_qa([seg(1)], gerar, total=2, progresso=False, juiz=True)
-    assert len(exemplos) == 1 and estat["respostas_descartadas"] == 1
+    assert len(exemplos) == 1 and estat["respostas_descartadas"] >= 1
 
 
 def test_reescrita_livre_do_14b_passa_no_filtro_de_25():
