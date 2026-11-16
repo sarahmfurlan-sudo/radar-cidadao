@@ -6,7 +6,9 @@
 
 ## Integrantes
 
-**PREENCHER ANTES DE ENTREGAR:** nomes completos e RMs de todos os integrantes do grupo.
+Mario Antônio de Oliveira — 567713
+Sarah Marangoni Furlan — 566764
+Vinicius Augusto Silva — 566830
 
 ## Problema, público e ODS
 
