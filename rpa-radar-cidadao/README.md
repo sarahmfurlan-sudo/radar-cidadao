@@ -104,7 +104,3 @@ Fonte pública complementar para orientações preventivas: [Defesa Civil Nacion
 ## Notebook executado no Google Colab
 
 O arquivo `RADAR_CIDADAO_RPA_COLAB_EXECUTADO.ipynb` acompanha esta entrega com saídas e evidências já gravadas. Ele permite conferir o fluxo sem precisar refazer o notebook NLP.
-
-## Validação pelo grupo
-
-Este ZIP é uma cópia para revisão, não um pacote de publicação automática. Não há script de push. Verifiquem a execução, as evidências e o checklist antes da entrega.
