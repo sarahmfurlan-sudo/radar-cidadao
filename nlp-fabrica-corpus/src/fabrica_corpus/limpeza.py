@@ -76,7 +76,20 @@ _LINHAS_WEB = [
 ]
 
 
+# Rodapé das páginas do gov.br: menu de assuntos relacionados ("Outros eventos climáticos"),
+# Ouvidoria, selo da Vaccine Safety Net, botões e a pesquisa "Ajude a melhorar o gov.br".
+# Só vale em página que tem a pesquisa do gov.br; corta do primeiro marcador até o fim.
+_PESQUISA_GOVBR = re.compile(r"Ajude a melhorar o gov\.br", re.I)
+_INICIO_RODAPE_GOVBR = re.compile(
+    r"^[ \t]*(Outros eventos climáticos|Ouvidoria-Geral do|Membro da Vaccine Safety Net|Ajude a melhorar o gov\.br)\b",
+    re.I | re.M)
+
+
 def remover_boilerplate(texto: str) -> str:
+    if _PESQUISA_GOVBR.search(texto):
+        m = _INICIO_RODAPE_GOVBR.search(texto)
+        if m:
+            texto = texto[:m.start()]
     for padrao in _BLOCOS_WEB:
         texto = padrao.sub("", texto)
     linhas = [l for l in texto.split("\n") if not any(p.match(l) for p in _LINHAS_WEB)]

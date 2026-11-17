@@ -14,5 +14,8 @@ bitsandbytes==0.50.2
 # Modelo do spaCy para português (detecção de nomes), pelo wheel oficial no GitHub
 pt_core_news_md @ https://github.com/explosion/spacy-models/releases/download/pt_core_news_md-3.8.0/pt_core_news_md-3.8.0-py3-none-any.whl#sha256=54382cda034e41f3ec605ceeb924cd6cfdbced00a65f7afa12218520ba7008c5
 
+# Interface do notebook (abas "Processar documento" e "Corpus finais")
+gradio==6.32.0
+
 # Testes
 pytest==9.2.0

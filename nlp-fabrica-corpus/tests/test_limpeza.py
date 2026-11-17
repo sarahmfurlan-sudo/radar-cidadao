@@ -271,3 +271,18 @@ def test_referencias_em_minuscula_no_meio_da_frase_ficam():
     from fabrica_corpus.limpeza import remover_referencias
     texto = "O plano traz referências Bibliográficas e Técnicas para o município."
     assert remover_referencias(texto)[0] == texto
+
+
+def test_rodape_do_govbr_sai():
+    """Página Enchentes (gov.br): menu de assuntos, Ouvidoria, selo VSN e pesquisa de satisfação."""
+    from fabrica_corpus.limpeza import remover_boilerplate
+    texto = ("Busque apoio psicológico se necessário.\nOutros eventos climáticos\nOndas de calor\nSecas\n"
+             "Ouvidoria-Geral do\nSUS\nMembro da Vaccine Safety Net (VSN)\nRejeitar\nFale Agora\n"
+             "Ajude a melhorar o gov.br\nAgora não\nResponder pesquisa\n")
+    assert remover_boilerplate(texto).strip() == "Busque apoio psicológico se necessário."
+
+
+def test_rodape_so_sai_em_pagina_do_govbr():
+    from fabrica_corpus.limpeza import remover_boilerplate
+    texto = "Outros eventos climáticos, como secas e ondas de calor, também afetam a saúde."
+    assert remover_boilerplate(texto) == texto

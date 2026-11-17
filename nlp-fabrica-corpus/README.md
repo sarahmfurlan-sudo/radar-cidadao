@@ -1,22 +1,22 @@
-> **Entrega consolidada de NLP (16/11/2026):** [arquivos finais, relatório, revisão humana e notebooks](entrega-final/README.md). Corpus: 306 trechos, 100 perguntas e respostas únicas, 31 diálogos (11 recusas). Revisão humana: Sarah Marangoni Furlan (RM 566764). A demonstração em vídeo deve ser anexada separadamente. A interface Gradio ainda não está comprovada neste pacote.
 # Fábrica de Corpus: Radar Cidadão
+
+> **Entrega de NLP:** [corpus finais, revisão humana e relatório](entrega-final/README.md). Corpus: 307 trechos, 100 perguntas e respostas únicas, 31 diálogos (11 recusas válidas). Revisão humana: Sarah Marangoni Furlan (RM 566764). Notebook: [`fabrica_corpus.ipynb`](fabrica_corpus.ipynb) ([abrir no Colab](https://colab.research.google.com/github/sarahmfurlan-sudo/radar-cidadao/blob/main/nlp-fabrica-corpus/fabrica_corpus.ipynb)).
 
 Ferramenta da disciplina de NLP da Global Solution 2026.2 (FIAP, tema CitizenTech).
 
 Ela transforma documentos públicos sobre chuvas intensas e alagamentos em três corpus no formato JSONL, prontos para o fine-tuning de um modelo de linguagem pequeno (SLM) voltado a orientar o cidadão.
 
-> **Situação do código:** módulos de ingestão, limpeza, anonimização, segmentação e geração já implementados. Os corpus e a auditoria estão publicados em `entrega-final/`; o vídeo demonstrativo é uma entrega separada. A interface Gradio não foi validada neste pacote.
-
 ## Como executar no Google Colab
 
-> **Notebooks usados na geração e no fechamento:** consulte `entrega-final/notebooks/`. Para executar, utilize Google Colab com GPU e acesso aos documentos/caches necessários.
+1. Abra o notebook [`fabrica_corpus.ipynb`](fabrica_corpus.ipynb) no Colab: [link direto](https://colab.research.google.com/github/sarahmfurlan-sudo/radar-cidadao/blob/main/nlp-fabrica-corpus/fabrica_corpus.ipynb).
+2. O ambiente **sem GPU** basta. A geração com o Qwen é opcional e está desligada (`RODAR_GERACAO = False`); só ela precisa de GPU.
+3. Execute as células em ordem (Ambiente de execução > Executar tudo). A primeira clona este repositório e instala as bibliotecas do `requirements.txt` (alguns minutos).
+4. O notebook mostra cada etapa (ingestão, limpeza, anonimização com o "antes e depois" do arquivo de teste, segmentação), roda a finalização numa cópia da `entrega-final` (confere que os corpus são reproduzidos) e o relatório de qualidade.
+5. A última célula abre a interface Gradio com um link público (`share=True`):
+   - **Processar documento:** envio de PDF, TXT, DOCX ou HTML (vários arquivos) ou texto colado; mostra o resultado de cada etapa e oferece o `corpus_texto.jsonl` daquele envio para baixar.
+   - **Corpus finais:** estatísticas, 5 exemplos aleatórios de cada corpus e download dos 3 JSONL da entrega.
 
-Passos previstos:
-
-1. Abrir o notebook `fabrica_corpus.ipynb` no Colab.
-2. Ativar a GPU gratuita (Ambiente de execução → Alterar o tipo de ambiente de execução → GPU).
-3. Executar as células em ordem. O notebook clona este repositório e instala as bibliotecas.
-4. Usar a interface Gradio para enviar documentos (PDF, TXT, DOCX, HTML ou texto colado) e gerar os corpus.
+Os notebooks usados na geração com o Qwen (GPU) estão em [`entrega-final/notebooks/`](entrega-final/notebooks/).
 
 ## Etapas da ferramenta
 
@@ -190,7 +190,7 @@ Os formatos TXT, DOCX e texto colado serão demonstrados com um arquivo de teste
 
 ## Bibliotecas
 
-As versões fixadas estão em [`requirements.txt`](requirements.txt). `gradio` ainda não é usado pelo código; `accelerate` e `bitsandbytes` só são usados no Colab.
+As versões fixadas estão em [`requirements.txt`](requirements.txt). `gradio` é usado pela interface ([`interface.py`](src/fabrica_corpus/interface.py)); `accelerate` e `bitsandbytes` só são usados na geração com GPU.
 
 | Biblioteca | Uso |
 |---|---|
@@ -206,7 +206,9 @@ As versões fixadas estão em [`requirements.txt`](requirements.txt). `gradio` a
 
 | Caminho | Conteúdo |
 |---|---|
-| `src/fabrica_corpus/` | Módulos Python de cada etapa (`ingestao`, `limpeza`, `anonimizacao`, `segmentacao`, `geracao`, `exportacao` e `finalizacao`) |
+| `fabrica_corpus.ipynb` | Notebook final do Colab: pipeline, relatório de qualidade e interface Gradio |
+| `src/fabrica_corpus/` | Módulos Python de cada etapa (`ingestao`, `limpeza`, `anonimizacao`, `segmentacao`, `geracao`, `exportacao`, `finalizacao` e `interface`) |
+| `entrega-final/` | Corpus finais revisados, estatísticas, revisão humana e registro de ajustes |
 | `dados/entrada/` | Documentos de entrada |
 | `dados/cache_geracao/` | Saídas do Qwen salvas para reaproveitar entre execuções |
 | `dados/geracao/` | Resultado de cada geração (`resultado_v8.json`): exemplos aprovados e estatísticas, lido pela exportação |

@@ -230,6 +230,8 @@ def _remapear_segmentos(exemplos: list[dict], texto_antigo: dict, texto_novo: di
 def _atualizar_estatisticas(caminho: Path, metricas: dict) -> None:
     """Atualiza só as contagens; os campos da revisão humana e da geração ficam como estão."""
     estat = json.loads(caminho.read_text(encoding="utf-8")) if caminho.exists() else {}
+    # os remapeamentos de execuções anteriores continuam registrados (o histórico não se perde)
+    anteriores = estat.get("finalizacao", {}).get("segmento_id_remapeados", {})
     for tipo in MINIMOS:
         bloco = estat.setdefault(tipo, {})
         for campo in ("quantidade", "minimo", "quantidade_atingida", "media_tokens_aprox"):
@@ -241,6 +243,6 @@ def _atualizar_estatisticas(caminho: Path, metricas: dict) -> None:
                "invalidos_removidos": metricas[tipo]["invalidos_removidos"]} for tipo in MINIMOS}
     estat["finalizacao"]["recusas_no_corpus"] = metricas["recusas"]
     estat["finalizacao"]["paginas_removidas"] = metricas["paginas_removidas"]
-    estat["finalizacao"]["segmento_id_remapeados"] = metricas["segmento_id_remapeados"]
+    estat["finalizacao"]["segmento_id_remapeados"] = {**anteriores, **metricas["segmento_id_remapeados"]}
     estat["finalizacao"]["respostas_com_paginas"] = metricas["respostas_com_paginas"]
     caminho.write_text(json.dumps(estat, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

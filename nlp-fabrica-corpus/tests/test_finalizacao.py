@@ -118,3 +118,8 @@ def test_finalizar_remapeia_segmento_deslocado(tmp_path):
     assert m["segmento_id_remapeados"] == {f"{base}_0002": f"{base}_0001"}
     gravado = json.loads((tmp_path / "corpus_qa.jsonl").read_text(encoding="utf-8"))
     assert gravado["segmento_id"] == f"{base}_0001"
+
+    # rodar de novo não apaga o registro do remapeamento feito antes
+    assert finalizar(tmp_path, segmentos=novos)["segmento_id_remapeados"] == {}
+    estat = json.loads((tmp_path / "estatisticas.json").read_text(encoding="utf-8"))
+    assert estat["finalizacao"]["segmento_id_remapeados"] == {f"{base}_0002": f"{base}_0001"}
