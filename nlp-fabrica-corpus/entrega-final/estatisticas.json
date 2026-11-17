@@ -3,7 +3,7 @@
     "quantidade": 307,
     "minimo": 50,
     "quantidade_atingida": true,
-    "media_tokens_aprox": 326.9,
+    "media_tokens_aprox": 326.5,
     "duplicatas_removidas": 0,
     "invalidos_removidos": 0
   },
@@ -53,8 +53,8 @@
     },
     "recusas_no_corpus": 11,
     "paginas_removidas": {
-      "qa": 96,
-      "chat": 18
+      "qa": 0,
+      "chat": 0
     },
     "segmento_id_remapeados": {
       "mcid_2026_mapeamento_riscos_0035": "mcid_2026_mapeamento_riscos_0034",
