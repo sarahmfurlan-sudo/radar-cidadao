@@ -1,227 +1,106 @@
 # Fábrica de Corpus: Radar Cidadão
 
-> **Entrega de NLP:** [corpus finais, revisão humana e relatório](entrega-final/README.md). Corpus: 307 trechos, 100 perguntas e respostas únicas, 31 diálogos (11 recusas válidas). Revisão humana: Sarah Marangoni Furlan (RM 566764). Notebook: [`fabrica_corpus.ipynb`](fabrica_corpus.ipynb) ([abrir no Colab](https://colab.research.google.com/github/sarahmfurlan-sudo/radar-cidadao/blob/main/nlp-fabrica-corpus/fabrica_corpus.ipynb)).
+Disciplina de Processamento de Linguagem Natural, Global Solution 2026.2 da FIAP (tema CitizenTech).
 
-Ferramenta da disciplina de NLP da Global Solution 2026.2 (FIAP, tema CitizenTech).
+A ferramenta transforma documentos públicos sobre chuvas intensas, alagamentos e deslizamentos em três corpus no formato JSONL, prontos para o fine-tuning de um modelo de linguagem pequeno (SLM) que orienta o cidadão. O trabalho cobre a preparação dos dados: coleta, extração, limpeza, normalização, anonimização, segmentação, geração dos corpus e relatório de qualidade.
 
-Ela transforma documentos públicos sobre chuvas intensas e alagamentos em três corpus no formato JSONL, prontos para o fine-tuning de um modelo de linguagem pequeno (SLM) voltado a orientar o cidadão.
+## Integrantes
+
+| Nome completo | RM |
+|---|---|
+| Mario Antônio de Oliveira | 567713 |
+| Sarah Marangoni Furlan | 566764 |
+| Vinicius Augusto Silva | 566830 |
 
 ## Como executar no Google Colab
 
-1. Abra o notebook [`fabrica_corpus.ipynb`](fabrica_corpus.ipynb) no Colab: [link direto](https://colab.research.google.com/github/sarahmfurlan-sudo/radar-cidadao/blob/main/nlp-fabrica-corpus/fabrica_corpus.ipynb).
-2. O ambiente **sem GPU** basta. A geração com o Qwen é opcional e está desligada (`RODAR_GERACAO = False`); só ela precisa de GPU.
-3. Execute as células em ordem (Ambiente de execução > Executar tudo). A primeira clona este repositório e instala as bibliotecas do `requirements.txt` (alguns minutos).
-4. O notebook mostra cada etapa (ingestão, limpeza, anonimização com o "antes e depois" do arquivo de teste, segmentação), roda a finalização numa cópia da `entrega-final` (confere que os corpus são reproduzidos) e o relatório de qualidade.
-5. A última célula abre a interface Gradio com um link público (`share=True`):
-   - **Processar documento:** envio de PDF, TXT, DOCX ou HTML (vários arquivos) ou texto colado; mostra o resultado de cada etapa e oferece o `corpus_texto.jsonl` daquele envio para baixar.
-   - **Corpus finais:** estatísticas, 5 exemplos aleatórios de cada corpus e download dos 3 JSONL da entrega.
+1. Abra o notebook no Colab:
+   https://colab.research.google.com/github/sarahmfurlan-sudo/radar-cidadao/blob/main/nlp-fabrica-corpus/fabrica_corpus.ipynb
+2. Execute as células em ordem (Ambiente de execução > Executar tudo). Não é preciso GPU nem conta em nenhum serviço.
+3. O notebook clona este repositório, instala as dependências do `requirements.txt` e o modelo `pt_core_news_md` do spaCy, e roda o pipeline com os 5 documentos de `dados/entrada`.
+4. Na interface Gradio, envie arquivos PDF, TXT, DOCX ou HTML, ou cole um texto, para ver o resultado de cada etapa e baixar o corpus de texto do envio. Os arquivos de `dados/teste` servem para testar a anonimização.
 
-Os notebooks usados na geração com o Qwen (GPU) estão em [`entrega-final/notebooks/`](entrega-final/notebooks/).
+A geração das perguntas e dos diálogos usa o modelo Qwen/Qwen2.5-14B-Instruct e precisa de GPU. Ela já foi feita e revisada, então vem desligada (`RODAR_GERACAO = False`) e o notebook usa os corpus revisados de `entrega-final`. Para gerar de novo, ative a GPU no Colab e mude a opção para `True`.
 
-## Etapas da ferramenta
+Para rodar os testes localmente: `python -m pytest -q` dentro de `nlp-fabrica-corpus`.
 
-1. **Ingestão:** PDF, TXT, DOCX, HTML e texto colado.
-2. **Extração:** com registro do arquivo de origem de cada trecho.
-3. **Limpeza:** cabeçalhos, rodapés, números de página, URLs soltas, caracteres estranhos, linhas repetidas e palavras quebradas por hífen.
-   - **Letra capitular:** a letra grande do início do parágrafo, que o PDF separa do resto da palavra, é juntada de volta, tanto quando vem numa linha à parte quanto quando vem com espaço ("T odos" vira "Todos"). No caso do espaço, só consoantes são juntadas, porque "A", "E" e "O" são palavras em português ("A erosão", "E depois"). E a junção só acontece quando o vocabulário do corpus confirma: a palavra juntada aparece inteira em outro lugar do corpus ("todos", "também") e o pedaço depois da letra não é uma palavra sozinha. Nos 9 documentos, a regra junta "Todos", "Também", "Vale" e "Janeiro" e deixa separadas as letras soltas de tabela, legenda e citação ("P abrangência", "S sobre", "F et"). Sem essa conferência, a primeira versão da regra (13/11/2026) juntava errado 9 dos 14 casos.
-   - **Limites conhecidos:** capitular cuja palavra não aparece inteira em outro lugar do corpus fica separada ("T ente", na Periferia Sem Risco); espaço no meio da palavra fora do caso da capitular ("ex emplo") não é corrigido, porque uma regra geral erraria palavras normais; espaço perdido entre duas palavras ("Vamosconversar") também não; tabelas de PDF chegam com as colunas misturadas; palavra composta quebrada exatamente no hífen ("bem-estar" no fim da linha) vira "bemestar".
-4. **Normalização:** UTF-8, espaços, quebras de linha e aspas, mantendo acentos, pontuação e maiúsculas.
-5. **Anonimização:** CPF, e-mail, telefone e nomes de pessoas, antes de gerar qualquer corpus.
-   - **Marcações:** `[CPF]`, `[EMAIL]`, `[TELEFONE]` e `[NOME]`.
-   - **Nomes, em três camadas:** (1) entidades de pessoa encontradas pelo spaCy (`pt_core_news_md`); (2) o que vem depois do rótulo "Nome:"; (3) repetições de um nome já encontrado, em maiúsculas ou só pelo primeiro nome.
-   - **Filtro contra falsos positivos:** usa o vocabulário do corpus. Uma palavra que aparece escrita em minúscula em algum lugar do corpus é tratada como palavra comum, e não como nome de pessoa.
-   - **Preservados**, por decisão do grupo em 13/11/2026, porque são serviços de que o cidadão precisa: os números de emergência (190, 192, 193, 199 e 40199), o 156, os e-mails `.gov.br` e os telefones de órgãos públicos da lista `CONTATOS_PUBLICOS`.
-   - **Sobrenomes de autores em citações** (decisão de 17/11/2026, contados à parte em "citacao"): "(Sulaiman, Moura & Nogueira, 2021)" vira "([NOME], [NOME] & [NOME], 2021)"; nas citações narrativas, "Santos et al.,(2007)" e "Hermelin (2005)" viram "[NOME] et al.,(2007)" e "[NOME] (2005)". Ficam o ano, "et al.", "Jr.", "Filho", "Apud", a pontuação e os autores institucionais ("Brasil", "IPCC", "Gides"...). Parêntese que não tem só autores e anos ("(entre 2010 e 2020)") não é tocado.
-   - **Limites conhecidos:** um nome de uma palavra só não é mascarado; um nome de cidade com cara de nome de pessoa (por exemplo, "Afonso Cláudio") é mascarado; um sobrenome que também é palavra comum pode ficar solto no texto.
-6. **Segmentação:** trechos de 256 a 512 tokens.
-   - **Contagem de tokens:** com o tokenizador do Qwen 2.5 (`Qwen/Qwen2.5-7B-Instruct`), que tem o mesmo vocabulário do Qwen 3.
-   - **Corte:** sempre em fim de frase.
-   - **Rastreabilidade:** cada segmento guarda todas as páginas de origem e um `id` (nome do arquivo + número sequencial).
-7. **Geração dos corpus:** `corpus_texto.jsonl`, `corpus_qa.jsonl` e `corpus_chat.jsonl`, todos com o campo `fonte`.
-   - **Modelo:** `Qwen/Qwen2.5-14B-Instruct`, em 4 bits na GPU do Colab, sem API externa (a confirmar no primeiro teste no Colab).
-   - **Critérios de qualidade**, definidos antes de gerar (13/11/2026), com meta de **90% de aprovação** na amostra revisada pelo grupo. Um exemplo é aprovado quando cumpre os 4:
-     1. **Apoiada:** tudo o que a resposta afirma está no trecho.
-     2. **Responde:** a resposta responde exatamente a pergunta.
-     3. **Mesmo agente:** quem age é o mesmo na pergunta e na resposta (morador, poder público ou conceito).
-     4. **Fala com o morador:** sem "o trecho", "este documento", "isso aqui" etc., como se o leitor estivesse vendo o documento.
-   - **Histórico das versões do prompt:**
+## Bibliotecas principais
 
-     | Versão | Mudança | Motivo |
-     |---|---|---|
-     | v1 a v3 | Geração direta a partir do trecho, com o `Qwen2.5-7B-Instruct`; citação da fonte passa a ser colocada pelo código (v3) | — |
-     | v5 | Modelo trocado para o 14B; juiz de coerência (responde e mesmo agente); trava contra "o trecho" | Revisão do 7B: muitos exemplos incoerentes (veja "Revisão do 7B" abaixo) |
-     | v6 | Juiz ganha o critério "apoiada"; a trava de palavras vira um filtro grosseiro de 25% | Quem decide se a resposta acrescenta algo é o juiz, que lê o sentido; a contagem de palavras só barra o que está muito longe do trecho |
-     | v7 | O cidadão só pergunta o que o trecho explica, sem a lista fixa de assuntos (antes, durante, depois, limpeza, doenças) | Com a lista, o modelo fazia o cidadão perguntar de assuntos que o trecho não trata e respondia com conhecimento próprio |
-     | v8 | Geração em etapas, a partir dos fatos do trecho (veja abaixo) | A revisão do 7B ficou em 71% de aprovação, abaixo da meta de 90% |
+A lista completa, com versões, está em `requirements.txt`.
 
-   - **Geração em etapas (v8):**
-     1. **Extração de fatos:** o modelo lista os fatos do trecho que interessam ao morador, cada um numa frase curta e com **quem age**: `morador` (o que a pessoa pode fazer), `poder_publico` (com o órgão: prefeitura, Defesa Civil, saúde etc.) ou `conceito` (definição, causa, explicação). Cada fato passa pelas travas 2 a 4; um fato inventado não chega à etapa seguinte. Se o trecho não tem nada útil ao morador (siglas, referências, créditos), o segmento é pulado.
-     2. **Perguntas e diálogos a partir dos fatos:** cada pergunta é respondida por um fato e segue quem age nele ("O que eu faço...", "O que a Defesa Civil faz...", "O que é..."). Assim a pergunta já nasce com o agente certo e o diálogo não precisa inventar para continuar.
-     - A etapa em fatos pode ser desligada pela constante `USAR_FATOS`, voltando à geração direta a partir do trecho.
-   - **Persona** (aprovada em 13/11/2026): o cidadão é morador de área de risco. O assistente do Radar Cidadão é acolhedor, só responde com base no trecho, cita a fonte e, em risco imediato, orienta a ligar para o 199 (Defesa Civil) ou o 193 (Bombeiros). Na geração, o cidadão usa a `PERSONA_CIDADAO_GERACAO`, que não traz a lista de assuntos (v7).
-   - **Citação da fonte:** é acrescentada automaticamente pelo código, e não pedida ao modelo (no teste de 13/11/2026 o modelo ignorou o pedido). A função `citacao` de [`geracao.py`](src/fabrica_corpus/geracao.py) (linhas 63 a 74) coloca a citação no fim de cada resposta e na última fala do assistente em cada diálogo, sempre no mesmo formato, com o título legível e as páginas: "Fonte: Periferia Sem Risco, do Ministério das Cidades (2024), p. 7-9." Os títulos ficam na constante `TITULOS` (linhas 46 a 56). O prompt de geração usa a persona sem o "citando a fonte" (`PERSONA_GERACAO`) e pede para o modelo não escrever a fonte, para a citação não sair duplicada.
-   - **Quantidades:** 100 perguntas e respostas (até 2 por segmento, sem passar do número de fatos) e 30 diálogos, cada um a partir de um segmento diferente. Cada diálogo tem tantas trocas quantos fatos o segmento tiver, de 2 a 3; um segmento com menos de 2 fatos não vira diálogo.
-   - **Recusas e encaminhamentos:** o enunciado pede pelo menos 10 diálogos em que o assistente recusa o que está fora do seu alcance e encaminha a quem pode ajudar. A função `gerar_recusas` gera um diálogo de 2 trocas para cada um dos 12 temas de `TEMAS_RECUSA`. Cada tema diz o que o cidadão pede e para onde o assistente encaminha:
-
-     | Tema | Encaminhamento |
-     |---|---|
-     | Diagnóstico | Unidade de saúde ou médico |
-     | Remédio | Unidade de saúde ou médico |
-     | Picada de bicho | SAMU (192) ou unidade de saúde |
-     | Estrutura da casa | Defesa Civil (199) |
-     | Emergência agora | Bombeiros (193) |
-     | Previsão exata | Alertas da Defesa Civil (SMS 40199) |
-     | Processo judicial | Defensoria Pública |
-     | Auxílio em dinheiro | CRAS (assistência social) |
-     | Seguro | Seguradora ou corretor |
-     | Obra pública | Prefeitura (156) |
-     | Dados de terceiros | Não passa dados de outras pessoas |
-     | Fora do assunto | Explica que só orienta sobre chuvas, alagamentos e deslizamentos |
-
-     Os temas não vêm de um trecho, então a citação da fonte não é acrescentada. Cada diálogo passa por uma trava própria: alternância cidadão/assistente com pelo menos 2 trocas; a primeira fala do assistente contém o encaminhamento do tema; nenhum número além dos de emergência; nada de "o trecho". Se falhar, é refeito, com até 3 tentativas; depois disso o tema é pulado e contado nas estatísticas. Os diálogos saem com `tipo` "recusa", `fonte` "recusa", sem páginas e sem segmento.
-   - **Divisão planejada dos segmentos:** antes de gerar, a função `planejar_divisao` reparte os segmentos entre perguntas e diálogos, na proporção do que cada um precisa. Antes (v1 a v7), as perguntas rodavam primeiro e ficavam com os documentos voltados ao morador (Periferia, Cartilha, Enchentes), e os diálogos só com as sobras técnicas. Agora todo documento contribui para os dois.
-   - **Leitura do JSON:** o modelo às vezes escreve vários blocos JSON seguidos em vez de um só (um bloco por troca do diálogo, uma fala por bloco, ou o bloco repetido). O código lê todos e junta os que têm a chave pedida (`fatos`, `perguntas`, `mensagens` ou `avaliacoes`), sem repetir perguntas; falas soltas viram a lista de mensagens.
-   - **Travas:** cada exemplo precisa passar pelas 6. Se falhar, o exemplo é refeito, com até 3 tentativas; depois disso o segmento é pulado e contado no relatório. O motivo de cada descarte fica registrado.
-     1. A saída é um JSON válido no formato pedido.
-     2. Nenhum número novo (telefone, prazo, quantidade), além dos de emergência.
-     3. **Filtro grosseiro de palavras:** pelo menos 25% das palavras importantes da resposta estão no trecho, comparadas pelo radical (as 5 primeiras letras), para "alagamentos" e "alagamento" contarem como a mesma palavra. Esse corte é só interno à trava: o texto do corpus não é alterado. Só barra a resposta muito longe do trecho; quem confere se a resposta acrescenta algo é o juiz (trava 6).
-     4. Nenhuma marcação da anonimização (`[NOME]` etc.).
-     5. Nada de falar "o trecho", "este documento", "isso aqui" etc., como se o leitor estivesse vendo o documento.
-     6. **Juiz:** o próprio modelo relê cada par de pergunta e resposta junto com o trecho e confere os critérios 1 a 3: se a resposta está **apoiada** no trecho, se **responde** exatamente o que foi perguntado e se **quem age** é o mesmo na pergunta e na resposta. Quando reprova, registra quais critérios falharam e o motivo numa frase. O juiz está no prompt `PROMPT_JUIZ` (linhas 362 a 381) e pode ser desligado pela constante `USAR_JUIZ` ou pelo parâmetro `juiz=False`.
-   - **Teto de segmentos tentados:** no máximo 3 segmentos tentados para cada segmento necessário nas perguntas, e 3 para cada diálogo pedido (no mínimo 6), para a geração não ficar em laço sem fim quando muitos segmentos são pulados.
-   - **Cache:** só o que deu certo fica salvo em [`dados/cache_geracao/`](dados/cache_geracao/) e é reaproveitado nas execuções seguintes. Recusas não são guardadas: depois de um ajuste no código ou no prompt, o segmento é tentado de novo. O nome do arquivo inclui a versão do prompt, o modelo e se o juiz e a etapa em fatos estavam ligados.
-   - **Conjunto fixo de avaliação:** a função `conjunto_avaliacao` sorteia, com semente fixa (2026), os mesmos 12 segmentos toda vez. Eles servem para comparar uma versão do prompt com outra sobre o mesmo material.
-   - **Revisão do grupo:** a amostra de 20% que o grupo revisa à mão é sorteada com semente fixa, então sai sempre igual.
-     - **Forma de registro:** um CSV por revisão na pasta [`revisao/`](revisao/), em UTF-8 com separador `;`, com as colunas `id`, `motivo_da_selecao` (amostra de 20% ou item suspeito escolhido a dedo), `fonte`, `paginas`, `pergunta / diálogo`, `resposta` (vazia nos diálogos), `rotulo (S/N)` e `motivo do N`. Os rótulos S/N são decididos pela Sarah; os motivos dos N são redigidos com apoio de IA.
-     - **Revisão do 7B** ([`revisao/rotulos_revisao_7b.csv`](revisao/rotulos_revisao_7b.csv)): 28 itens gerados pelo `Qwen2.5-7B-Instruct` (20 perguntas e 6 diálogos da amostra de 20%, mais 2 perguntas escolhidas por suspeita de erro de quem age). Resultado: **20 S e 8 N**, ou seja, 71% aprovados e 29% reprovados, abaixo da meta de 90%. Os 8 N: 3 em que a resposta não responde a pergunta, 2 com quem age trocado, 2 que falam "do trecho" ou "isso aqui" e 1 fora do foco do morador. Essa revisão motivou a troca para o 14B e o juiz (v5) e a geração em etapas (v8).
-     - **Medição do juiz:** a função `medir_juiz` roda as travas e o juiz sobre cada item de um CSV de revisão e compara com o rótulo humano. Devolve a matriz de confusão (humano S/N contra sistema aprova/reprova), a concordância e a lista de divergências, para o relatório.
-   - **Prompt completo:** em [`src/fabrica_corpus/geracao.py`](src/fabrica_corpus/geracao.py). Versão atual do prompt: `v8`.
-     - Personas: `PERSONA_ASSISTENTE`, `PERSONA_GERACAO`, `PERSONA_CIDADAO_GERACAO` e `PERSONA_CIDADAO` (linhas 77 a 100).
-     - Geração em etapas (v8): `PROMPT_FATOS`, `PROMPT_QA_FATOS` e `PROMPT_CHAT_FATOS` (linhas 158 a 206). Os critérios de qualidade ficam num comentário logo antes (linhas 146 a 151).
-     - Juiz: `PROMPT_JUIZ` (linhas 362 a 381).
-     - Geração direta, usada só com `USAR_FATOS = False`: `PROMPT_QA` e `PROMPT_CHAT` (linhas 102 a 143).
-8. **Exportação:** grava os corpus em JSONL (UTF-8, um JSON por linha, acentos sem escape), pela função `exportar_tudo` de [`exportacao.py`](src/fabrica_corpus/exportacao.py).
-   - **Arquivos e formatos:**
-
-     | Arquivo | Conteúdo | Campos |
-     |---|---|---|
-     | `corpus_texto.jsonl` | Segmentos dos 5 documentos de `dados/entrada` | `text`, `fonte`, `segmento_id` |
-     | `corpus_qa.jsonl` | Perguntas e respostas | `instruction` (pergunta), `input` (vazio), `output` (resposta, com o nome do documento citado no fim), `fonte`, `segmento_id` |
-     | `corpus_chat.jsonl` | Diálogos a partir dos trechos e de recusa | `messages` (`role`/`content`, com o `system` da persona primeiro), `fonte`, `tipo` (`chat` ou `recusa`), `segmento_id` (vazio nos de recusa) |
-     | `dados/saida_rag/corpus_rag.jsonl` | Segmentos dos 9 documentos (`dados/entrada` + `dados/entrada_ia_generativa`), para o RAG de IA Generativa | `id`, `texto`, `fonte`, `titulo` (de `geracao.TITULOS`), `paginas`, `tokens` |
-
-   - **Preparação por pasta:** cada pasta passa separadamente por ingestão, limpeza, anonimização e segmentação. Assim os segmentos dos 5 documentos são os mesmos no `corpus_texto`, na geração e no RAG, com os mesmos `id`.
-   - **Duplicatas:** removidas antes de gravar, mantendo a primeira ocorrência. Conta como duplicata o texto igual depois de normalizar espaços e caixa (só para comparar; o texto gravado não muda). Nas perguntas, conta a pergunta igual; nos diálogos, o texto de todas as falas. As contagens de removidos são devolvidas para o relatório.
-   - **Perguntas e diálogos vêm do arquivo de resultado da geração:** no fim da geração, o notebook grava `dados/geracao/resultado_v8.json` (função `gravar_resultado`), com a versão do prompt, o modelo, os exemplos aprovados e as estatísticas que a geração devolve (segmentos pulados, número de descartes e `motivos_descarte`, com a contagem de descartes por tipo de motivo, como "juiz (responde)"; nas recusas, os temas pulados). A exportação só lê esse arquivo: não repete a geração, não carrega modelo e não depende do cache. Se o arquivo não existir, ela avisa que é preciso rodar a geração antes.
-   - **Geração no notebook:** a função `gerar_perguntas_e_dialogos` divide os segmentos entre perguntas e diálogos (`planejar_divisao`) e gera, com o modelo, 100 perguntas, 30 diálogos a partir dos trechos e os 12 diálogos de recusa. Os de recusa vão para a lista `chat` do `resultado_v8.json`, depois dos outros, e entram no `corpus_chat.jsonl`. A exportação conta quantas recusas foram gravadas, para conferir o mínimo de 10.
-   - **Formato:** o dos corpus entregues, que segue o enunciado. A rastreabilidade fica pelo `segmento_id`; as páginas não vão para os corpus.
-   - **Finalização** ([`finalizacao.py`](src/fabrica_corpus/finalizacao.py)): o fluxo é geração (Qwen no Colab) -> revisão humana -> finalização. A finalização trabalha sobre os corpus já revisados da pasta [`entrega-final/`](entrega-final/), sem chamar o modelo nem usar o cache:
-     - refaz o `corpus_texto` pelo pipeline normal;
-     - tira as páginas da citação da fonte ("Fonte: Título, p. 7-9." vira "Fonte: Título."), mantendo o nome do documento;
-     - valida campos, tamanho mínimo, alternância das falas, duplicatas (sem acento, pontuação e caixa), quantidades mínimas e recusas válidas (a primeira fala do usuário tem que ser uma pergunta de verdade);
-     - quando a nova limpeza ou anonimização desloca a segmentação, aponta cada exemplo para o segmento com o mesmo conteúdo e registra a troca em `estatisticas.json` (`segmento_id_remapeados`);
-     - grava os 3 JSONL na própria pasta, atualiza as contagens do `estatisticas.json` (mantendo os dados da revisão humana) e refaz `amostras_5_por_corpus.json`.
-   - **Ajustes de revisão humana** nos exemplos (respostas reescritas, fontes das recusas) ficam registrados em [`entrega-final/REGISTRO_AJUSTES_EDITORIAIS.csv`](entrega-final/REGISTRO_AJUSTES_EDITORIAIS.csv), com antes, depois e motivo.
-9. **Relatório de qualidade:** número de exemplos, média de tokens, duplicatas removidas e 5 exemplos aleatórios.
-
-O corpus não passa por remoção de stop words nem por stemming: os textos dos 3 JSONL ficam com as palavras inteiras. A comparação pelas 5 primeiras letras existe só dentro da trava 3 da etapa 7, para conferir a resposta contra o trecho, e não muda nenhum texto.
-
-As perguntas e os diálogos são gerados pelo **Qwen2.5-14B-Instruct** (família Qwen), quantizado em 4 bits e rodando na GPU do Colab, sem API externa. O grupo revisa pelo menos 20% dos exemplos gerados. O modelo e o prompt estão descritos na etapa 7 e também serão informados no relatório.
+| Biblioteca | Uso |
+|---|---|
+| pypdf | Extração de texto de PDF |
+| python-docx | Extração de DOCX, incluindo tabelas |
+| beautifulsoup4 | Extração de HTML |
+| spaCy (`pt_core_news_md`) | Detecção de nomes de pessoas na anonimização |
+| transformers | Tokenizador do Qwen 2.5 (contagem de tokens) e geração |
+| bitsandbytes, accelerate, torch | Execução do Qwen quantizado em 4 bits na GPU (o torch já vem instalado no Colab; não está no `requirements.txt`) |
+| gradio | Interface |
+| pytest | Testes automatizados |
 
 ## Documentos de entrada
 
-Ficam em [`dados/entrada/`](dados/entrada/).
+Ficam em `dados/entrada`. São as versões dos links oficiais, conferidas por hash e ISBN.
 
 | Arquivo | Documento | Órgão | Ano | ISBN | Link oficial |
 |---|---|---|---|---|---|
 | `mcid_2026_mapeamento_riscos.pdf` | Mapeamento de Riscos: conceitos e métodos aplicados a processos geológicos e hidrológicos | Ministério das Cidades | 2026 | 978-85-7958-108-3 | [PDF](https://www.cidades.gov.br/images/stories/ArquivosPeriferias/ArquivosPDF/Mapeamento_de_riscos_21-10_digital.pdf) |
 | `ms_2025_plano_contingencia_chuvas.pdf` | Plano de Contingência para Emergências em Saúde Pública por Chuvas Intensas e Desastres Associados | Ministério da Saúde | 2025 | 978-65-5993-924-4 | [PDF](https://bvsms.saude.gov.br/bvs/publicacoes/plano_contingencia_emergencias_chuvas_desastres.pdf) |
 | `mcid_2024_periferia_sem_risco.pdf` | Periferia Sem Risco | Ministério das Cidades | 2024 | 978-85-7958-083-3 | [PDF](https://www.cidades.gov.br/images/stories/ArquivosPeriferias/ArquivosPDF/cartilhaperiferiasemrisco.pdf) |
-| `ms_2017_cartilha_alerta_chuvas.pdf` | Cartilha de Orientação à População no Período de Alerta de Chuvas Intensas | Ministério da Saúde | 2017 | — | [PDF](https://bvsms.saude.gov.br/bvs/publicacoes/cartilha_orientacao_populacao_chuvas_intensas.pdf) |
-| `ms_2026_enchentes.html` | Enchentes (página no gov.br) | Ministério da Saúde | 2026 (ano de acesso) | — | [Página](https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/e/enchentes) |
+| `ms_2017_cartilha_alerta_chuvas.pdf` | Cartilha de Orientação à População no Período de Alerta de Chuvas Intensas | Ministério da Saúde | 2017 | não tem | [PDF](https://bvsms.saude.gov.br/bvs/publicacoes/cartilha_orientacao_populacao_chuvas_intensas.pdf) |
+| `ms_2026_enchentes.html` | Enchentes (página do gov.br) | Ministério da Saúde | 2026 (ano de acesso) | não tem | [Página](https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/e/enchentes) |
 
-### Seleção de páginas
+## Corpus gerados
 
-Os PDFs ficam inteiros no repositório. A seleção é aplicada na ingestão, a partir de [`selecao_paginas.json`](dados/entrada/selecao_paginas.json). O HTML não tem páginas e entra inteiro.
+Ficam em `entrega-final`.
 
-| Documento | Páginas excluídas | Motivo |
+| Arquivo | Conteúdo | Quantidade |
 |---|---|---|
-| Mapeamento de Riscos (MCid, 2026) | 1–6, 109–111 (usadas 102 de 111) | Capa (p. 1), folha de rosto (p. 2), ficha catalográfica e expediente com nomes (p. 3), listas de figuras e quadros (p. 4–5), sumário (p. 6), minibiografias dos autores (p. 109), página em branco (p. 110) e quarta capa (p. 111). |
-| Cartilha Alerta de Chuvas (MS, 2017) | 1–4, 24 (usadas 19 de 24) | Capa, folha de rosto, ficha catalográfica e expediente com nomes, sumário e contracapa. |
-| Plano de Contingência (MS, 2025) | 1–6, 68–71, 78 (usadas 67 de 78) | Capa, folha de rosto, ficha catalográfica e expediente com nomes (p. 3), lista de siglas (p. 4–5), sumário (p. 6), referências bibliográficas (p. 68–71) e contracapa (p. 78). |
-| Periferia Sem Risco (MCid, 2024) | 1–2, 10–12 (usadas 7 de 12) | Capa e contracapa (só imagem) e expediente com nomes (p. 10). |
+| `corpus_texto.jsonl` | Trechos de 256 a 512 tokens (`text`, `fonte`, `segmento_id`) | 307 trechos |
+| `corpus_qa.jsonl` | Perguntas e respostas (`instruction`, `input`, `output`, `fonte`, `segmento_id`) | 100 pares |
+| `corpus_chat.jsonl` | Diálogos com papéis system, user e assistant (`messages`, `fonte`, `tipo`, `segmento_id`) | 31 diálogos, 11 recusas |
 
-## Documentos ampliados (RAG de IA Generativa)
+Também estão em `entrega-final`: `estatisticas.json` (contagens, médias de tokens e duplicatas), `amostras_5_por_corpus.json` (5 exemplos aleatórios de cada corpus), a revisão humana de 20% (`revisao_humana_20_porcento.csv`) e o registro de cada ajuste feito nos exemplos (`REGISTRO_AJUSTES_EDITORIAIS.csv`).
 
-Ficam em [`dados/entrada_ia_generativa/`](dados/entrada_ia_generativa/).
-**Não entram no corpus avaliado da NLP**, que usa só os 5 documentos acima. Servem para o corpus ampliado (9 documentos) usado no RAG da disciplina de IA Generativa.
+## Corpus ampliado para a IA Generativa
 
-| Arquivo | Documento | Órgão | Ano | Link oficial |
-|---|---|---|---|---|
-| `mdr_2021_guia_alertas_desastres.pdf` | Guia Prático de Utilização de Alertas do Governo Federal para Ações de Preparação para Desastres (2ª ed.) | Ministério do Desenvolvimento Regional | 2021 | _Pendente_ |
-| `mi_2003_manual_desastres_naturais.pdf` | Manual de Desastres, Volume I: Desastres Naturais | Ministério da Integração Nacional | 2003 | _Pendente_ |
-| `pmsp_2024_chuvas_excessivas.pdf` | Chuvas excessivas: Saiba como agir (página da Defesa Civil, salva em PDF) | Prefeitura de São Paulo | 2024 | [Página](https://prefeitura.sp.gov.br/web/defesa_civil/w/cuidados_importantes/179951) |
-| `cgesp_2026_dicas_alagamentos.docx` | Dicas sobre alagamentos e enchentes (texto transcrito da página) | CGE – Prefeitura de São Paulo | 2026 (ano de acesso) | _Pendente: link da página original no cgesp.org_ |
-
-### Seleção de páginas
-
-Os PDFs ficam inteiros no repositório. A seleção é aplicada na ingestão, a partir de [`selecao_paginas.json`](dados/entrada_ia_generativa/selecao_paginas.json).
-
-| Documento | Páginas usadas | Motivo |
-|---|---|---|
-| Manual de Desastres (MI, 2003) | 40–41, 48–52, 108–117 (17 de 174) | Só os capítulos sobre inundações, enxurradas, alagamentos e deslizamentos. Excluídas: créditos (p. 3), manejo rural de bacias (p. 42–47), inundações litorâneas (p. 53), introdução de geomorfologia (p. 102–107), rastejos e quedas de rochas (p. 118–121). |
-| Guia Prático de Alertas (MDR, 2021) | Todas, exceto a p. 2 (45 de 46) | A p. 2 é a página de créditos, com nomes reais. |
-
-### Arquivo para o RAG
-
-O RAG de IA Generativa lê o corpus ampliado pelo link raw do GitHub:
+O `corpus_rag.jsonl` fica em `dados/saida_rag/` e é lido pelo RAG da disciplina de IA Generativa pelo link raw do GitHub:
 
 ```
 https://raw.githubusercontent.com/sarahmfurlan-sudo/radar-cidadao/main/nlp-fabrica-corpus/dados/saida_rag/corpus_rag.jsonl
 ```
 
-- **Conteúdo:** 356 segmentos dos 9 documentos (307 dos 5 documentos de entrada e 49 dos 4 ampliados), já limpos, anonimizados e com 256 a 512 tokens (2 segmentos curtos, no fim de documento).
-- **Campos de cada linha:** `id`, `texto`, `fonte` (nome do arquivo), `titulo` (título legível, para citar a fonte na resposta), `paginas` (lista vazia para HTML e DOCX) e `tokens` (contados com o tokenizador do Qwen 2.5).
-- **Formato:** UTF-8, um JSON por linha.
+Ele tem 356 trechos de 9 documentos: os 5 de `dados/entrada` e os 4 de `dados/entrada_ia_generativa`, preparados pelo mesmo pipeline (limpeza, anonimização e segmentação). Cada linha tem `id`, `texto`, `fonte`, `titulo`, `paginas` e `tokens`. Esse corpus não faz parte da avaliação da NLP.
 
-## Arquivo de teste
+## Proteção de dados
 
-Os formatos TXT, DOCX e texto colado serão demonstrados com um arquivo de teste com **dados pessoais fictícios**. O mesmo arquivo serve para mostrar o "antes e depois" da anonimização. Ele fica em [`dados/teste/`](dados/teste/), junto com o script `gerar_docx.py`, que gera o DOCX a partir do TXT.
+Nenhum dado pessoal real aparece nos corpus. CPF, e-mail, telefone e nomes de pessoas, inclusive sobrenomes de autores em citações, são mascarados como `[CPF]`, `[EMAIL]`, `[TELEFONE]` e `[NOME]` antes da geração. Os números de emergência (190, 192, 193, 199 e 40199) e os contatos de órgãos públicos são mantidos. Os arquivos de `dados/teste` contêm só dados fictícios.
 
-## Bibliotecas
-
-As versões fixadas estão em [`requirements.txt`](requirements.txt). `gradio` é usado pela interface ([`interface.py`](src/fabrica_corpus/interface.py)); `accelerate` e `bitsandbytes` só são usados na geração com GPU.
-
-| Biblioteca | Uso |
-|---|---|
-| `pypdf` | Extração de texto de PDF |
-| `python-docx` | Extração de texto de DOCX |
-| `beautifulsoup4` | Extração de texto de HTML |
-| `gradio` | Interface |
-| `transformers`, `accelerate`, `bitsandbytes` | Execução do modelo Qwen quantizado na GPU |
-| `spacy` (`pt_core_news_md`) | Detecção de nomes de pessoas |
-| `transformers` (tokenizador do Qwen 2.5) | Contagem de tokens |
-
-## Estrutura da pasta
+## Estrutura
 
 | Caminho | Conteúdo |
 |---|---|
-| `fabrica_corpus.ipynb` | Notebook final do Colab: pipeline, relatório de qualidade e interface Gradio |
-| `src/fabrica_corpus/` | Módulos Python de cada etapa (`ingestao`, `limpeza`, `anonimizacao`, `segmentacao`, `geracao`, `exportacao`, `finalizacao` e `interface`) |
-| `entrega-final/` | Corpus finais revisados, estatísticas, revisão humana e registro de ajustes |
-| `dados/entrada/` | Documentos de entrada |
-| `dados/cache_geracao/` | Saídas do Qwen salvas para reaproveitar entre execuções |
-| `dados/geracao/` | Resultado de cada geração (`resultado_v8.json`): exemplos aprovados e estatísticas, lido pela exportação |
-| `dados/saida/` | Os 3 corpus JSONL e o relatório de qualidade |
-| `dados/saida_rag/` | Corpus ampliado (9 documentos) para o RAG de IA Generativa |
-| `revisao/` | Amostra revisada pelo grupo (mínimo de 20%) |
+| `fabrica_corpus.ipynb` | Notebook de entrada, com a interface Gradio |
+| `src/fabrica_corpus/` | Módulos de cada etapa: ingestão, limpeza, anonimização, segmentação, geração, exportação, finalização e interface (Gradio) |
+| `dados/entrada/` | Os 5 documentos de entrada e a seleção de páginas (`selecao_paginas.json`: as páginas de capa, créditos, sumário e referências que ficam de fora de cada PDF) |
+| `dados/entrada_ia_generativa/` | Os 4 documentos extras do corpus ampliado da IA Generativa (com a seleção de páginas deles) |
+| `dados/teste/` | Arquivos de teste com dados fictícios (TXT e DOCX) |
+| `dados/saida_rag/` | `corpus_rag.jsonl`, o corpus ampliado lido pelo RAG da IA Generativa |
+| `dados/cache_geracao/` | Pasta do cache das respostas do Qwen; na geração no Colab o cache ficou no Google Drive |
+| `dados/saida/` | Pasta de saída padrão da exportação (vazia: os corpus finais estão em `entrega-final`) |
+| `entrega-final/` | Corpus e arquivos de qualidade da entrega |
+| `revisao/` | Rótulos da revisão humana da primeira versão, com o Qwen 7B (`rotulos_revisao_7b.csv`) |
 | `logs/` | Logs de execução (não versionados) |
-| `tests/` | Testes automáticos de cada módulo (`pytest`) |
+| `tests/` | Testes automatizados |
+| `Relatorio_NLP_Radar_Cidadao.pdf` | Relatório da disciplina |
 
-## Integrantes
+## Limitações
 
-| Nome completo | RM |
-|---|---|
-| Sarah Marangoni Furlan | 566764 |
-| Mario Antônio de Oliveira | 567713 |
-| Vinicius Augusto Silva | 566830 |
+- Tabelas de PDF chegam com as colunas misturadas, e palavras compostas quebradas no hífen são unidas sem o hífen.
+- Um nome de uma palavra só, que não apareceu completo antes, não é mascarado.
+- As perguntas e os diálogos foram gerados por modelo e revisados por amostragem. Não substituem as orientações oficiais da Defesa Civil.
+
+## Links
+
+- Vídeo de demonstração: [inserir o link do vídeo]

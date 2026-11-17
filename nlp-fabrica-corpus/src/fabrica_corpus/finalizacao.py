@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import Callable
 
 from .exportacao import ENTRADA, RAIZ, gravar_jsonl, linha_texto, preparar_segmentos
+from .segmentacao import contar_tokens_qwen
 
 ENTREGA = RAIZ / "entrega-final"
 MINIMOS = {"texto": 50, "qa": 100, "chat": 30}
@@ -149,6 +150,20 @@ def estimar_tokens(e: dict) -> int:
     return len(re.findall(r"\w+|[^\w\s]", json.dumps(e, ensure_ascii=False)))
 
 
+def tokens_do_exemplo(e: dict, tipo: str, contar: Callable[[str], int]) -> int:
+    """Tokens do conteúdo de um exemplo, com o tokenizador do Qwen (o mesmo da segmentação).
+
+    texto: o trecho; qa: instruction + input + output; chat: o conteúdo de todas as
+    mensagens, incluindo a do system. Campos como fonte e segmento_id não contam."""
+    if tipo == "texto":
+        partes = [e["text"]]
+    elif tipo == "qa":
+        partes = [e["instruction"], e["input"], e["output"]]
+    else:
+        partes = [m["content"] for m in e["messages"]]
+    return sum(contar(p) for p in partes if p)
+
+
 # ------------------------------------------------------------ finalização
 def finalizar(pasta: str | Path = ENTREGA, segmentos: list | None = None,
               contar: Callable[[str], int] | None = None) -> dict:
@@ -158,6 +173,7 @@ def finalizar(pasta: str | Path = ENTREGA, segmentos: list | None = None,
     pasta = Path(pasta)
     if segmentos is None:
         segmentos, _ = preparar_segmentos(ENTRADA, contar)
+    contar = contar or contar_tokens_qwen
 
     qa_lido = ler_jsonl(pasta / "corpus_qa.jsonl")
     chat_lido = ler_jsonl(pasta / "corpus_chat.jsonl")
@@ -182,6 +198,8 @@ def finalizar(pasta: str | Path = ENTREGA, segmentos: list | None = None,
         metricas[tipo] = {"quantidade": len(validos), "minimo": MINIMOS[tipo],
                           "quantidade_atingida": len(validos) >= MINIMOS[tipo],
                           "media_tokens_aprox": round(statistics.mean(map(estimar_tokens, validos)), 1) if validos else 0,
+                          "media_tokens_qwen": round(statistics.mean(tokens_do_exemplo(e, tipo, contar)
+                                                                      for e in validos), 1) if validos else 0,
                           "duplicatas_removidas": dup, "invalidos_removidos": len(invalidos),
                           "detalhes_invalidos": invalidos[:40]}
     recusas = [e for e in finais["chat"] if e["tipo"] == "recusa"]
@@ -234,7 +252,7 @@ def _atualizar_estatisticas(caminho: Path, metricas: dict) -> None:
     anteriores = estat.get("finalizacao", {}).get("segmento_id_remapeados", {})
     for tipo in MINIMOS:
         bloco = estat.setdefault(tipo, {})
-        for campo in ("quantidade", "minimo", "quantidade_atingida", "media_tokens_aprox"):
+        for campo in ("quantidade", "minimo", "quantidade_atingida", "media_tokens_aprox", "media_tokens_qwen"):
             bloco[campo] = metricas[tipo][campo]
     estat["recusas_validas"] = metricas["recusas_validas"]
     estat["recusas_atingidas"] = metricas["recusas_atingidas"]

@@ -5,7 +5,8 @@
     "quantidade_atingida": true,
     "media_tokens_aprox": 326.5,
     "duplicatas_removidas": 0,
-    "invalidos_removidos": 0
+    "invalidos_removidos": 0,
+    "media_tokens_qwen": 480.6
   },
   "qa": {
     "quantidade": 100,
@@ -13,7 +14,8 @@
     "quantidade_atingida": true,
     "media_tokens_aprox": 93.1,
     "duplicatas_removidas": 15,
-    "invalidos_removidos": 1
+    "invalidos_removidos": 1,
+    "media_tokens_qwen": 74.8
   },
   "chat": {
     "quantidade": 31,
@@ -21,7 +23,8 @@
     "quantidade_atingida": true,
     "media_tokens_aprox": 306.8,
     "duplicatas_removidas": 0,
-    "invalidos_removidos": 0
+    "invalidos_removidos": 0,
+    "media_tokens_qwen": 246.8
   },
   "recusas_validas": 11,
   "recusas_atingidas": true,

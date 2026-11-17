@@ -17,6 +17,9 @@ def chat(falas, tipo="chat", fonte="ms_2017_cartilha_alerta_chuvas.pdf", seg="ms
     return {"messages": mensagens, "fonte": fonte, "tipo": tipo, "segmento_id": seg}
 
 
+CONTAR = lambda t: len(t.split())   # contador simples no lugar do tokenizador do Qwen
+
+
 CITACAO = "\n\nFonte: Cartilha de Alerta de Chuvas Intensas, do Ministério da Saúde (2017)"
 
 
@@ -78,12 +81,15 @@ def test_finalizar_grava_sem_paginas_e_preserva_revisao(tmp_path):
     segmentos = [Segmento(id="ms_2017_cartilha_alerta_chuvas_0001", fonte="ms_2017_cartilha_alerta_chuvas.pdf",
                           tipo="pdf", paginas=[1], texto="Durante a enchente, desligue a energia elétrica da casa.")]
 
-    m = finalizar(tmp_path, segmentos=segmentos)
+    m = finalizar(tmp_path, segmentos=segmentos, contar=CONTAR)
 
     assert m["qa"]["quantidade"] == 3 and m["qa"]["duplicatas_removidas"] == 1
     assert m["paginas_removidas"] == {"qa": 3, "chat": 1} and m["respostas_com_paginas"] == 0
     assert m["recusas"] == 1 and m["recusas_validas"] == 0 and not m["recusas_atingidas"]
+    # média de tokens do conteúdo (pergunta + resposta), sem contar fonte e segmento_id
     gravado = [json.loads(l) for l in (tmp_path / "corpus_qa.jsonl").read_text(encoding="utf-8").splitlines()]
+    esperado = sum(CONTAR(e["instruction"]) + CONTAR(e["output"]) for e in gravado) / len(gravado)
+    assert m["qa"]["media_tokens_qwen"] == round(esperado, 1)
     assert all("p. " not in e["output"] for e in gravado)
     texto = json.loads((tmp_path / "corpus_texto.jsonl").read_text(encoding="utf-8").splitlines()[0])
     assert texto == {"text": segmentos[0].texto, "fonte": segmentos[0].fonte, "segmento_id": segmentos[0].id}
@@ -94,7 +100,7 @@ def test_finalizar_grava_sem_paginas_e_preserva_revisao(tmp_path):
 
     # rodar de novo dá o mesmo resultado
     antes = (tmp_path / "corpus_qa.jsonl").read_text(encoding="utf-8")
-    finalizar(tmp_path, segmentos=segmentos)
+    finalizar(tmp_path, segmentos=segmentos, contar=CONTAR)
     assert (tmp_path / "corpus_qa.jsonl").read_text(encoding="utf-8") == antes
 
 
@@ -113,13 +119,13 @@ def test_finalizar_remapeia_segmento_deslocado(tmp_path):
     novos = [Segmento(id=f"{base}_0001", fonte=f"{base}.pdf", tipo="pdf", paginas=[2],
                       texto="Enxurradas acontecem quando a água corre rápido pelas ruas íngremes.")]
 
-    m = finalizar(tmp_path, segmentos=novos)
+    m = finalizar(tmp_path, segmentos=novos, contar=CONTAR)
 
     assert m["segmento_id_remapeados"] == {f"{base}_0002": f"{base}_0001"}
     gravado = json.loads((tmp_path / "corpus_qa.jsonl").read_text(encoding="utf-8"))
     assert gravado["segmento_id"] == f"{base}_0001"
 
     # rodar de novo não apaga o registro do remapeamento feito antes
-    assert finalizar(tmp_path, segmentos=novos)["segmento_id_remapeados"] == {}
+    assert finalizar(tmp_path, segmentos=novos, contar=CONTAR)["segmento_id_remapeados"] == {}
     estat = json.loads((tmp_path / "estatisticas.json").read_text(encoding="utf-8"))
     assert estat["finalizacao"]["segmento_id_remapeados"] == {f"{base}_0002": f"{base}_0001"}
