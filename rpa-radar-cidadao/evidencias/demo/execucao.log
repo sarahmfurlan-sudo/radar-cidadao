@@ -1,12 +1,12 @@
-2026-11-16 18:22:03,708 INFO linha=2 id_hash=d137bcef3d09dba5 categoria=alagamento status=orientacao_geral
-2026-11-16 18:22:03,711 INFO linha=3 id_hash=bcaed22546e5b30c categoria=deslizamento status=orientacao_geral
-2026-11-16 18:22:03,713 INFO linha=4 id_hash=24952f69fba29c0b categoria=chuva_intensa status=orientacao_geral
-2026-11-16 18:22:03,714 INFO linha=5 id_hash=7b7aba1fe1c2ff1e categoria=possivel_urgencia status=encaminhar_imediatamente
-2026-11-16 18:22:03,716 INFO linha=6 id_hash=2cd708f5775286e2 categoria=outros status=fora_escopo
-2026-11-16 18:22:03,716 WARNING linha=7 status=invalido tipo=ValueError
-2026-11-16 18:22:03,718 INFO linha=8 id_hash=4ef80ea288471983 categoria=alagamento status=orientacao_geral
-2026-11-16 18:22:03,720 INFO linha=9 id_hash=bc1f7e21e36284b0 categoria=chuva_intensa status=orientacao_geral
-2026-11-16 18:22:03,722 INFO linha=10 id_hash=2b6b22e75cd6ba3e categoria=deslizamento status=orientacao_geral
-2026-11-16 18:22:03,724 INFO linha=11 id_hash=52ebfd3d505a055b categoria=alagamento status=orientacao_geral
-2026-11-16 18:22:03,726 INFO linha=12 id_hash=5222b7efcffa66de categoria=outros status=fora_escopo
-2026-11-16 18:22:03,727 INFO linha=13 id_hash=10e1dfbcb485cc1a categoria=possivel_urgencia status=encaminhar_imediatamente
+2026-11-17 17:02:52,791 INFO linha=2 id_hash=d137bcef3d09dba5 categoria=alagamento status=orientacao_geral
+2026-11-17 17:02:52,792 INFO linha=3 id_hash=bcaed22546e5b30c categoria=deslizamento status=orientacao_geral
+2026-11-17 17:02:52,794 INFO linha=4 id_hash=24952f69fba29c0b categoria=chuva_intensa status=orientacao_geral
+2026-11-17 17:02:52,795 INFO linha=5 id_hash=7b7aba1fe1c2ff1e categoria=possivel_urgencia status=encaminhar_imediatamente
+2026-11-17 17:02:52,796 INFO linha=6 id_hash=2cd708f5775286e2 categoria=outros status=fora_escopo
+2026-11-17 17:02:52,796 WARNING linha=7 status=invalido tipo=ValueError
+2026-11-17 17:02:52,797 INFO linha=8 id_hash=4ef80ea288471983 categoria=alagamento status=orientacao_geral
+2026-11-17 17:02:52,798 INFO linha=9 id_hash=bc1f7e21e36284b0 categoria=chuva_intensa status=orientacao_geral
+2026-11-17 17:02:52,800 INFO linha=10 id_hash=2b6b22e75cd6ba3e categoria=deslizamento status=orientacao_geral
+2026-11-17 17:02:52,801 INFO linha=11 id_hash=52ebfd3d505a055b categoria=alagamento status=orientacao_geral
+2026-11-17 17:02:52,802 INFO linha=12 id_hash=5222b7efcffa66de categoria=outros status=fora_escopo
+2026-11-17 17:02:52,803 INFO linha=13 id_hash=10e1dfbcb485cc1a categoria=possivel_urgencia status=encaminhar_imediatamente

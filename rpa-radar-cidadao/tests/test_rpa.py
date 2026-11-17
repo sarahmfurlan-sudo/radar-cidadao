@@ -35,9 +35,9 @@ def test_entrada_vazia_revisao(modelo):
 
 
 def test_anonimizacao():
-    txt = proteger_dados("email: exemplo@teste.com CPF 123.456.789-09 telefone (11) 99999-8888")
-    assert "exemplo@teste.com" not in txt
-    assert "123.456.789-09" not in txt
+    txt = proteger_dados("email: exemplo@example.com CPF 123.456.789-10 telefone (20) 99999-8888")
+    assert "exemplo@example.com" not in txt
+    assert "123.456.789-10" not in txt
     assert "99999-8888" not in txt
     assert "[CPF]" in txt and "[EMAIL]" in txt and "[TELEFONE]" in txt
 
@@ -75,11 +75,11 @@ def test_idempotencia(tmp_path):
 
 def test_saida_sem_dados_pessoais(tmp_path):
     entrada = tmp_path / "a.csv"
-    criar_csv(entrada, [("a", "A rua alagou. email teste@example.org CPF 123.456.789-09")])
+    criar_csv(entrada, [("a", "A rua alagou. email teste@example.org CPF 123.456.789-10")])
     destino = tmp_path / "saida"
     processar(entrada, destino)
     txt = (destino / "resultados.csv").read_text(encoding="utf-8-sig")
-    assert "teste@example.org" not in txt and "123.456.789-09" not in txt
+    assert "teste@example.org" not in txt and "123.456.789-10" not in txt
     assert "[EMAIL]" in txt and "[CPF]" in txt
 
 

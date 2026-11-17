@@ -1,0 +1,90 @@
+GOVERNO DO ESTADO DE SÃO PAULO
+SECRETARIA DA SEGURANÇA PÚBLICA
+COORDENADORIA ESTADUAL DE PROTEÇÃO E DEFESA CIVIL (CEDEC-SP)
+
+================================================================================
+MANUAL DE AUTOPROTEÇÃO DO CIDADÃO: INUNDAÇÕES, ENXURRADAS E ALAGAMENTOS URBANOS
+================================================================================
+Referência Técnica: CEDEC-SP / PPDC (Plano Preventivo de Defesa Civil)
+Abrangência: Região Metropolitana de São Paulo e Municípios Paulistas
+Total de Páginas do Documento: 6
+
+[PÁGINA 1 de 6]
+--------------------------------------------------------------------------------
+SEÇÃO 1: CONCEITOS E TIPOLOGIAS DE DESASTRES HIDROLÓGICOS (COBRADE)
+--------------------------------------------------------------------------------
+1.1. Classificação Oficial (COBRADE - Classificação e Codificação Brasileira de Desastres):
+A Coordenadoria Estadual de Proteção e Defesa Civil de São Paulo (CEDEC-SP) adota a classificação técnica federal para diferenciar os fenômenos hidrológicos que afetam áreas urbanas:
+- Alagamento Urbano (COBRADE 1.2.3.0.0): Acúmulo momentâneo de águas no leito das ruas e nos perímetros urbanos, decorrente de precipitações intensas e da deficiência de escoamento nos sistemas de microdrenagem (bueiros, bocas de lobo, sarjetas e galerias pluviais obstruídas por resíduos sólidos).
+- Enxurrada ou Inundação Brusca (COBRADE 1.2.2.0.0): Escoamento superficial concentrado e de alta velocidade, provocado por chuvas intensas em bacias impermeabilizadas ou de relevo acentuado. Apresenta elevado poder destrutivo e arraste hidrodinâmico.
+- Inundação Gradual (COBRADE 1.2.1.0.0): Subida das águas de rios, canais e córregos que extravasam de sua calha normal e atingem a planície marginal (várzea) de forma progressiva.
+
+1.2. Dinâmica de Formação de Alagamentos na Metrópole:
+A impermeabilização do solo urbano impede a infiltração natural da água da chuva. Quando bueiros e bocas de lobo encontram-se bloqueados por lixo doméstico ou entulho de obras em via pública, o volume pluvial acumula-se rapidamente na superfície asfáltica, gerando pontos intransitáveis em menos de 15 minutos de precipitação forte.
+
+[PÁGINA 2 de 6]
+--------------------------------------------------------------------------------
+SEÇÃO 2: MEDIDAS PREVENTIVAS (ANTES DO EVENTO PLUVIOMÉTRICO)
+--------------------------------------------------------------------------------
+2.1. Zeladoria Colaborativa e Manutenção no Entorno Residencial:
+- Manter ralos internos, calhas de telhado, rufos e condutores pluviais desobstruídos, removendo folhas, galhos e sedimentos antes do início do período chuvoso (outubro a março).
+- Não descartar sacos de lixo domiciliar, restos de poda, garrafas plásticas ou entulho de construção civil nas calçadas e sarjetas fora do horário exato da coleta municipal. O material depositado na via pública é arrastado pela enxurrada até as grelhas das bocas de lobo, provocando o represamento da água e o alagamento da rua.
+- Ao identificar bueiros entupidos, tampas quebradas ou acúmulo de entulho em via pública em tempo seco, registrar imediatamente um relato nos canais de zeladoria urbana (como o Radar Cidadão e a Central 156) para encaminhamento à subprefeitura responsável.
+
+2.2. Preparação Familiar em Áreas Sujeitas a Alagamento:
+- Elevar móveis, eletrodomésticos e alimentos armazenados para cotas superiores ao nível histórico de inundação do imóvel.
+- Guardar documentos pessoais (RG, CPF, certidões, escrituras), receitas médicas e medicamentos de uso contínuo dentro de sacos plásticos vedados, posicionados em local elevado e de pronto alcance para evacuação.
+- Cadastrar o telefone celular no serviço gratuito de alertas da Defesa Civil Estadual enviando o número do CEP por SMS para o número 40199.
+- Definir previamente com a família uma rota de saída segura para locais altos e um ponto de encontro fora da mancha de inundação.
+
+[PÁGINA 3 de 6]
+--------------------------------------------------------------------------------
+SEÇÃO 3: PROCEDIMENTOS DE CONDUTA DURANTE O ALAGAMENTO (FASE DE RESPOSTA)
+--------------------------------------------------------------------------------
+3.1. Conduta Segura no Interior de Edificações:
+- Ao observar que a água na via pública iniciou elevação em direção ao imóvel, desligue imediatamente a chave geral de energia elétrica (disjuntor principal) e feche o registro geral de gás (botijão GLP ou gás encanado).
+- REGRA CRÍTICA DE SEGURANÇA ELÉTRICA: Jamais toque em equipamentos elétricos, tomadas, interruptores ou no quadro de distribuição se estiver descalço, com as mãos úmidas ou pisando em piso molhado. Se a água já tiver atingido o nível das tomadas, não tente acessar o disjuntor; evacue a área e acione o Corpo de Bombeiros (193).
+- Nunca desça a subsolos, porões ou garagens subterrâneas durante chuvas intensas para tentar retirar veículos. Garagens subterrâneas comportam-se como reservatórios confinados e inundam com velocidade letal, impedindo a abertura de portas pela pressão hidrostática.
+- Dirija-se imediatamente aos pavimentos superiores da edificação. Em imóveis térreos sob risco de submersão, saia antes que a lâmina d'água atinja 15 centímetros na via.
+
+[PÁGINA 4 de 6]
+--------------------------------------------------------------------------------
+SEÇÃO 4: PROIBIÇÃO DE TRAVESSIA A PÉ E PROCEDIMENTOS PARA MOTORISTAS
+--------------------------------------------------------------------------------
+4.1. Proibição Estrita de Travessia a Pé:
+- NUNCA tente caminhar, nadar ou atravessar ruas alagadas ou enxurradas. Uma lâmina de água de apenas 15 centímetros (altura do tornozelo) em movimento possui energia cinética suficiente para derrubar um adulto e arrastá-lo pela correnteza.
+- A água turva de alagamento oculta bueiros com tampas deslocadas pela pressão interna das galerias (que geram vórtices de sucção fatal), buracos profundos no pavimento, objetos perfurocortantes e cabos da rede elétrica rompidos e energizados.
+
+4.2. Procedimentos Obrigatórios para Condutores de Veículos:
+- NUNCA tente atravessar trechos alagados dirigindo automóveis, motocicletas, vans ou utilitários. Uma lâmina de água de 30 centímetros (metade da roda de um carro de passeio) reduz o peso efetivo do veículo pelo empuxo hidrostático, causando perda de aderência dos pneus e flutuação lateral. Com 60 centímetros, veículos utilitários e caminhonetes são arrastados.
+- Caso a rua comece a alagar enquanto estiver no trânsito, estacione imediatamente em um ponto alto, abandone o veículo se a água continuar subindo na via e busque abrigo seguro em edifícios elevados.
+- Se o motor do veículo apagar dentro da área alagada, NÃO tente dar a partida novamente (o acionamento provoca aspiração de água pelos cilindros, travamento mecânico imediato e perda de tempo crítico de evacuação). Se a água atingir o nível da porta ou assoalho, destrave as portas, saia pela janela ou pelo lado oposto ao fluxo da correnteza e desloque-se para o teto do veículo ou ponto elevado, acionando o 193 (Corpo de Bombeiros).
+
+[PÁGINA 5 de 6]
+--------------------------------------------------------------------------------
+SEÇÃO 5: AÇÕES DE RECUPERAÇÃO E RETORNO SEGURO (APÓS A BAIXA DAS ÁGUAS)
+--------------------------------------------------------------------------------
+5.1. Vistoria Estrutural e Riscos Residenciais:
+- Somente retorne ao interior do imóvel após o escoamento total das águas e a verificação de que não há risco estrutural ou elétrico.
+- Inspecione visualmente paredes, colunas, muros de arrimo e pisos em busca de trincas diagonais, rachaduras, afundamento de solo, inclinação de postes ou portas e janelas que deixaram de fechar. A presença de qualquer um desses sinais indica comprometimento estrutural: evacue imediatamente o local e solicite vistoria técnica da Defesa Civil pelo telefone 199.
+- Verifique a presença de animais sinantrópicos e peçonhentos (ratos, escorpiões, aranhas e serpentes) que buscam refúgio em partes secas das residências, dentro de calçados, armários e sob entulhos após a inundação.
+
+5.2. Protocolo Sanitário de Limpeza e Desinfecção:
+- A água e a lama residual de alagamentos urbanos estão contaminadas por esgoto sanitário e pela bactéria Leptospira interrogans (presente na urina de roedores), causadora da Leptospirose, além de agentes transmissores de Hepatite A, febre tifoide e gastroenterites severas.
+- NUNCA realize a limpeza de lama sem proteção impermeável: utilize obrigatoriamente botas de borracha de cano alto e luvas de borracha grossa. Na ausência de botas e luvas, envolva pés e mãos com sacos plásticos duplos bem vedados.
+- Após remover a lama grossa com água e sabão, desinfete pisos, paredes, bancadas e utensílios aplicando solução de hipoclorito de sódio (água sanitária a 2,5%): dilua 1 copo americano (200 ml) de água sanitária para cada balde de 10 litros de água limpa, deixando agir por 30 minutos.
+
+[PÁGINA 6 de 6]
+--------------------------------------------------------------------------------
+SEÇÃO 6: DESCARTE DE INSUMOS CONTAMINADOS E CANAIS OFICIAIS DE ATENDIMENTO
+--------------------------------------------------------------------------------
+6.1. Segurança Alimentar e Hidráulica:
+- Descarte integralmente todos os alimentos (perecíveis, grãos, caixas de leite, embalagens plásticas, papelão e inclusive enlatados amassados, oxidados ou com tampas de rosca) que tiveram contato direto ou indireto com a água do alagamento.
+- Descarte todos os medicamentos, cosméticos e produtos de higiene pessoal atingidos pela água ou lama.
+- Caso o reservatório subterrâneo (cisterna) ou caixa d'água tenha sofrido infiltração, a água não deve ser consumida até o esgotamento, lavagem e cloração do reservatório. Em situação emergencial, filtre e ferva a água por 5 minutos antes do consumo, ou adicione 2 gotas de hipoclorito de sódio a 2,5% por litro de água, aguardando 30 minutos antes de beber.
+- Caso apresente febre, dor de cabeça e dores musculares (especialmente nas panturrilhas) nos 30 dias seguintes ao contato com água de enchente, procure imediatamente uma Unidade Básica de Saúde (UBS) ou pronto-socorro e informe ao médico que teve contato com água de alagamento.
+
+6.2. Canais Telefônicos Oficiais (Atendimento Gratuito 24 Horas):
+- 193 — Corpo de Bombeiros da Polícia Militar: Acionamento imediato em emergências com risco à vida, pessoas ilhadas, veículos arrastados, afogamentos, choques elétricos e desabamentos.
+- 199 — Defesa Civil: Acionamento para alertas, vistorias técnicas em imóveis com trincas ou risco de colapso, apoio humanitário e abrigamento emergencial.
+- 156 — Central de Atendimento da Prefeitura de São Paulo: Solicitação de serviços de zeladoria urbana preventiva (limpeza e desobstrução de bueiros e bocas de lobo, coleta de entulho e manutenção de galerias) em períodos sem risco imediato à vida.

@@ -6,9 +6,9 @@
 
 ## Integrantes
 
-Mario Antônio de Oliveira — 567713
-Sarah Marangoni Furlan — 566764
-Vinicius Augusto Silva — 566830
+**Mario Antônio de Oliveira — RM 567713**  
+**Sarah Marangoni Furlan — RM 566764**  
+**Vinicius Augusto Silva — RM 566830**
 
 ## Problema, público e ODS
 
@@ -101,6 +101,10 @@ Materiais fornecidos na disciplina: `01_hyperautomation`, `rpa_ia_arquivos`, `02
 
 Fonte pública complementar para orientações preventivas: [Defesa Civil Nacional — gov.br/mdr](https://www.gov.br/mdr/pt-br/assuntos/protecao-e-defesa-civil). O protótipo não consulta esse endereço nem afirma reproduzir recomendações oficiais completas.
 
-## Demonstracao no Google Colab
+## Notebook executado no Google Colab
 
-[Notebook executado com evidencias](RADAR_CIDADAO_RPA_COLAB_EXECUTADO.ipynb). Abra no Colab e use Ambiente de execucao > Executar tudo para reproduzir. As saidas salvas demonstram uma execucao anterior; os dados sao sinteticos.
+O arquivo `RADAR_CIDADAO_RPA_COLAB_EXECUTADO.ipynb` acompanha esta entrega com saídas e evidências já gravadas. Ele permite conferir o fluxo sem precisar refazer o notebook NLP.
+
+## Validação pelo grupo
+
+Este ZIP é uma cópia para revisão, não um pacote de publicação automática. Não há script de push. Verifiquem a execução, as evidências e o checklist antes da entrega.

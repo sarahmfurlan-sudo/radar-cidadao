@@ -1,0 +1,94 @@
+PREFEITURA DA CIDADE DE SÃO PAULO
+SECRETARIA MUNICIPAL DE INFRAESTRUTURA URBANA E OBRAS (SIURB)
+CENTRO DE GERENCIAMENTO DE EMERGÊNCIAS CLIMÁTICAS (CGE-SP)
+
+================================================================================
+PROTOCOLO OPERACIONAL DE ESTADOS DE CRITICIDADE HIDROLÓGICA E METEOROLÓGICA
+================================================================================
+Código Normativo: CGE-MET-POP-02/2026
+Aplicação: Sistema de Monitoramento da Região Metropolitana e Subprefeituras Paulistanas
+Total de Páginas do Documento: 5
+
+[PÁGINA 1 de 5]
+--------------------------------------------------------------------------------
+1. FINALIDADE E ARQUITETURA DE MONITORAMENTO HIDROMETEOROLÓGICO
+--------------------------------------------------------------------------------
+1.1. Competência Institucional:
+O Centro de Gerenciamento de Emergências Climáticas da Prefeitura de São Paulo (CGE-SP) opera 24 horas por dia no monitoramento de variáveis meteorológicas, pluviométricas e fluviométricas nas 32 Subprefeituras da capital, trabalhando de forma integrada com a Defesa Civil Municipal (COMDEC-SP), Companhia de Engenharia de Tráfego (CET) e Corpo de Bombeiros.
+
+1.2. Rede de Sensores e Confirmação de Risco:
+A confirmação técnica do risco de alagamento baseia-se na leitura combinada de:
+- Sensores de precipitação pluviométrica (taxa de chuva em milímetros por hora - mm/h);
+- Sensores ultrassônicos e hidrostáticos de nível de água instalados em córregos, canais, galerias e pontos baixos da malha viária;
+- Registro persistente de ocorrência no ponto (memória de alagamento), que identifica se o local sofreu lâmina d'água crítica recentemente, mesmo após o escoamento superficial;
+- Relatos geolocalizados enviados pelos cidadãos e validados no Mapa de Risco.
+
+[PÁGINA 2 de 5]
+--------------------------------------------------------------------------------
+2. ESCALA OFICIAL DOS 4 ESTADOS DE CRITICIDADE OPERACIONAL (PARTE I)
+--------------------------------------------------------------------------------
+2.1. ESTADO DE OBSERVAÇÃO (Nível 1 — Condição de Rotina / Verde-Amarelo):
+- Critério Técnico: Tempo firme ou previsão de chuvas fracas e isoladas com intensidade inferior a 10 mm/h, sem elevação significativa do nível dos córregos monitorados.
+- Ação do Poder Público: Acompanhamento rotineiro por radar meteorológico e execução de serviços programados de zeladoria preventiva pelas subprefeituras (limpeza de bocas de lobo, raspagem de sarjetas e remoção de entulho).
+- Orientação Oficial ao Cidadão:
+  * Momento indicado para registrar relatos preventivos no Radar Cidadão caso identifique bueiros obstruídos por lixo, sacos plásticos ou entulho em sua rua;
+  * Realizar limpeza preventiva de calhas e ralos domésticos;
+  * Solicitar desobstrução de bocas de lobo via Central 156 para evitar alagamentos na próxima chuva.
+
+2.2. ESTADO DE ATENÇÃO (Nível 2 — Potencial de Alagamentos / Laranja):
+- Critério Técnico: Chuva moderada a forte com taxa entre 15 mm/h e 30 mm/h, ou formação de células convectivas com deslocamento para as bacias urbanas da capital, elevando o nível dos córregos para 50% a 75% da cota de extravasamento.
+- Ação do Poder Público: Mobilização preventiva das equipes das Subprefeituras, Defesa Civil e agentes de trânsito da CET para os pontos históricos cadastrados no Mapa de Risco.
+- Orientação Oficial ao Cidadão:
+  * Evitar deslocamentos em direção a fundos de vale, avenidas marginais de córregos e passagens subterrâneas;
+  * Retirar veículos estacionados em áreas baixas ou sob árvores com risco de queda;
+  * Acompanhar a evolução dos alertas no Mapa de Risco e manter documentos e itens essenciais protegidos em local elevado.
+
+[PÁGINA 3 de 5]
+--------------------------------------------------------------------------------
+3. ESCALA OFICIAL DOS 4 ESTADOS DE CRITICIDADE OPERACIONAL (PARTE II)
+--------------------------------------------------------------------------------
+3.1. ESTADO DE ALERTA (Nível 3 — Extravasamento Iminente ou Instalado / Vermelho):
+- Critério Técnico: Precipitação intensa superior a 30 mm/h, cota de córregos ou galerias acima de 80% da capacidade máxima, confirmação por sensores de nível de água em elevação rápida ou transbordamento iniciado em vias públicas.
+- Ação do Poder Público: Bloqueio físico imediato de vias alagadas pela CET, acionamento de bombas de recalque e comportas de piscinões, e despacho de equipes da Defesa Civil (199) e Corpo de Bombeiros (193).
+- Orientação Oficial ao Cidadão:
+  * Suspender imediatamente qualquer tentativa de deslocamento pela região em alerta;
+  * Permaneça abrigado em local alto e seguro;
+  * NUNCA tente atravessar a rua alagada a pé (15 cm derrubam um adulto) ou conduzindo veículos (30 cm flutuam e arrastam automóveis);
+  * Se a água começar a invadir o imóvel, desligue a chave geral de energia elétrica e feche o registro de gás, deslocando-se para o andar superior ou ponto mais alto.
+
+3.2. ESTADO DE ALERTA MÁXIMO (Nível 4 — Calamidade Hidrológica / Roxo):
+- Critério Técnico: Transbordamento generalizado de rios principais (Tietê, Pinheiros, Tamanduateí ou Aricanduva) ou colapso simultâneo de múltiplas sub-bacias com pontos de alagamento intransitáveis de longa duração e risco extremo à vida.
+- Ação do Poder Público: Operação integral do Plano Municipal de Contingência, mobilização de resgate aquático pelo Corpo de Bombeiros (193) e abertura de abrigos emergenciais pela Defesa Civil (199).
+- Orientação Oficial ao Cidadão:
+  * Prioridade absoluta à preservação da vida humana;
+  * Em caso de pessoas ilhadas, veículos arrastados pela enxurrada ou risco de desabamento, acione imediatamente o 193 (Bombeiros) ou 199 (Defesa Civil).
+
+[PÁGINA 4 de 5]
+--------------------------------------------------------------------------------
+4. CLASSIFICAÇÃO TÉCNICA DE TRANSITABILIDADE VIÁRIA EM ALAGAMENTOS
+--------------------------------------------------------------------------------
+4.1. Ponto de Alagamento Transitável:
+Lâmina d'água restrita a faixas laterais da pista (inferior a 15 centímetros no eixo viário), sem correnteza ativa, permitindo a passagem cautelosa apenas de veículos de grande porte (ônibus e caminhões), mas já proibitiva para pedestres, ciclistas e motociclistas.
+
+4.2. Ponto de Alagamento Intransitável:
+Lâmina d'água igual ou superior a 20–30 centímetros na pista ou presença de enxurrada com velocidade superficial ativa. Nenhum veículo deve tentar a travessia devido ao risco iminente de perda de dirigibilidade, flutuação hidrodinâmica, aspiração de água pelo motor (calço hidráulico) e submersão rápida em depressões da via.
+
+4.3. Memória de Alagamento e Risco Residual Pós-Chuva:
+Mesmo após a cessação da chuva e o abaixamento do nível da água na superfície asfáltica, o ponto que sofreu alagamento mantém riscos residuais críticos nas horas seguintes:
+- Tampas de bueiros e poços de visita deslocadas ou ausentes (ocultas por poças remanescentes);
+- Camada de lama escorregadia e contaminada por esgoto sanitário (risco de Leptospirose);
+- Solapamento da base asfáltica com risco de cedimento do pavimento sob o peso de veículos;
+- Saturação hídrica do solo e das galerias, fazendo com que qualquer nova pancada de chuva fraca provoque realagamento imediato.
+Por essa razão, o registro de memória de alagamento deve permanecer sinalizado no Mapa de Risco para orientação preventiva da população e priorização de vistoria técnica.
+
+[PÁGINA 5 de 5]
+--------------------------------------------------------------------------------
+5. MATRIZ RESUMO DE DECISÃO E ENCAMINHAMENTO (RADAR CIDADÃO + DEFESA CIVIL)
+--------------------------------------------------------------------------------
+| Situação Relatada / Sensores | Estado CGE | Canal Oficial | Orientação Primária ao Cidadão | Destino do Encaminhamento |
+| :--- | :--- | :--- | :--- | :--- |
+| Bueiro entupido por lixo ou entulho em tempo seco | Observação | Central 156 | Registrar relato com foto e localização; não mexer no bueiro | Subprefeitura local (limpeza e desobstrução) |
+| Chuva forte + sensores indicam subida do nível da água | Atenção / Alerta | 199 (Defesa Civil) | Desligar disjuntor elétrico e gás; elevar bens; não sair de carro | Defesa Civil Municipal (COMDEC) e Mapa de Risco |
+| Via alagada com lâmina d'água cobrindo calçada ou rodas | Alerta | 199 / 193 | Proibição total de travessia a pé (15 cm) ou de carro (30 cm) | CET, Subprefeitura e Defesa Civil |
+| Pessoas ilhadas, carro arrastado ou risco de desabamento | Alerta Máximo | 193 (Bombeiros) e 199 | Acionamento imediato de resgate (193); subir para ponto alto | Corpo de Bombeiros (193) e Defesa Civil (199) |
+| Água baixou, mas restou lama, trincas ou memória ativa | Pós-Evento | 199 / 156 | Vistoriar trincas; limpar com botas/luvas e água sanitária (200ml/10L); descartar alimentos atingidos | Defesa Civil (vistoria estrutural) e Subprefeitura |

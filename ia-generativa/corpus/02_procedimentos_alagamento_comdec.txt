@@ -1,0 +1,79 @@
+PREFEITURA DA CIDADE DE SÃO PAULO
+SECRETARIA MUNICIPAL DE SEGURANÇA URBANA
+COORDENAÇÃO MUNICIPAL DE DEFESA CIVIL (COMDEC-SP)
+
+================================================================================
+MANUAL OPERACIONAL: PROTOCOLOS DE ZELADORIA URBANA, DRENAGEM E ENCAMINHAMENTOS
+================================================================================
+Documento Técnico: COMDEC-POP-04/2026
+Destinação: Agentes de Defesa Civil, Equipes Técnicas das 32 Subprefeituras e Cidadãos
+Total de Páginas do Documento: 6
+
+[PÁGINA 1 de 6]
+--------------------------------------------------------------------------------
+CAPÍTULO I: O SISTEMA DE MICRODRENAGEM URBANA E A ZELADORIA COLABORATIVA
+--------------------------------------------------------------------------------
+Artigo 1º. O sistema municipal de drenagem de águas pluviais de São Paulo estrutura-se em dois subsistemas complementares:
+I - Microdrenagem: constituída por guias, sarjetas, sarjetões, bocas de lobo (bueiros com grelha metálica ou de concreto), bocas de leão, poços de visita, caixas de ligação e galerias pluviais secundárias de até 1,50m de seção.
+II - Macrodrenagem: constituída por galerias celulares principais, canais de fundo de vale, reservatórios de detenção de cheias ("piscinões") e os leitos principais das bacias hidrográficas (Tietê, Pinheiros, Tamanduateí, Aricanduva, Pirajuçara, Cabuçu de Baixo, Cabuçu de Cima e Anhangabaú).
+
+Artigo 2º. A causa predominante de alagamentos localizados em vias urbanas durante precipitações de intensidade moderada (15 mm/h a 30 mm/h) é o bloqueio superficial e interno dos dispositivos de microdrenagem.
+§ 1º. O descarte irregular de sacos de lixo domiciliar, entulho de alvenaria, restos de varrição, folhas e embalagens plásticas nas calçadas e sarjetas obstrui as grades de captação das bocas de lobo logo nos primeiros 10 minutos de escoamento superficial.
+§ 2º. Ensaios hidráulicos demonstram que uma boca de lobo com 50% de sua grelha coberta por resíduos plásticos ou entulho perde até 82% de sua capacidade de engolimento hídrico, fazendo com que o volume excedente escoe pela pista de rolamento e se acumule nos pontos mais baixos da via.
+
+[PÁGINA 2 de 6]
+--------------------------------------------------------------------------------
+CAPÍTULO II: CLASSIFICAÇÃO DE RELATOS E FLUXO DE ZELADORIA PREVENTIVA
+--------------------------------------------------------------------------------
+Artigo 3º. O registro colaborativo de problemas na infraestrutura de drenagem pelos moradores constitui instrumento de prevenção primária de alagamentos no município.
+§ 1º. Todo relato submetido pela população através de plataforma colaborativa (Radar Cidadão) deve conter:
+a) Fotografia do ponto em via pública evidenciando o acúmulo de lixo, entulho ou obstrução do bueiro;
+b) Localização georreferenciada (logradouro, número aproximado, bairro e subprefeitura correspondente);
+c) Categoria da ocorrência (Zeladoria Preventiva em tempo seco, Alerta de Alagamento em chuva ativa ou Emergência Crítica).
+
+§ 2º. O processamento técnico do relato segue três faixas operacionais:
+I - Faixa Verde (Zeladoria Preventiva - Tempo Seco): Relato de bueiro entupido por lixo ou entulho na ausência de chuva. Gera encaminhamento para a subprefeitura competente e protocolo na Central 156 para execução de limpeza manual ou mecânica em janela preventiva de até 72 horas.
+II - Faixa Laranja (Alerta de Risco Hidrológico): Relato validado por detector de imagem e confirmado por sensores locais de chuva e nível de água na região. Atualiza imediatamente o Mapa de Risco e dispara alerta preventivo aos moradores do entorno.
+III - Faixa Vermelha (Emergência Hidrológica Instalada): Ocorrência com lâmina d'água elevada, transbordamento ou pessoas em perigo. O sistema orienta o acionamento imediato do Corpo de Bombeiros (193) e da Defesa Civil (199).
+
+[PÁGINA 3 de 6]
+--------------------------------------------------------------------------------
+CAPÍTULO III: PROIBIÇÃO DE INTERVENÇÃO MANUAL PELO CIDADÃO EM BUEIROS
+--------------------------------------------------------------------------------
+Artigo 4º. É expressamente vedado e desaconselhado ao cidadão tentar remover tampas de poços de visita, levantar grelhas pesadas de bocas de lobo ou introduzir ferramentas, mãos ou pés no interior de bueiros entupidos, especialmente durante ou logo após chuvas.
+§ 1º. Riscos físicos e hidrodinâmicos: O diferencial de pressão entre a água acumulada na superfície e a galeria subterrânea gera forças de sucção capazes de prender membros inferiores ou aspirar uma pessoa para o interior da tubulação.
+§ 2º. Riscos traumáticos e biológicos: Resíduos acumulados em sarjetas e bueiros frequentemente contêm cacos de vidro, vergalhões metálicos, agulhas descartadas e colônias bacterianas patogênicas (Leptospira, Salmonella e vírus entéricos).
+§ 3º. O papel do cidadão no Radar Cidadão restringe-se à identificação visual à distância segura, registro fotográfico do relato, acompanhamento do Mapa de Risco e cumprimento das orientações de autoproteção da Defesa Civil.
+
+[PÁGINA 4 de 6]
+--------------------------------------------------------------------------------
+CAPÍTULO IV: BACIAS HIDROGRÁFICAS E PONTOS CRÍTICOS MONITORADOS NA CAPITAL
+--------------------------------------------------------------------------------
+Artigo 5º. As 32 Subprefeituras e a COMDEC-SP mantêm cadastro atualizado das áreas sujeitas a alagamentos recorrentes nas principais bacias urbanas:
+I - Bacia do Rio Tamanduateí (Subprefeituras Mooca, Sé, Vila Prudente e Ipiranga): Avenida do Estado, Rua da Figueira, região do Parque Dom Pedro II e baixadas próximas ao Mercado Municipal.
+II - Bacia do Córrego Aricanduva (Subprefeituras Aricanduva/Formosa/Carrão, Itaquera e São Mateus): Avenida Aricanduva nos pontos de confluência de córregos afluentes e baixadas sob viadutos.
+III - Bacia do Ribeirão Anhangabaú e Córrego Saracura (Subprefeituras Sé e Pinheiros): Praça da Bandeira, Avenida 9 de Julho, Vale do Anhangabaú e baixada da Rua Bela Cintra.
+IV - Bacia do Córrego Pirajuçara e Poá (Subprefeituras Campo Limpo e Butantã): Avenida Eliseu de Almeida, Estrada do Campo Limpo e divisas com Taboão da Serra.
+V - Eixos Marginais (Tietê e Pinheiros): Alças de acesso sob pontes, passagens inferiores e trechos de confluência com córregos canalizados.
+
+Artigo 6º. A persistência do registro de alagamento no ponto crítico após o escoamento superficial (memória de alagamento) é fundamental para que cidadãos que circulam pela via horas depois ou em novas pancadas de chuva consultem o histórico real de vulnerabilidade no Mapa de Risco.
+
+[PÁGINA 5 de 6]
+--------------------------------------------------------------------------------
+CAPÍTULO V: ESTRUTURA DO ENCAMINHAMENTO AO PODER PÚBLICO
+--------------------------------------------------------------------------------
+Artigo 7º. Para que os relatos de cidadãos resultem em ação efetiva de limpeza e desobstrução pelas equipes das Subprefeituras e vistoria da Defesa Civil, o encaminhamento automatizado deve consolidar:
+I - Dados geográficos e temporais da ocorrência;
+II - Resultado da validação por imagem (presença confirmada de lixo ou entulho em via pública e respectiva taxa de confiança do detector);
+III - Leitura dos sensores hidrológicos da área (nível de lâmina d'água e precipitação em milímetros);
+IV - Status do histórico do ponto no Mapa de Risco;
+V - Classificação de prioridade operacional e subprefeitura destinatária;
+VI - Registro de log de auditoria e tratamento de falhas de transmissão.
+
+[PÁGINA 6 de 6]
+--------------------------------------------------------------------------------
+CAPÍTULO VI: INTEGRAÇÃO COM OS CANAIS OFICIAIS E ABRIGAMENTO MUNICIPAL
+--------------------------------------------------------------------------------
+Artigo 8º. Plataformas colaborativas de cidadania (CitizenTech) como o Radar Cidadão atuam de maneira complementar aos sistemas públicos municipais e estaduais, jamais substituindo os canais de emergência.
+§ 1º. Em situações de risco iminente à vida, inundação de residências ou veículos presos em alagamentos, o acionamento prioritário e insubstituível é via telefone 193 (Corpo de Bombeiros) ou 199 (Defesa Civil).
+§ 2º. Quando o nível dos córregos atinge a cota de extravasamento nas áreas mapeadas como R3 (Risco Alto) e R4 (Risco Muito Alto), os agentes da COMDEC-SP em conjunto com a Secretaria Municipal de Assistência e Desenvolvimento Social (SMADS) ativam os espaços de acolhimento emergencial para recepção das famílias desalojadas.

@@ -1,0 +1,556 @@
+[
+    {
+        "id": "69e5326f76928c61",
+        "type": "tab",
+        "label": "Radar Cidadão - Monitoramento & API",
+        "disabled": false,
+        "info": "Recebe telemetria e alertas via MQTT, alimenta o Dashboard e expõe API HTTP + WebSocket para o Front-End React."
+    },
+    {
+        "id": "3fd5e399cdaf37f4",
+        "type": "mqtt in",
+        "z": "69e5326f76928c61",
+        "name": "Telemetria Radar Cidadão",
+        "topic": "radarcidadao/+/telemetria",
+        "qos": "0",
+        "datatype": "utf8",
+        "broker": "0705b78e51469992",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 100,
+        "wires": [
+            [
+                "16a6779c3779ddea"
+            ]
+        ]
+    },
+    {
+        "id": "16a6779c3779ddea",
+        "type": "json",
+        "z": "69e5326f76928c61",
+        "name": "JSON para objeto",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 380,
+        "y": 100,
+        "wires": [
+            [
+                "3578713664b2f423",
+                "eee234633af23cd9",
+                "20f7dbf601619b1d",
+                "rc_ws_out_01"
+            ]
+        ]
+    },
+    {
+        "id": "3578713664b2f423",
+        "type": "debug",
+        "z": "69e5326f76928c61",
+        "name": "Telemetria JSON",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 640,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "eee234633af23cd9",
+        "type": "function",
+        "z": "69e5326f76928c61",
+        "name": "processarTelemetria",
+        "func": "const p = msg.payload;\nflow.set(\"ultimoStatus\", {\n    ...p,\n    atualizado_em: new Date().toISOString()\n});\n\nconst nivelAgua = { payload: p.nivel_agua_pct, topic: \"Nível da Água (%)\" };\nconst chuva = { payload: p.chuva_pct, topic: \"Chuva (%)\" };\nconst dist = { payload: p.distancia_cm };\nconst risco = { payload: `${p.nivel_risco} (${p.regiao})` };\n\nreturn [nivelAgua, chuva, dist, risco];",
+        "outputs": 4,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 650,
+        "y": 160,
+        "wires": [
+            [
+                "4d3079db4e8b48ac",
+                "fcb3dc1e7168ed0b"
+            ],
+            [
+                "0c1a18dfa91cff9a",
+                "fcb3dc1e7168ed0b"
+            ],
+            [
+                "52394c17cc7fb252"
+            ],
+            [
+                "rc_risco_text_01"
+            ]
+        ]
+    },
+    {
+        "id": "4d3079db4e8b48ac",
+        "type": "ui_gauge",
+        "z": "69e5326f76928c61",
+        "name": "Nível da Água",
+        "group": "0ee1f74a76248fdc",
+        "order": 1,
+        "width": 4,
+        "height": 3,
+        "gtype": "gage",
+        "title": "Nível da Água",
+        "label": "%",
+        "format": "{{value | number:1}}",
+        "min": 0,
+        "max": 100,
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "40",
+        "seg2": "70",
+        "diff": false,
+        "className": "",
+        "x": 960,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "0c1a18dfa91cff9a",
+        "type": "ui_gauge",
+        "z": "69e5326f76928c61",
+        "name": "Intensidade da Chuva",
+        "group": "0ee1f74a76248fdc",
+        "order": 2,
+        "width": 4,
+        "height": 3,
+        "gtype": "gage",
+        "title": "Intensidade da Chuva",
+        "label": "%",
+        "format": "{{value | number:1}}",
+        "min": 0,
+        "max": 100,
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "20",
+        "seg2": "50",
+        "diff": false,
+        "className": "",
+        "x": 980,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "52394c17cc7fb252",
+        "type": "ui_level",
+        "z": "69e5326f76928c61",
+        "group": "0ee1f74a76248fdc",
+        "order": 3,
+        "width": 4,
+        "height": 3,
+        "name": "Distância até a Água",
+        "label": "Distância (cm)",
+        "colorHi": "#00b33c",
+        "colorWarn": "#ff9900",
+        "colorNormal": "#e60000",
+        "colorOff": "#595959",
+        "min": 0,
+        "max": 100,
+        "segWarn": "35",
+        "segHigh": "65",
+        "unit": "cm",
+        "layout": "sv",
+        "channelA": "",
+        "channelB": "",
+        "decimals": 1,
+        "animations": "soft",
+        "shape": 2,
+        "colorschema": "fixed",
+        "textoptions": "default",
+        "colorText": "#eeeeee",
+        "fontLabel": "",
+        "fontValue": "",
+        "fontSmall": "",
+        "colorFromTheme": true,
+        "textAnimations": false,
+        "hideValue": false,
+        "tickmode": "off",
+        "peakmode": false,
+        "property": "payload",
+        "peaktime": 3000,
+        "x": 980,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "fcb3dc1e7168ed0b",
+        "type": "ui_chart",
+        "z": "69e5326f76928c61",
+        "name": "Histórico Água e Chuva",
+        "group": "0ee1f74a76248fdc",
+        "order": 5,
+        "width": 12,
+        "height": 4,
+        "label": "Histórico: Nível da Água e Chuva (%)",
+        "chartType": "line",
+        "legend": "true",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "100",
+        "removeOlder": 5,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#ff7f0e",
+            "#2ca02c",
+            "#d62728"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 980,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "rc_risco_text_01",
+        "type": "ui_text",
+        "z": "69e5326f76928c61",
+        "group": "0ee1f74a76248fdc",
+        "order": 4,
+        "width": 12,
+        "height": 1,
+        "name": "Status de Risco",
+        "label": "Status de Risco",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "Arial",
+        "fontSize": 18,
+        "color": "#333333",
+        "x": 960,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "20f7dbf601619b1d",
+        "type": "trigger",
+        "z": "69e5326f76928c61",
+        "name": "Sem dados por 10 s",
+        "op1": "Recebendo telemetria",
+        "op2": "Sem dados há 10 s",
+        "op1type": "str",
+        "op2type": "str",
+        "duration": "10",
+        "extend": true,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 650,
+        "y": 360,
+        "wires": [
+            [
+                "7fc1d4b62ef57d20"
+            ]
+        ]
+    },
+    {
+        "id": "7fc1d4b62ef57d20",
+        "type": "ui_text",
+        "z": "69e5326f76928c61",
+        "group": "0ee1f74a76248fdc",
+        "order": 6,
+        "width": 12,
+        "height": 1,
+        "name": "Conexão",
+        "label": "Conexão ESP32",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "Arial",
+        "fontSize": 16,
+        "color": "#333333",
+        "x": 950,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "rc_mqtt_alerta_01",
+        "type": "mqtt in",
+        "z": "69e5326f76928c61",
+        "name": "Alertas Radar Cidadão",
+        "topic": "radarcidadao/+/alerta",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "0705b78e51469992",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 460,
+        "wires": [
+            [
+                "rc_json_alerta_01"
+            ]
+        ]
+    },
+    {
+        "id": "rc_json_alerta_01",
+        "type": "json",
+        "z": "69e5326f76928c61",
+        "name": "JSON Alerta",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 370,
+        "y": 460,
+        "wires": [
+            [
+                "rc_fn_alerta_01"
+            ]
+        ]
+    },
+    {
+        "id": "rc_fn_alerta_01",
+        "type": "function",
+        "z": "69e5326f76928c61",
+        "name": "Registrar Alerta",
+        "func": "const alerta = {\n    ...msg.payload,\n    recebido_em: new Date().toISOString()\n};\nflow.set(\"ultimoAlerta\", alerta);\n\nconst historico = flow.get(\"historicoAlertas\") || [];\nhistorico.unshift(alerta);\nif (historico.length > 20) historico.pop();\nflow.set(\"historicoAlertas\", historico);\n\nif (alerta.nivel_risco === \"ALERTA\") {\n    return {\n        payload: `${alerta.regiao}: ${alerta.mensagem}`,\n        topic: \"ALERTA DE ALAGAMENTO\"\n    };\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 600,
+        "y": 460,
+        "wires": [
+            [
+                "rc_toast_01",
+                "rc_debug_alerta_01"
+            ]
+        ]
+    },
+    {
+        "id": "rc_toast_01",
+        "type": "ui_toast",
+        "z": "69e5326f76928c61",
+        "position": "top right",
+        "displayTime": "6",
+        "highlight": "#ca3838",
+        "sendall": true,
+        "outputs": 0,
+        "ok": "OK",
+        "cancel": "",
+        "raw": false,
+        "className": "",
+        "topic": "",
+        "name": "Notificação de Alerta",
+        "x": 960,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "rc_debug_alerta_01",
+        "type": "debug",
+        "z": "69e5326f76928c61",
+        "name": "Alerta disparado",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 950,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "rc_http_get_01",
+        "type": "http in",
+        "z": "69e5326f76928c61",
+        "name": "GET /api/radar/status",
+        "url": "/api/radar/status",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 150,
+        "y": 580,
+        "wires": [
+            [
+                "rc_fn_http_01"
+            ]
+        ]
+    },
+    {
+        "id": "rc_fn_http_01",
+        "type": "function",
+        "z": "69e5326f76928c61",
+        "name": "Montar resposta JSON + CORS",
+        "func": "msg.payload = {\n    status: flow.get(\"ultimoStatus\") || null,\n    ultimo_alerta: flow.get(\"ultimoAlerta\") || null,\n    historico_alertas: flow.get(\"historicoAlertas\") || []\n};\nmsg.statusCode = 200;\nmsg.headers = {\n    \"Content-Type\": \"application/json\",\n    \"Access-Control-Allow-Origin\": \"*\",\n    \"Access-Control-Allow-Methods\": \"GET, OPTIONS\",\n    \"Access-Control-Allow-Headers\": \"Content-Type\"\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 430,
+        "y": 580,
+        "wires": [
+            [
+                "rc_http_res_01"
+            ]
+        ]
+    },
+    {
+        "id": "rc_http_res_01",
+        "type": "http response",
+        "z": "69e5326f76928c61",
+        "name": "HTTP 200 JSON",
+        "statusCode": "",
+        "headers": {},
+        "x": 700,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "rc_http_opt_01",
+        "type": "http in",
+        "z": "69e5326f76928c61",
+        "name": "OPTIONS /api/radar/status",
+        "url": "/api/radar/status",
+        "method": "options",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 160,
+        "y": 640,
+        "wires": [
+            [
+                "rc_fn_cors_01"
+            ]
+        ]
+    },
+    {
+        "id": "rc_fn_cors_01",
+        "type": "function",
+        "z": "69e5326f76928c61",
+        "name": "CORS Preflight",
+        "func": "msg.statusCode = 204;\nmsg.headers = {\n    \"Access-Control-Allow-Origin\": \"*\",\n    \"Access-Control-Allow-Methods\": \"GET, OPTIONS\",\n    \"Access-Control-Allow-Headers\": \"Content-Type\"\n};\nmsg.payload = \"\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 640,
+        "wires": [
+            [
+                "rc_http_res_01"
+            ]
+        ]
+    },
+    {
+        "id": "rc_ws_out_01",
+        "type": "websocket out",
+        "z": "69e5326f76928c61",
+        "name": "WebSocket /ws/radar",
+        "server": "rc_ws_srv_01",
+        "client": "",
+        "x": 650,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "rc_ws_srv_01",
+        "type": "websocket-listener",
+        "path": "/ws/radar",
+        "wholemsg": "false"
+    },
+    {
+        "id": "0705b78e51469992",
+        "type": "mqtt-broker",
+        "name": "Mosquitto - plataforma IoT",
+        "broker": "mosquitto",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "0ee1f74a76248fdc",
+        "type": "ui_group",
+        "name": "Bueiro 01 - Monitoramento",
+        "tab": "2c252bbf0cb3136e",
+        "order": 1,
+        "disp": true,
+        "width": "12",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "2c252bbf0cb3136e",
+        "type": "ui_tab",
+        "name": "Radar Cidadão",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "449411836ceba03d",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-dashboard": "3.6.6",
+            "node-red-contrib-ui-level": "0.1.46"
+        }
+    }
+]

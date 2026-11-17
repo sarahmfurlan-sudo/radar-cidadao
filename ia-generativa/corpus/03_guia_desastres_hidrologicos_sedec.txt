@@ -1,0 +1,96 @@
+REPÚBLICA FEDERATIVA DO BRASIL
+MINISTÉRIO DA INTEGRAÇÃO E DO DESENVOLVIMENTO REGIONAL (MIDR)
+SECRETARIA NACIONAL DE PROTEÇÃO E DEFESA CIVIL (SEDEC)
+CENTRO NACIONAL DE GERENCIAMENTO DE RISCOS E DESASTRES (CENAD)
+
+================================================================================
+GUIA NACIONAL DE DIRETRIZES PARA GESTÃO DE RISCOS E DESASTRES HIDROLÓGICOS
+================================================================================
+Volume II: Orientações de Resiliência Urbana e Autoproteção Comunitária
+Legislação Correlata: Lei Federal nº 12.608/2012 (Política Nacional de Proteção e Defesa Civil - PNPDEC)
+Total de Páginas do Documento: 5
+
+[PÁGINA 1 de 5]
+--------------------------------------------------------------------------------
+TÍTULO I: A POLÍTICA NACIONAL DE PROTEÇÃO E DEFESA CIVIL E OS ODS DA ONU
+--------------------------------------------------------------------------------
+1. Fundamentos Legais (Lei Federal nº 12.608/2012):
+A Política Nacional de Proteção e Defesa Civil (PNPDEC) estabelece que é dever da União, dos Estados, do Distrito Federal e dos Municípios adotar medidas necessárias à redução dos riscos de desastres, contando com a colaboração de entidades públicas, privadas e de toda a sociedade.
+- Artigo 2º, § 2º: A incerteza quanto ao risco de desastre não constituirá óbice para a adoção das medidas preventivas e mitigadoras da situação de risco.
+
+2. Alinhamento com os Objetivos de Desenvolvimento Sustentável (ODS) e Marco de Sendai:
+As ações comunitárias de prevenção a alagamentos e inundações urbanas vinculam-se diretamente a duas metas globais prioritárias:
+- ODS 11 (Cidades e Comunidades Sustentáveis) — Meta 11.5: Reduzir significativamente o número de mortes e o número de pessoas afetadas por desastres e diminuir substancialmente as perdas econômicas diretas causadas por desastres, incluindo os desastres relacionados à água, com foco na proteção dos pobres e das pessoas em situação de vulnerabilidade.
+- ODS 13 (Ação Contra a Mudança Global do Clima) — Meta 13.1: Reforçar a resiliência e a capacidade de adaptação a riscos relacionados ao clima e às catástrofes naturais em todos os países.
+
+[PÁGINA 2 de 5]
+--------------------------------------------------------------------------------
+TÍTULO II: AS CINCO FASES DO CICLO DE GESTÃO EM DEFESA CIVIL
+--------------------------------------------------------------------------------
+A atuação integrada entre cidadãos, sistemas tecnológicos de alerta (CitizenTech) e órgãos de Defesa Civil estrutura-se em cinco etapas contínuas:
+
+1. Prevenção:
+Ações executadas antes da ocorrência de eventos chuvosos extremos para impedir a geração de novos riscos. Abrange a educação ambiental contra o descarte de lixo e entulho em vias públicas, o respeito às faixas marginais de proteção de córregos e a identificação antecipada de vulnerabilidades na drenagem do bairro.
+
+2. Mitigação:
+Intervenções destinadas a diminuir a magnitude de alagamentos em áreas já consolidadas. Compreende a limpeza sistemática de bueiros e bocas de lobo a partir dos relatos da comunidade, o desassoreamento de galerias e canais, e a manutenção de reservatórios de amortecimento (piscinões).
+
+3. Preparação:
+Organização prévia da população e das equipes de socorro para responder de forma rápida a alertas meteorológicos. Inclui o mapeamento de pontos históricos no Mapa de Risco, o cadastro no sistema de alerta por SMS (40199), a montagem de kits de emergência familiar e o treinamento de rotas seguras de evacuação.
+
+4. Resposta:
+Medidas imediatas tomadas durante e logo após o evento hidrológico extremo para salvar vidas, resgatar pessoas ilhadas (Corpo de Bombeiros - 193) e prestar socorro e assistência humanitária (Defesa Civil - 199).
+
+5. Recuperação:
+Procedimentos posteriores à baixa das águas para restabelecer as condições de habitabilidade e segurança sanitária, compreendendo vistoria estrutural de edificações, desinfecção de residências com hipoclorito de sódio, descarte de materiais contaminados e recomposição da infraestrutura viária.
+
+[PÁGINA 3 de 5]
+--------------------------------------------------------------------------------
+TÍTULO III: DIRETRIZES DE AUTOPROTEÇÃO E COMPORTAMENTO HUMANO SEGURO
+--------------------------------------------------------------------------------
+Diretriz 1 — Prioridade Absoluta da Vida sobre Bens Materiais:
+Nenhuma pessoa deve retardar a saída de uma área sob alerta de inundação ou retornar a um imóvel alagado para buscar veículos, eletrodomésticos, móveis ou objetos pessoais. A elevação do nível da água em bacias urbanas impermeabilizadas ocorre de forma abrupta, bloqueando portas e saídas em poucos minutos.
+
+Diretriz 2 — Proteção Prioritária a Grupos Vulneráveis:
+Em protocolos de evacuação residencial ou comunitária, deve ser assegurada prioridade de deslocamento e auxílio direto a:
+- Idosos e pessoas com mobilidade reduzida ou deficiência física, visual ou auditiva;
+- Crianças e gestantes;
+- Pessoas acamadas ou dependentes de equipamentos médicos elétricos.
+A comunidade deve manter identificação prévia dos moradores vulneráveis da rua para apoio solidário imediato assim que um alerta for emitido no Mapa de Risco.
+
+Diretriz 3 — Composição da Mochila de Emergência Familiar:
+Moradores de áreas com recorrência histórica de alagamentos e inundações devem manter preparada uma bolsa impermeável de rápida retirada contendo:
+- Água potável engarrafada (mínimo de 2 litros por pessoa/dia) e alimentos não perecíveis de consumo imediato;
+- Medicamentos de uso contínuo para pelo menos 7 dias e cópias das prescrições;
+- Documentos de identificação da família acondicionados em invólucro plástico hermético;
+- Lanterna, rádio a pilha, apito para sinalização sonora de resgate, carregador portátil ("powerbank") carregado, kit básico de primeiros socorros e muda de roupas secas.
+
+[PÁGINA 4 de 5]
+--------------------------------------------------------------------------------
+TÍTULO IV: RISCOS FÍSICOS, HIDRODINÂMICOS E BIOLÓGICOS DAS ÁGUAS DE ENCHENTE
+--------------------------------------------------------------------------------
+A Secretaria Nacional de Proteção e Defesa Civil alerta que a água de alagamentos e enxurradas urbanas não se comporta como água parada comum, reunindo quatro fatores letais combinados:
+
+1. Força Hidrodinâmica de Arraste:
+A pressão exercida pela água em movimento cresce com o quadrado da velocidade do fluxo. Apenas 15 cm de lâmina d'água em velocidade de enxurrada derrubam um adulto; 30 cm fazem veículos de passeio perderem o contato dos pneus com o solo e flutuarem sem controle; 60 cm arrastam caminhonetes e furgões.
+
+2. Armadilhas Submersas e Sucção em Galerias:
+A pressão hidráulica interna das galerias pluviais frequentemente expulsa as tampas de ferro fundido dos poços de visita e desloca grelhas de bueiros. Sob a água barrenta, essas aberturas tornam-se invisíveis e geram vórtices de sucção que puxam pedestres para o interior da rede subterrânea.
+
+3. Eletrocussão em Massa:
+O contato da água com fiações subterrâneas, postes metálicos, transformadores ou cabos rompidos energiza a lâmina d'água ao redor. Ao avistar fios caídos na água ou faíscas, afaste-se imediatamente e acione o 193 (Bombeiros) e a concessionária de energia.
+
+4. Contaminação Biológica e Química:
+O extravasamento de redes de esgoto e o arraste de resíduos urbanos contaminam a água com a bactéria Leptospira interrogans (Leptospirose), vírus da Hepatite A, coliformes fecais, solventes e metais pesados.
+
+[PÁGINA 5 de 5]
+--------------------------------------------------------------------------------
+TÍTULO V: DIRETRIZES DE COMUNICAÇÃO RESPONSÁVEL E PREVENÇÃO DE PÂNICO
+--------------------------------------------------------------------------------
+1. Combate à Desinformação em Eventos Climáticos:
+Sistemas de informação cidadã e assistentes automatizados devem operar exclusivamente com base em documentos técnicos oficiais da Defesa Civil e dados validados por sensores e relatos verificados.
+- É proibido difundir rumores, previsões catastróficas sem base meteorológica ou receitas caseiras sem comprovação sanitária.
+- Toda orientação fornecida ao cidadão deve indicar de forma clara a fonte normativa oficial e os telefones públicos de emergência (199 Defesa Civil e 193 Corpo de Bombeiros).
+
+2. Preservação de Dados e Ética:
+O tratamento de relatos colaborativos deve observar a finalidade estrita de proteção civil e zeladoria urbana (Lei Geral de Proteção de Dados - Lei nº 13.709/2018), utilizando geolocalização do ponto de alagamento ou obstrução viária para atualização do Mapa de Risco e geração de encaminhamento ao poder público, sem exposição indevida de dados pessoais dos cidadãos.

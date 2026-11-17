@@ -1,7 +1,7 @@
 # Relatorio de validacao e evidencias — Radar Cidadao RPA + IA
 
-**Disciplina:** AI for Robotic Process Automation — FIAP GS 2026.2
-**Projeto:** Radar Cidadao (prototipo academico)
+**Disciplina:** AI for Robotic Process Automation — FIAP GS 2026.2  
+**Projeto:** Radar Cidadao (prototipo academico)  
 **Fonte:** artefatos do projeto v1 e execucao confirmada no Windows em 16/11/2026.
 
 ## Objetivo e fluxo
