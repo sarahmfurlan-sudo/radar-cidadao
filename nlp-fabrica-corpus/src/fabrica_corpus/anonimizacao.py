@@ -21,10 +21,19 @@ do corpus é palavra comum, não nome. Entidade cujo primeiro nome ou a maioria
 das palavras é comum é descartada, e o primeiro nome só é mascarado sozinho
 quando nunca aparece em minúscula.
 
+Sobrenomes de autores em citações (decisão de 17/11/2026), contados à parte em
+"citacao": "(Sulaiman, Moura & Nogueira, 2021)" -> "([NOME], [NOME] & [NOME], 2021)"
+e as citações narrativas "Santos et al.,(2007)" -> "[NOME] et al.,(2007)" e
+"Hermelin (2005)" / "Gramani e Massad (2022)" -> "[NOME] (2005)" / "[NOME] e [NOME] (2022)". Ficam o ano,
+"et al.", "Jr.", "Filho", "Apud", a pontuação e os autores institucionais ("Brasil",
+"Brasil-Japão", siglas e a lista _NAO_PESSOA). Parêntese que não tem só autores e
+anos ("(entre 2010 e 2020)", "(Lei nº 12.608, 2012)") não é tocado.
+
 Limites conhecidos (registrar no relatório):
  - nome isolado de uma palavra só, sem ter aparecido completo antes, não é
    mascarado (evita falsos positivos como "Secretário", "CPF");
- - sobrenome de autor em citação ("Jacobi, 2018") não é dado pessoal e fica.
+ - autor institucional por extenso que não está em _NAO_PESSOA (ex.: "(Cemaden
+   Educação, 2020)") é mascarado como se fosse pessoa.
 """
 from __future__ import annotations
 
@@ -195,6 +204,90 @@ def _mascarar_nomes(texto: str, nomes: set[str], vocab: set[str] = frozenset()) 
     return texto, n
 
 
+# ---------------------------------------------------------------- citações de autores
+_ANO = r"(?:1[5-9]|20)\d{2}[a-z]?"
+_ANOS = rf"{_ANO}(?:\s*,\s*{_ANO})*"
+_PALAVRA = r"[A-ZÀ-Ú][\wÀ-ÿ'’-]*"
+# sequência de palavras com inicial maiúscula, que pode ter "de/da/do/dos/das" no meio
+_AUTOR = re.compile(rf"\[NOME\]|{_PALAVRA}(?:\s+(?:d[aeo]s?\s+)?{_PALAVRA})*")
+_PARENTESE_COM_ANO = re.compile(rf"\(([^()]*?\b{_ANO})\s*\)")
+_SO_SEPARADORES = re.compile(r"(?:[\s,;&.]|\be\b|\bet\s+al\b)*")
+_CITACAO_NARRATIVA = re.compile(rf"\b({_PALAVRA})(\s+et\s+al\.?\s*,?\s*\(\s*{_ANOS}\s*\))")
+# autor seguinte da mesma lista: "Santos et al.,(2007), Sulaiman e Jacobi (2018)"; no
+# Mapeamento p. 9 a página acaba em "Sulaiman" e a lista continua na p. 10
+_CONTINUACAO_NARRATIVA = re.compile(rf"(et\s+al\.?\s*,?\s*\(\s*{_ANOS}\s*\)\s*,\s+)({_PALAVRA})(?=[ \t]*(?:\n|$)|\s+e\s|\s*,)")
+# narrativa sem "et al.": "Hermelin (2005)", "Gramani e Massad (2022)", "Fornasari Filho (2018)"
+_AUTOR_NARRATIVO = rf"{_PALAVRA}(?:\s+(?:Jr\.?|Júnior|Filho|Neto|Sobrinho))?"
+_CITACAO_NARRATIVA_SIMPLES = re.compile(
+    rf"(?<![\wÀ-ÿ\[])({_AUTOR_NARRATIVO}(?:\s*(?:,|\be\b|&)\s*{_AUTOR_NARRATIVO})*)(\s+\(\s*{_ANOS}\s*\))")
+_SUFIXOS = {"jr", "jr.", "júnior", "junior", "filho", "neto", "sobrinho"}
+# autores institucionais que não são sigla em maiúsculas (siglas como IPCC e ANA já ficam)
+_INSTITUCIONAIS = {"brasil", "brasil-japão", "apud", "gides", "maceió", "cemaden", "inmet"}
+
+
+def _mascarar_autor(m: re.Match) -> tuple[str, int]:
+    """Uma sequência de palavras de um autor -> "[NOME]" (mantém Apud, Jr., Filho e instituições)."""
+    palavras = m.group(0).split()
+    inicio = ["Apud"] if palavras[0] == "Apud" else []
+    palavras = palavras[len(inicio):]
+    fim = []
+    while palavras and palavras[-1].lower() in _SUFIXOS:
+        fim.insert(0, palavras.pop())
+    nucleo = " ".join(palavras)
+    if (not nucleo or nucleo == "[NOME]" or nucleo.lower() in _INSTITUCIONAIS or nucleo.lower() in _NAO_PESSOA
+            or nucleo.isupper()):
+        return m.group(0), 0
+    return " ".join(inicio + ["[NOME]"] + fim), 1
+
+
+def _mascarar_citacoes(texto: str) -> tuple[str, int]:
+    """Mascara sobrenomes de autores em citações autor-ano. Devolve (texto, autores mascarados)."""
+    total = 0
+
+    def parentese(m: re.Match) -> str:
+        nonlocal total
+        conteudo = m.group(1)
+        sem_anos = re.sub(_ANOS, " ", conteudo)
+        # só autores, separadores, "et al." e anos: senão não é citação ("entre 2010 e 2020")
+        if not _AUTOR.search(sem_anos) or not _SO_SEPARADORES.fullmatch(_AUTOR.sub(" ", sem_anos)):
+            return m.group(0)
+        partes, n = [], 0
+        ultimo = 0
+        for a in _AUTOR.finditer(conteudo):
+            novo, k = _mascarar_autor(a)
+            partes.append(conteudo[ultimo:a.start()] + novo)
+            ultimo, n = a.end(), n + k
+        total += n
+        return "(" + "".join(partes) + conteudo[ultimo:] + ")"
+
+    def narrativa(m: re.Match) -> str:
+        nonlocal total
+        novo, k = _mascarar_autor(re.match(r".+", m.group(1)))
+        total += k
+        return novo + m.group(2)
+
+    def continuacao(m: re.Match) -> str:
+        nonlocal total
+        novo, k = _mascarar_autor(re.match(r".+", m.group(2)))
+        total += k
+        return m.group(1) + novo
+
+    def narrativa_simples(m: re.Match) -> str:
+        nonlocal total
+        autores, partes, ultimo = m.group(1), [], 0
+        for a in re.finditer(_AUTOR_NARRATIVO, autores):
+            novo, k = _mascarar_autor(a)
+            partes.append(autores[ultimo:a.start()] + novo)
+            ultimo, total = a.end(), total + k
+        return "".join(partes) + autores[ultimo:] + m.group(2)
+
+    texto = _PARENTESE_COM_ANO.sub(parentese, texto)
+    texto = _CITACAO_NARRATIVA.sub(narrativa, texto)
+    texto = _CONTINUACAO_NARRATIVA.sub(continuacao, texto)
+    texto = _CITACAO_NARRATIVA_SIMPLES.sub(narrativa_simples, texto)
+    return texto, total
+
+
 # ---------------------------------------------------------------- orquestração
 def anonimizar_texto(texto: str, vocab: set[str] | None = None) -> tuple[str, dict]:
     """Devolve (texto anonimizado, contagem por tipo)."""
@@ -203,6 +296,7 @@ def anonimizar_texto(texto: str, vocab: set[str] | None = None) -> tuple[str, di
     texto, contagem["cpf"] = _mascarar_cpf(texto)
     texto, contagem["email"] = _mascarar_email(texto)
     texto, contagem["telefone"] = _mascarar_telefone(texto)
+    texto, contagem["citacao"] = _mascarar_citacoes(texto)
     nomes = encontrar_nomes(texto, vocab)
     texto, contagem["nome"] = _mascarar_nomes(texto, nomes, vocab)
     return texto, contagem
@@ -212,7 +306,7 @@ def anonimizar_corpus(trechos: Iterable) -> tuple[list, dict]:
     """Anonimiza todos os trechos. Devolve (trechos, estatísticas por tipo)."""
     trechos = list(trechos)
     vocab = vocabulario_minusculas(t.texto for t in trechos)   # vocabulário do corpus inteiro
-    total = {"cpf": 0, "email": 0, "telefone": 0, "nome": 0}
+    total = {"cpf": 0, "email": 0, "telefone": 0, "citacao": 0, "nome": 0}
     saida = []
     for t in trechos:
         texto, contagem = anonimizar_texto(t.texto, vocab)

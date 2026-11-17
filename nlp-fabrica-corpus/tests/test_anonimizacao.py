@@ -57,7 +57,7 @@ def test_gabarito_passando_pela_ingestao_txt_e_docx():
     anon, _ = anonimizar_corpus(trechos)
     for t in anon:
         _, contagem = anonimizar_texto(t.texto)        # rodar de novo não acha mais nada
-        assert contagem == {"cpf": 0, "email": 0, "telefone": 0, "nome": 0}, t.fonte
+        assert contagem == {"cpf": 0, "email": 0, "telefone": 0, "citacao": 0, "nome": 0}, t.fonte
         for item in DEVEM_SUMIR:
             assert item not in t.texto, f"{t.fonte}: ficou {item}"
     docx = next(t for t in anon if t.tipo == "docx")
@@ -71,7 +71,7 @@ def test_contatos_publicos_preservados():
              "SVS: Tel.: (61) 3213-8510, svs@saude.gov.br. Central 156.")
     anon, contagem = anonimizar_texto(texto)
     assert anon == texto
-    assert contagem == {"cpf": 0, "email": 0, "telefone": 0, "nome": 0}
+    assert contagem == {"cpf": 0, "email": 0, "telefone": 0, "citacao": 0, "nome": 0}
 
 
 def test_telefone_particular_mascarado():
@@ -132,3 +132,44 @@ def test_autor_com_sobrenome_que_e_palavra_comum_continua_mascarado():
     texto = "Autores: Fernando Rocha Nogueira; Leonardo Andrade de Souza. A rocha alterada desliza."
     anon, c = anonimizar_texto(texto)
     assert "Fernando" not in anon and "Leonardo" not in anon and "A rocha alterada desliza." in anon
+
+
+# ------------------------------------------------------------------ citações de autores (17/11/2026)
+from fabrica_corpus.anonimizacao import _mascarar_citacoes
+
+
+@pytest.mark.parametrize("antes, depois, n", [
+    ("ocupa os territórios (Sulaiman, Moura & Nogueira, 2021).", "ocupa os territórios ([NOME], [NOME] & [NOME], 2021).", 3),
+    ("no âmbito das microbacias (Nogueira e Canil, 2018).", "no âmbito das microbacias ([NOME] e [NOME], 2018).", 2),
+    ("(Veyret; Richemond, 2007)", "([NOME]; [NOME], 2007)", 2),
+    ("(Bandeira et al.,2018)", "([NOME] et al.,2018)", 1),
+    ("(Infanti Jr. & Fornasari Filho, 1998; Fornasari Filho & Faria, 2018)",
+     "([NOME] Jr. & [NOME] Filho, 1998; [NOME] Filho & [NOME], 2018)", 4),
+    ("(Apud Infanti Jr. e Fornasari Filho, 1998)", "(Apud [NOME] Jr. e [NOME] Filho, 1998)", 2),
+    ("(Gramani, 2001; [NOME], et al.,2022)", "([NOME], 2001; [NOME], et al.,2022)", 1),
+    ("como Santos et al.,(2007), mostram", "como [NOME] et al.,(2007), mostram", 1),
+    ("como Santos et al.,(2007), Sulaiman\nProcessos erosivos", "como [NOME] et al.,(2007), [NOME]\nProcessos erosivos", 2),
+    ("como Santos et al.,(2007), Sulaiman e Jacobi", "como [NOME] et al.,(2007), [NOME] e Jacobi", 2),
+    ("Os estudos de Hermelin (2005) mostram", "Os estudos de [NOME] (2005) mostram", 1),
+    ("e Jacobi (2018) e Brasil (2024).", "e [NOME] (2018) e Brasil (2024).", 1),
+    ("Gramani e Massad (2022) e Carvalho, Macedo e Ogura (2007)", "[NOME] e [NOME] (2022) e [NOME], [NOME] e [NOME] (2007)", 5),
+    ("Cruden & Varnes (1996)", "[NOME] & [NOME] (1996)", 2),
+    ("segundo Fornasari Filho (2018)", "segundo [NOME] Filho (2018)", 1),
+])
+def test_citacao_mascara_sobrenomes_e_mantem_ano(antes, depois, n):
+    assert _mascarar_citacoes(antes) == (depois, n)
+
+
+@pytest.mark.parametrize("texto", [
+    "(Brasil, 2025a)", "(Brasil, 2021b, 2022)", "(Brasil-Japão, 2018)", "(entre 2010 e 2020)",
+    "(Lei nº 12.608, 2012)", "(IPT, 2007)", "(Ministério das Cidades, 2026)", "(Figura 20, 2018)",
+    "Brasil (2024)", "IPCC (2023)", "IPT e CPRM (2014)", "ANA (2014)", "Gides (2018)",
+    "Defesa Civil do Município de Maceió (2019)", "em 2019 choveu", "o plano de 2023 (revisado)",
+])
+def test_citacao_institucional_ou_nao_citacao_fica(texto):
+    assert _mascarar_citacoes(texto) == (texto, 0)
+
+
+def test_citacao_contada_em_chave_propria():
+    _, contagem = anonimizar_texto("O risco cresce com a ocupação (Maricato, 2002).", vocab=set())
+    assert contagem["citacao"] == 1 and contagem["nome"] == 0

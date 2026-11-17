@@ -250,3 +250,24 @@ def test_limpar_corpus_usa_o_vocabulario_de_todos_os_documentos():
     b = Trecho(fonte="b.pdf", tipo="pdf", pagina=1, texto="Todos devem se preparar.")
     limpos, _ = limpar_corpus([a, b])
     assert limpos[0].texto.startswith("Todos os anos")
+
+
+def test_titulo_de_referencias_no_meio_da_linha():
+    """Mapeamento p. 9: a coluna termina sem fechar a frase e o título e a 1ª citação grudam nela."""
+    from fabrica_corpus.limpeza import remover_referencias
+    texto = ("multidisciplinar no tema, como Santos et al.,(2007), Sulaiman REFERÊNCIAS BIBLIOGRÁFICAS "
+             "BRASIL. Lei nº 601, de 18 de setembro de 1850.\n"
+             "Dispõe sobre as terras devolutas do Império. Rio de\n"
+             "Janeiro, 1850. Disponível em: http://www.planalto.gov.br. Acesso em:\n"
+             "03 jul. 2026.\n"
+             "BRASIL. Ministério das Cidades. Secretaria\n"
+             "Nacional de Periferias. SBN nas periferias. Brasília, 2025.")
+    limpo, n = remover_referencias(texto)
+    assert limpo.strip() == "multidisciplinar no tema, como Santos et al.,(2007), Sulaiman"
+    assert n == 6
+
+
+def test_referencias_em_minuscula_no_meio_da_frase_ficam():
+    from fabrica_corpus.limpeza import remover_referencias
+    texto = "O plano traz referências Bibliográficas e Técnicas para o município."
+    assert remover_referencias(texto)[0] == texto

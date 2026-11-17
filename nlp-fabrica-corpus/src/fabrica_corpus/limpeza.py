@@ -244,6 +244,13 @@ def _e_citacao(linha: str) -> bool:
     return bool(_INICIO_CITACAO.match(linha) or _SINAL_CITACAO.search(linha))
 
 
+# Título "REFERÊNCIAS BIBLIOGRÁFICAS" no MEIO de uma linha: acontece quando a coluna de
+# texto termina sem fechar a frase e juntar_linhas cola o título e a 1ª citação nela
+# ("...Santos et al.,(2007), Sulaiman REFERÊNCIAS BIBLIOGRÁFICAS BRASIL. Lei nº 601...",
+# Mapeamento p. 9). Só em maiúsculas, para não pegar "referências" no meio de uma frase.
+_TITULO_NO_MEIO = re.compile(r"[ \t]+(REFER[ÊE]NCIAS(?:[ \t]+BIBLIOGR[ÁA]FICAS)?)[ \t]*:?[ \t]+(?=[A-ZÀ-Ú])")
+
+
 def remover_referencias(texto: str) -> tuple[str, int]:
     """Remove blocos de citações bibliográficas. Devolve (texto, linhas removidas).
 
@@ -252,24 +259,43 @@ def remover_referencias(texto: str) -> tuple[str, int]:
     primeiro título em maiúsculas ou na primeira frase de texto normal. Só é
     removido se tiver pelo menos 2 inícios de citação: uma frase comum que
     comece com "BRASIL." não basta.
+
+    Logo depois de um título "REFERÊNCIAS" o bloco é mais tolerante: uma linha que
+    não parece citação ainda faz parte dele se houver citação nas 3 linhas seguintes
+    (entrada que continua depois do ponto: "...de 1850." / "Dispõe sobre...").
     """
-    linhas = [l for l in texto.split("\n") if not _TITULO_REFERENCIAS.match(l)]
+    texto = _TITULO_NO_MEIO.sub(r"\n\1\n", texto)   # título colado no meio da linha vira linha própria
+    linhas, apos_titulo = [], set()
+    for l in texto.split("\n"):
+        if _TITULO_REFERENCIAS.match(l):
+            apos_titulo.add(len(linhas))
+        else:
+            linhas.append(l)
     remover: set[int] = set()
+
+    def citacao_adiante(j: int) -> bool:
+        proximas = [l.strip() for l in linhas[j + 1:] if l.strip()][:3]
+        return any(_e_citacao(l) for l in proximas)
+
     i = 0
     while i < len(linhas):
         if not _e_citacao(linhas[i]) or _TITULO_MAIUSCULO.match(linhas[i]):
             i += 1
             continue
+        com_titulo = i in apos_titulo
         j, inicios, anterior_fechou = i, 0, False
         while j < len(linhas):
             l = linhas[j].strip()
             if not l:
                 j += 1
                 continue
-            if _TITULO_MAIUSCULO.match(l):
-                break
+            # "IPCC, 2023." parece título em maiúsculas, mas é o fim de uma citação
+            if (_TITULO_MAIUSCULO.match(l) and not (com_titulo and _e_citacao(l))) or (j > i and j in apos_titulo):
+                break                           # um bloco não atravessa o título de referências
             if _e_citacao(l):
                 inicios += bool(_INICIO_CITACAO.match(l))
+            elif com_titulo and citacao_adiante(j):
+                pass                            # continuação de uma entrada da lista
             elif anterior_fechou or re.search(r"[.!?]$", l):
                 # depois de uma citação fechada ("..., 2018."), linha que não é
                 # citação já é texto do livro; frase fechada também encerra o bloco

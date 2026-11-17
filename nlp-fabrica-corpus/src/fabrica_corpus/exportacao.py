@@ -4,7 +4,7 @@ Arquivos gerados (UTF-8, um JSON por linha, acentos sem escape):
  - dados/saida/corpus_texto.jsonl: segmentos dos 5 documentos de dados/entrada;
  - dados/saida/corpus_qa.jsonl: perguntas e respostas no formato instruction/input/output;
  - dados/saida/corpus_chat.jsonl: diálogos no formato messages (system/user/assistant),
-   com os de recusa e encaminhamento (tipo "recusa", fonte "recusa", sem páginas);
+   com os de recusa e encaminhamento (tipo "recusa", sem segmento);
  - dados/saida_rag/corpus_rag.jsonl: segmentos dos 9 documentos (dados/entrada +
    dados/entrada_ia_generativa), lido pelo RAG da disciplina de IA Generativa.
 
@@ -87,8 +87,13 @@ def gravar_jsonl(linhas: Iterable[dict], caminho: str | Path) -> int:
 
 
 # ------------------------------------------------------------ formatos
+# Formato entregue (segue o enunciado):
+#   texto: text, fonte, segmento_id
+#   qa:    instruction, input, output, fonte, segmento_id
+#   chat:  messages, fonte, tipo, segmento_id
+# A rastreabilidade fica pelo segmento_id; as páginas não vão para os corpus.
 def linha_texto(seg) -> dict:
-    return {"id": seg.id, "texto": seg.texto, "fonte": seg.fonte, "paginas": seg.paginas, "tokens": seg.tokens}
+    return {"text": seg.texto, "fonte": seg.fonte, "segmento_id": seg.id}
 
 
 def linha_rag(seg) -> dict:
@@ -97,17 +102,16 @@ def linha_rag(seg) -> dict:
 
 
 def linha_qa(exemplo: dict) -> dict:
-    return {"id": exemplo["id"], "instruction": exemplo["pergunta"], "input": "", "output": exemplo["resposta"],
-            "fonte": exemplo["fonte"], "paginas": exemplo["paginas"], "segmento_id": exemplo["segmento_id"]}
+    return {"instruction": exemplo["pergunta"], "input": "", "output": exemplo["resposta"],
+            "fonte": exemplo["fonte"], "segmento_id": exemplo.get("segmento_id") or ""}
 
 
 def linha_chat(exemplo: dict) -> dict:
-    """Diálogo a partir de um trecho (tipo "trecho") ou de recusa e encaminhamento (tipo "recusa",
-    fonte "recusa", sem páginas e sem segmento)."""
+    """Diálogo a partir de um trecho (tipo "chat") ou de recusa e encaminhamento (tipo "recusa",
+    sem segmento)."""
     mensagens = [{"role": m["role"], "content": m["content"]} for m in exemplo["mensagens"]]
-    return {"id": exemplo["id"], "tipo": exemplo.get("tipo", "trecho"), "messages": mensagens,
-            "fonte": exemplo["fonte"], "paginas": exemplo.get("paginas") or [],
-            "segmento_id": exemplo.get("segmento_id")}
+    return {"messages": mensagens, "fonte": exemplo["fonte"], "tipo": exemplo.get("tipo", "chat"),
+            "segmento_id": exemplo.get("segmento_id") or ""}
 
 
 def _texto_do_dialogo(linha: dict) -> str:
@@ -152,7 +156,7 @@ def ler_resultado(caminho: str | Path = RESULTADO) -> dict:
 
 # ------------------------------------------------------------ exportação
 def exportar_texto(segmentos: list, saida: str | Path = SAIDA) -> dict:
-    linhas, removidos = remover_duplicatas((linha_texto(s) for s in segmentos), lambda l: l["texto"])
+    linhas, removidos = remover_duplicatas((linha_texto(s) for s in segmentos), lambda l: l["text"])
     gravados = gravar_jsonl(linhas, Path(saida) / "corpus_texto.jsonl")
     return {"gravados": gravados, "duplicatas_removidas": removidos}
 
@@ -190,5 +194,5 @@ def exportar_tudo(com_qa_chat: bool = True, contar: Callable[[str], int] | None 
              "texto": exportar_texto(seg_nlp),
              "rag": exportar_rag(seg_nlp + seg_ia)}
     if com_qa_chat:
-        estat.update(exportar_qa_chat(seg_nlp))
+        estat.update(exportar_qa_chat())
     return estat

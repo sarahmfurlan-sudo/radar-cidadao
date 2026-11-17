@@ -31,6 +31,7 @@ Passos previstos:
    - **Nomes, em três camadas:** (1) entidades de pessoa encontradas pelo spaCy (`pt_core_news_md`); (2) o que vem depois do rótulo "Nome:"; (3) repetições de um nome já encontrado, em maiúsculas ou só pelo primeiro nome.
    - **Filtro contra falsos positivos:** usa o vocabulário do corpus. Uma palavra que aparece escrita em minúscula em algum lugar do corpus é tratada como palavra comum, e não como nome de pessoa.
    - **Preservados**, por decisão do grupo em 13/11/2026, porque são serviços de que o cidadão precisa: os números de emergência (190, 192, 193, 199 e 40199), o 156, os e-mails `.gov.br` e os telefones de órgãos públicos da lista `CONTATOS_PUBLICOS`.
+   - **Sobrenomes de autores em citações** (decisão de 17/11/2026, contados à parte em "citacao"): "(Sulaiman, Moura & Nogueira, 2021)" vira "([NOME], [NOME] & [NOME], 2021)"; nas citações narrativas, "Santos et al.,(2007)" e "Hermelin (2005)" viram "[NOME] et al.,(2007)" e "[NOME] (2005)". Ficam o ano, "et al.", "Jr.", "Filho", "Apud", a pontuação e os autores institucionais ("Brasil", "IPCC", "Gides"...). Parêntese que não tem só autores e anos ("(entre 2010 e 2020)") não é tocado.
    - **Limites conhecidos:** um nome de uma palavra só não é mascarado; um nome de cidade com cara de nome de pessoa (por exemplo, "Afonso Cláudio") é mascarado; um sobrenome que também é palavra comum pode ficar solto no texto.
 6. **Segmentação:** trechos de 256 a 512 tokens.
    - **Contagem de tokens:** com o tokenizador do Qwen 2.5 (`Qwen/Qwen2.5-7B-Instruct`), que tem o mesmo vocabulário do Qwen 3.
@@ -104,16 +105,23 @@ Passos previstos:
 
      | Arquivo | Conteúdo | Campos |
      |---|---|---|
-     | `dados/saida/corpus_texto.jsonl` | Segmentos dos 5 documentos de `dados/entrada` | `id`, `texto`, `fonte`, `paginas`, `tokens` |
-     | `dados/saida/corpus_qa.jsonl` | Perguntas e respostas | `id`, `instruction` (pergunta), `input` (vazio), `output` (resposta, já com a citação da fonte), `fonte`, `paginas`, `segmento_id` |
-     | `dados/saida/corpus_chat.jsonl` | Diálogos a partir dos trechos e de recusa | `id`, `tipo` (`trecho` ou `recusa`), `messages` (`role`/`content`, com o `system` da persona primeiro), `fonte` (`recusa` nos de recusa), `paginas` (vazio nos de recusa), `segmento_id` (`null` nos de recusa) |
+     | `corpus_texto.jsonl` | Segmentos dos 5 documentos de `dados/entrada` | `text`, `fonte`, `segmento_id` |
+     | `corpus_qa.jsonl` | Perguntas e respostas | `instruction` (pergunta), `input` (vazio), `output` (resposta, com o nome do documento citado no fim), `fonte`, `segmento_id` |
+     | `corpus_chat.jsonl` | Diálogos a partir dos trechos e de recusa | `messages` (`role`/`content`, com o `system` da persona primeiro), `fonte`, `tipo` (`chat` ou `recusa`), `segmento_id` (vazio nos de recusa) |
      | `dados/saida_rag/corpus_rag.jsonl` | Segmentos dos 9 documentos (`dados/entrada` + `dados/entrada_ia_generativa`), para o RAG de IA Generativa | `id`, `texto`, `fonte`, `titulo` (de `geracao.TITULOS`), `paginas`, `tokens` |
 
    - **Preparação por pasta:** cada pasta passa separadamente por ingestão, limpeza, anonimização e segmentação. Assim os segmentos dos 5 documentos são os mesmos no `corpus_texto`, na geração e no RAG, com os mesmos `id`.
    - **Duplicatas:** removidas antes de gravar, mantendo a primeira ocorrência. Conta como duplicata o texto igual depois de normalizar espaços e caixa (só para comparar; o texto gravado não muda). Nas perguntas, conta a pergunta igual; nos diálogos, o texto de todas as falas. As contagens de removidos são devolvidas para o relatório.
    - **Perguntas e diálogos vêm do arquivo de resultado da geração:** no fim da geração, o notebook grava `dados/geracao/resultado_v8.json` (função `gravar_resultado`), com a versão do prompt, o modelo, os exemplos aprovados e as estatísticas que a geração devolve (segmentos pulados, número de descartes e `motivos_descarte`, com a contagem de descartes por tipo de motivo, como "juiz (responde)"; nas recusas, os temas pulados). A exportação só lê esse arquivo: não repete a geração, não carrega modelo e não depende do cache. Se o arquivo não existir, ela avisa que é preciso rodar a geração antes.
    - **Geração no notebook:** a função `gerar_perguntas_e_dialogos` divide os segmentos entre perguntas e diálogos (`planejar_divisao`) e gera, com o modelo, 100 perguntas, 30 diálogos a partir dos trechos e os 12 diálogos de recusa. Os de recusa vão para a lista `chat` do `resultado_v8.json`, depois dos outros, e entram no `corpus_chat.jsonl`. A exportação conta quantas recusas foram gravadas, para conferir o mínimo de 10.
-   - **`id` nas perguntas e nos diálogos:** os `id` da geração (`qa_0001`, `chat_0001`...) são mantidos, para ligar cada exemplo exportado à revisão do grupo.
+   - **Formato:** o dos corpus entregues, que segue o enunciado. A rastreabilidade fica pelo `segmento_id`; as páginas não vão para os corpus.
+   - **Finalização** ([`finalizacao.py`](src/fabrica_corpus/finalizacao.py)): o fluxo é geração (Qwen no Colab) -> revisão humana -> finalização. A finalização trabalha sobre os corpus já revisados da pasta [`entrega-final/`](entrega-final/), sem chamar o modelo nem usar o cache:
+     - refaz o `corpus_texto` pelo pipeline normal;
+     - tira as páginas da citação da fonte ("Fonte: Título, p. 7-9." vira "Fonte: Título."), mantendo o nome do documento;
+     - valida campos, tamanho mínimo, alternância das falas, duplicatas (sem acento, pontuação e caixa), quantidades mínimas e recusas válidas (a primeira fala do usuário tem que ser uma pergunta de verdade);
+     - quando a nova limpeza ou anonimização desloca a segmentação, aponta cada exemplo para o segmento com o mesmo conteúdo e registra a troca em `estatisticas.json` (`segmento_id_remapeados`);
+     - grava os 3 JSONL na própria pasta, atualiza as contagens do `estatisticas.json` (mantendo os dados da revisão humana) e refaz `amostras_5_por_corpus.json`.
+   - **Ajustes de revisão humana** nos exemplos (respostas reescritas, fontes das recusas) ficam registrados em [`entrega-final/REGISTRO_AJUSTES_EDITORIAIS.csv`](entrega-final/REGISTRO_AJUSTES_EDITORIAIS.csv), com antes, depois e motivo.
 9. **Relatório de qualidade:** número de exemplos, média de tokens, duplicatas removidas e 5 exemplos aleatórios.
 
 O corpus não passa por remoção de stop words nem por stemming: os textos dos 3 JSONL ficam com as palavras inteiras. A comparação pelas 5 primeiras letras existe só dentro da trava 3 da etapa 7, para conferir a resposta contra o trecho, e não muda nenhum texto.
@@ -172,7 +180,7 @@ O RAG de IA Generativa lê o corpus ampliado pelo link raw do GitHub:
 https://raw.githubusercontent.com/sarahmfurlan-sudo/radar-cidadao/main/nlp-fabrica-corpus/dados/saida_rag/corpus_rag.jsonl
 ```
 
-- **Conteúdo:** 355 segmentos dos 9 documentos (306 dos 5 documentos de entrada e 49 dos 4 ampliados), já limpos, anonimizados e com 256 a 512 tokens (2 segmentos curtos, no fim de documento).
+- **Conteúdo:** 356 segmentos dos 9 documentos (307 dos 5 documentos de entrada e 49 dos 4 ampliados), já limpos, anonimizados e com 256 a 512 tokens (2 segmentos curtos, no fim de documento).
 - **Campos de cada linha:** `id`, `texto`, `fonte` (nome do arquivo), `titulo` (título legível, para citar a fonte na resposta), `paginas` (lista vazia para HTML e DOCX) e `tokens` (contados com o tokenizador do Qwen 2.5).
 - **Formato:** UTF-8, um JSON por linha.
 
@@ -198,7 +206,7 @@ As versões fixadas estão em [`requirements.txt`](requirements.txt). `gradio` a
 
 | Caminho | Conteúdo |
 |---|---|
-| `src/fabrica_corpus/` | Módulos Python de cada etapa (`ingestao`, `limpeza`, `anonimizacao`, `segmentacao`, `geracao` e `exportacao`) |
+| `src/fabrica_corpus/` | Módulos Python de cada etapa (`ingestao`, `limpeza`, `anonimizacao`, `segmentacao`, `geracao`, `exportacao` e `finalizacao`) |
 | `dados/entrada/` | Documentos de entrada |
 | `dados/cache_geracao/` | Saídas do Qwen salvas para reaproveitar entre execuções |
 | `dados/geracao/` | Resultado de cada geração (`resultado_v8.json`): exemplos aprovados e estatísticas, lido pela exportação |

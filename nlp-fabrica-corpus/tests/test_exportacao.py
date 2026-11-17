@@ -74,9 +74,10 @@ def test_gravar_jsonl_utf8_uma_linha_por_objeto(tmp_path):
 def test_linha_qa_no_formato_do_enunciado():
     exemplo = {"id": "qa_0001", "pergunta": "O que é enchente?", "resposta": "É a cheia do rio.\n\nFonte: X, p. 3.",
                "fonte": "a.pdf", "paginas": [3], "segmento_id": "a_0001", "modelo": "m"}
-    assert linha_qa(exemplo) == {"id": "qa_0001", "instruction": "O que é enchente?", "input": "",
-                                 "output": "É a cheia do rio.\n\nFonte: X, p. 3.",
-                                 "fonte": "a.pdf", "paginas": [3], "segmento_id": "a_0001"}
+    linha = linha_qa(exemplo)
+    assert linha == {"instruction": "O que é enchente?", "input": "", "output": "É a cheia do rio.\n\nFonte: X, p. 3.",
+                     "fonte": "a.pdf", "segmento_id": "a_0001"}
+    assert list(linha) == ["instruction", "input", "output", "fonte", "segmento_id"]
 
 
 # 4. Formato dos diálogos: messages com role/content e system primeiro
@@ -86,12 +87,12 @@ def test_linha_chat_no_formato_do_enunciado():
                                                 {"role": "assistant", "content": "olá"}],
                "fonte": "a.pdf", "paginas": [3], "segmento_id": "a_0001"}
     linha = linha_chat(exemplo)
-    assert list(linha) == ["id", "tipo", "messages", "fonte", "paginas", "segmento_id"]
-    assert linha["tipo"] == "trecho"
+    assert list(linha) == ["messages", "fonte", "tipo", "segmento_id"]
+    assert linha["tipo"] == "chat"
     assert [m["role"] for m in linha["messages"]] == ["system", "user", "assistant"]
 
 
-# 4b. Diálogo de recusa: tipo e fonte "recusa", sem páginas e sem segmento
+# 4b. Diálogo de recusa: tipo "recusa", sem segmento (segmento_id vazio, como na entrega)
 def test_linha_chat_de_recusa():
     exemplo = {"id": "chat_recusa_0001", "tipo": "recusa", "tema": "remédio", "fonte": "recusa", "paginas": [],
                "segmento_id": None, "mensagens": [{"role": "system", "content": "persona"},
@@ -99,7 +100,7 @@ def test_linha_chat_de_recusa():
                                                   {"role": "assistant", "content": "Procure a unidade de saúde."}]}
     linha = linha_chat(exemplo)
     assert linha["tipo"] == "recusa" and linha["fonte"] == "recusa"
-    assert linha["paginas"] == [] and linha["segmento_id"] is None
+    assert linha["segmento_id"] == "" and "paginas" not in linha
 
 
 # 5. Perguntas e diálogos saem do arquivo de resultado, sem repetir a geração
@@ -119,14 +120,12 @@ def test_exportar_qa_chat_do_arquivo_de_resultado(tmp_path):
     assert n_recusas >= 10                                     # o enunciado pede pelo menos 10
     assert estat["geracao"]["qa"]["exemplos"] == 6 and estat["geracao"]["recusas"]["temas_pulados"] == []
     _, linhas_qa = ler(tmp_path / "saida" / "corpus_qa.jsonl")
-    assert set(linhas_qa[0]) == {"id", "instruction", "input", "output", "fonte", "paginas", "segmento_id"}
-    assert linhas_qa[0]["id"] == "qa_0001"
+    assert list(linhas_qa[0]) == ["instruction", "input", "output", "fonte", "segmento_id"]
     assert "\n\nFonte: " in linhas_qa[0]["output"]           # citação já vem na resposta
     _, linhas_chat = ler(tmp_path / "saida" / "corpus_chat.jsonl")
-    assert linhas_chat[0]["id"] == "chat_0001" and linhas_chat[0]["messages"][0]["role"] == "system"
+    assert linhas_chat[0]["tipo"] == "chat" and linhas_chat[0]["messages"][0]["role"] == "system"
     recusa = linhas_chat[-1]
-    assert recusa["tipo"] == "recusa" and recusa["fonte"] == "recusa" and recusa["paginas"] == []
-    assert recusa["id"].startswith("chat_recusa_")
+    assert recusa["tipo"] == "recusa" and recusa["segmento_id"] == ""
 
 
 # 6. Exportar não chama o modelo: só lê o arquivo; sem arquivo, avisa
@@ -160,7 +159,7 @@ def test_texto_e_rag_com_campos_pedidos(tmp_path):
     assert est_texto == {"gravados": 2, "duplicatas_removidas": 1}
     assert est_rag["gravados"] == 2 and est_rag["duplicatas_removidas"] == 1
     _, texto = ler(tmp_path / "corpus_texto.jsonl")
-    assert set(texto[0]) == {"id", "texto", "fonte", "paginas", "tokens"}
+    assert list(texto[0]) == ["text", "fonte", "segmento_id"] and texto[0]["segmento_id"] == "seg_0001"
     _, rag = ler(tmp_path / "corpus_rag.jsonl")
     assert set(rag[0]) == {"id", "texto", "fonte", "titulo", "paginas", "tokens"}
     assert rag[1]["titulo"] == "dicas do CGE da Prefeitura de São Paulo"
