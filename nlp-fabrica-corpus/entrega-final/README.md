@@ -12,14 +12,13 @@ Entrega consolidada dos corpus e da revisão humana. Os dados são educacionais 
 
 ## Arquivos
 
-- `corpus_texto.jsonl`: 306 segmentos com identificadores e fontes.
-- `corpus_qa.jsonl`: 100 pares de perguntas/respostas únicos.
-- `corpus_chat.jsonl`: 31 diálogos com no mínimo duas respostas do assistente; 11 recusas marcadas.
-- `estatisticas.json`: métricas, quantidades e limitações metodológicas.
-- `revisao_humana_20_porcento.csv` e `.xlsx`: avaliação humana original preservada em coluna separada do parecer técnico atualizado.
-- `RELATORIO_REVISAO_HUMANA.pdf`: resultado da auditoria com comentários editados tecnicamente.
+- `corpus_texto.jsonl`: 307 segmentos (`text`, `fonte`, `segmento_id`).
+- `corpus_qa.jsonl`: 100 pares de perguntas/respostas únicos (`instruction`, `input`, `output`, `fonte`, `segmento_id`).
+- `corpus_chat.jsonl`: 31 diálogos com no mínimo duas trocas (`messages`, `fonte`, `tipo`, `segmento_id`); 11 recusas válidas.
+- `estatisticas.json`: quantidades, médias de tokens, duplicatas, recusas válidas e dados da revisão humana.
+- `revisao_humana_20_porcento.csv` e `.xlsx`: avaliação humana original (marcação e comentário da revisora) em colunas separadas do parecer técnico.
 - `RELATORIO_FINAL_GS_Radar_Cidadao.pdf`: relatório acadêmico consolidado.
-- `REGISTRO_DA_REVISAO.md` e `REGISTRO_AJUSTES_EDITORIAIS.csv`: rastreabilidade das alterações.
+- `REGISTRO_AJUSTES_EDITORIAIS.csv`: cada alteração feita nos exemplos depois da geração (antes, depois e motivo).
 - `revisao_humana_MARCACOES_RECEBIDAS.pdf`: prova da avaliação original enviada.
 - `ROTEIRO_VIDEO_5_MIN.md`: roteiro para a demonstração.
 
@@ -29,8 +28,8 @@ As fontes são documentos públicos sobre enchentes, chuvas intensas e mapeament
 
 ## Reprodutibilidade
 
-O projeto utiliza Python, extração/limpeza de documentos, segmentação, geração assistida por LLM e regras de filtragem. Para reproduzir a execução, consulte os notebooks na pasta `notebooks/`. Os corpora aqui entregues são as versões revisadas e consolidadas, não arquivos recém-gerados durante este empacotamento.
+O projeto utiliza Python, extração/limpeza de documentos, segmentação, geração assistida por LLM e regras de filtragem. A geração das perguntas e dos diálogos está nos notebooks da pasta `notebooks/`. Fluxo: geração (Qwen no Colab) -> revisão humana -> finalização. A finalização (`src/fabrica_corpus/finalizacao.py`) refaz o `corpus_texto` pelo pipeline, tira as páginas das citações, valida e grava os corpus revisados, sem chamar o modelo de novo.
 
 ## Limitações
 
-A revisão humana da amostra foi realizada. Os pareceres técnicos da IA fundamentam-se nos **segmentos armazenados no corpus**; não substituem conferência independente da paginação física dos PDFs originais. O vídeo de demonstração precisa ser gravado/anexado pelo grupo. Não coloque tokens, dados pessoais ou credenciais no repositório.
+A revisão humana da amostra foi realizada. Os pareceres técnicos da IA fundamentam-se nos **segmentos armazenados no corpus**; não substituem conferência independente da paginação física dos PDFs originais. Não coloque tokens, dados pessoais ou credenciais no repositório.
