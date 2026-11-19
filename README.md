@@ -40,7 +40,7 @@ O Radar Cidadão é um app de zeladoria urbana colaborativa. O MVP é focado em 
 | IA Generativa | [`ia-generativa/`](ia-generativa/) | https://youtu.be/yCeERxSGitM |
 | AI for Robotic Process Automation (RPA + IA) | [`rpa-radar-cidadao/`](rpa-radar-cidadao/) | não se aplica |
 | Computação Quântica | [`computacao-quantica/`](computacao-quantica/) | não se aplica |
-| Governança em IA e Business Analytics | [`governanca/`](governanca/) | [inserir o link do YouTube] |
+| Governança em IA e Business Analytics | [`governanca/`](governanca/) | https://youtu.be/bSoN1tuT9XI |
 
 Cada pasta tem o seu README com o que foi feito e como executar.
 
