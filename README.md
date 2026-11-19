@@ -36,7 +36,7 @@ O Radar Cidadão é um app de zeladoria urbana colaborativa. O MVP é focado em 
 | Visão Computacional | [`visao-computacional/`](visao-computacional/) | arquivo na pasta |
 | IoT | [`iot/`](iot/) | https://youtu.be/PKmweoWx3LY |
 | Cluster Computing, Computação Neuromórfica e Supercomputadores | [`neuromorfica-memristor/`](neuromorfica-memristor/) | não se aplica |
-| Processamento de Linguagem Natural: Fábrica de Corpus | [`nlp-fabrica-corpus/`](nlp-fabrica-corpus/) | [inserir o link do YouTube] |
+| Processamento de Linguagem Natural: Fábrica de Corpus | [`nlp-fabrica-corpus/`](nlp-fabrica-corpus/) | https://youtu.be/0dX_j7xm8_Q |
 | IA Generativa | [`ia-generativa/`](ia-generativa/) | https://youtu.be/yCeERxSGitM |
 | AI for Robotic Process Automation (RPA + IA) | [`rpa-radar-cidadao/`](rpa-radar-cidadao/) | não se aplica |
 | Computação Quântica | [`computacao-quantica/`](computacao-quantica/) | não se aplica |
